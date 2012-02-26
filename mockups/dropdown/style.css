@@ -1,0 +1,74 @@
+/* Overall properties */
+body
+{
+    width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+    font-family: monospace;
+}
+
+
+/* Header properties */
+#header
+{
+    width: 300px;
+    height: 100px;
+    background-color: #666666;
+    margin-bottom: 20px;
+}
+
+/* Overall main properties */
+#main
+{
+    width: 1000px;
+}
+
+/* Dropdown properties */
+#dropdown
+{
+    width: 250px;
+    height: 700px;
+    background-color: #dddddd;
+    float: left;
+    padding: 7px;
+}
+
+/* Main chat area properties */
+#chatarea
+{
+    width: 714px;
+    height: 700px;
+    float: right;
+    background-color: #dddddd;
+}
+#chatheader
+{
+    width: 700px;
+    height: 15px;
+    margin-bottom: 5px;
+    padding: 7px;
+    color: #ffffff;
+    background-color: #666666;
+}
+#messages
+{
+    width: 680px;
+    height: 500px;
+    overflow-y: scroll;
+    padding: 7px;
+    margin-left: 10px;
+    margin-right: 10px;
+    background-color: #cccccc;
+}
+#sendarea
+{
+    width: 700px;
+    height: 150px;
+    padding: 7px;
+}
+#buttonarea
+{
+    width: 150px;
+    text-align: center;
+    float: right;
+}
