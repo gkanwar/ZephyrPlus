@@ -1,4 +1,8 @@
 /* Overall properties */
+html
+{
+    background-color: #efefef;
+}
 body
 {
     width: 1000px;
@@ -11,9 +15,7 @@ body
 /* Header properties */
 #header
 {
-    width: 300px;
-    height: 100px;
-    background-color: #666666;
+    margin-top: 50px;
     margin-bottom: 20px;
 }
 
@@ -27,17 +29,40 @@ body
 #dropdown
 {
     width: 250px;
-    height: 700px;
-    background-color: #dddddd;
+    height: 500px;
+    background-color: #2d2d2d;
     float: left;
+    line-height: 1.5em;
+    color: #efefef;
+}
+#dropdown p
+{
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+#dropdown ul
+{
+    list-style: none;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    padding-left: 10px;
+}
+#personals
+{
     padding: 7px;
+    background-color: #464646;
+}
+#classes
+{
+    padding: 7px;
+    background-color: #2d2d2d;
 }
 
 /* Main chat area properties */
 #chatarea
 {
     width: 714px;
-    height: 700px;
+    height: 500px;
     float: right;
     background-color: #dddddd;
 }
@@ -45,30 +70,60 @@ body
 {
     width: 700px;
     height: 15px;
-    margin-bottom: 5px;
     padding: 7px;
-    color: #ffffff;
-    background-color: #666666;
+    color: #171717;
+    background-color: #c5c5c5;
 }
 #messages
 {
-    width: 680px;
-    height: 500px;
+    width: 660px;
+    height: 382px;
     overflow-y: scroll;
-    padding: 7px;
-    margin-left: 10px;
-    margin-right: 10px;
-    background-color: #cccccc;
+    padding-left: 27px;
+    padding-right: 27px;
+    background-color: #171717;
+    color: #c5c5c5;
 }
 #sendarea
 {
     width: 700px;
-    height: 150px;
+    height: 75px;
     padding: 7px;
+}
+#sendarea textarea
+{
+    width: 550px;
+    height: 75px;
+    border: none;
+    background-color: #ffffff;
+    float: left;
+    resize: none;
 }
 #buttonarea
 {
     width: 150px;
+    float: right;
+}
+#buttonarea input[type=submit]
+{
+    width: 145px;
+    height: 35px;
+    padding: 5px;
+    margin-bottom: 5px;
     text-align: center;
+    background-color: #ffffff;
+    border: none;
+    font-family: monospace;
+    float: right;
+}
+#buttonarea input[type=text]
+{
+    width: 145px;
+    height: 35px;
+    padding: 5px;
+    text-align: center;
+    background-color: #ffffff;
+    border: none;
+    font-family: monospace;
     float: right;
 }
