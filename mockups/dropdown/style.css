@@ -47,6 +47,10 @@ body
     margin-bottom: 0px;
     padding-left: 10px;
 }
+#dropdown li ul
+{
+    padding-left: 30px;
+}
 #personals_sidebar
 {
     padding: 7px;

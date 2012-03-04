@@ -11,6 +11,8 @@ var maxPersonals = 5;
 // Load the personals to display in the sidebar
 var loadPersonals = function()
 {
+    // TODO: Make an AJAX call to get the personals data
+
     root = $("#personals_anchor");
     ul = $("<ul></ul>");
     console.log("loading personals");
@@ -36,6 +38,8 @@ var maxClasses = 5;
 // Load the classes to display in the sidebar
 var loadClasses = function()
 {
+    // TODO: Load the classes via AJAX
+
     root = $("#classes_anchor");
     ul = $("<ul></ul>");
     console.log("loading classes");
@@ -46,9 +50,13 @@ var loadClasses = function()
 	{
 	    break;
 	}
-	ul.append("<li>" + classes[i] + "</li>");
+	ul.append("<li><img src='img/dropdown-inactive.png' onclick='$(this).parent().children(\".dropdown\").slideToggle(); $(this).attr(\"src\", $(this).attr(\"src\") == \"img/dropdown-active.png\" ? \"img/dropdown-inactive.png\" : \"img/dropdown-active.png\")'/>"+ 
+		  classes[i] + "<ul class='dropdown' style='display:none'>\
+                                    <li>Subclass-1</li>\
+                                    <li>Subclass-2</li>\
+                                </ul></li>");
     }
-    if (personals.length > maxPersonals)
+    if (classes.length > maxClasses)
     {
 	ul.append("<li>...</li>");
     }
