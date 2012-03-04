@@ -1,0 +1,60 @@
+body
+{
+    width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+    font-family: monospace;
+    background-color: #efefef
+}
+
+
+
+/*login page*/
+
+#biglogo
+{
+    float: middle;
+    margin-left:80px;
+    margin-top:50px;
+}
+#abouthelp
+{
+    float: right;
+
+}
+.backImg {
+    position:absolute;
+    z-index:2;
+}
+#loginbutton
+{
+    position:relative;
+    top:-110px;
+    left:40px;
+    
+}
+#loginbutton input[type=submit]
+{
+    width: 580px;
+    height: 80 px;
+    padding: 5px;
+    text-align: center;
+    background-color:A3A3A3;
+    border:none;
+    font-size:3em;
+    font-family:monospace;
+   
+}
+#abouthelp
+{
+    position: relative;
+    top: -175px;
+    right:50px;
+    font-size:2em;
+    font-familiy:monospace;
+}
+#abouthelp a
+{
+    text-decoration:none;
+    color:000000;
+}
