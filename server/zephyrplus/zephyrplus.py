@@ -10,6 +10,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 #import models
 from models import Zephyr, Subscription, Account
 
+import simplejson
 #from django.conf import settings
 #settings.configure(DATABASE_ENGINE='sqlite3', DATABASE_NAME='zephyrs.db')
 
@@ -54,7 +55,18 @@ class ChatUpdateHandler(tornado.web.RequestHandler):
 		if len(zephyrs) == 0 and longpoll.lower() == "true":
 			MessageWaitor.wait_for_messages(self,sub)
 		else:
-			self.write(str(list(zephyrs)))
+			response = []
+			for zephyr in zephyrs:
+                            values = {
+                                    'message': zephyr.message,
+                                    'sender': zephyr.sender,
+                                    'date': (zephyr.date - datetime.datetime.fromtimestamp(0)).total_seconds()*1000,
+                                    'class': zephyr.dst.class_name,
+                                    'instance': zephyr.dst.instance,
+                                    'recipient': zephyr.dst.recipient
+                                }
+                            response.append(values)
+			self.write(simplejson.dumps(response))
 			self.finish()
 
 application = tornado.web.Application([
