@@ -5,12 +5,13 @@ import tornado.web
 import os
 import time
 import datetime
+import simplejson
+import subprocess
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 
 #import models
 from models import Zephyr, Subscription, Account
 
-import simplejson
 #from django.conf import settings
 #settings.configure(DATABASE_ENGINE='sqlite3', DATABASE_NAME='zephyrs.db')
 
@@ -68,6 +69,20 @@ class ChatUpdateHandler(tornado.web.RequestHandler):
                             response.append(values)
 			self.write(simplejson.dumps(response))
 			self.finish()
+	
+	def post(self, *args, **kwargs):
+		class_name = self.get_argument('class', 'message')
+		instance = self.get_argument('instance', 'personal')
+		recipient = self.get_argument('recipient', '*')
+		signature = self.get_argument('signature', None)
+		message = self.get_argument('message')
+		if signature is not None:
+			signature = "username" + " (" + signature + ")"
+		else
+			signature = "username"
+		proc = subprocess.Popen(["zwrite", "-c", class_name, "-i", instance, "-s", signature, recipient], stdin=subprocess.PIPE)
+		proc.stdin.write(message)
+		proc.stdin.close()
 
 application = tornado.web.Application([
 	(r"/chat", ChatUpdateHandler),
