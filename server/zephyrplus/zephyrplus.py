@@ -67,6 +67,7 @@ class ChatUpdateHandler(tornado.web.RequestHandler):
                                     'recipient': zephyr.dst.recipient
                                 }
                             response.append(values)
+			self.set_header('Content-Type', 'text/plain')
 			self.write(simplejson.dumps(response))
 			self.finish()
 	
@@ -78,7 +79,7 @@ class ChatUpdateHandler(tornado.web.RequestHandler):
 		message = self.get_argument('message')
 		if signature is not None:
 			signature = "username" + " (" + signature + ")"
-		else
+		else:
 			signature = "username"
 		proc = subprocess.Popen(["zwrite", "-c", class_name, "-i", instance, "-s", signature, recipient], stdin=subprocess.PIPE)
 		proc.stdin.write(message)
