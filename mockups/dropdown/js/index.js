@@ -23,11 +23,11 @@ var loadPersonals = function()
 	{
 	    break;
 	}
-	ul.append("<li>" + personals[i] + "</li>");
+	ul.append("<li class='personals_entry'>" + personals[i] + "</li>");
     }
     if (personals.length > maxPersonals)
     {
-	ul.append("<li>...</li>");
+	ul.append("<li class='personals_entry'>...</li>");
     }
     root.html(ul);
 };
@@ -50,7 +50,7 @@ var loadClasses = function()
 	{
 	    break;
 	}
-	ul.append("<li><img src='img/dropdown-inactive.png' onclick='$(this).parent().children(\".dropdown\").slideToggle(); $(this).attr(\"src\", $(this).attr(\"src\") == \"img/dropdown-active.png\" ? \"img/dropdown-inactive.png\" : \"img/dropdown-active.png\")'/>"+ 
+	ul.append("<li class='classes_entry'><img src='img/dropdown-inactive.png' onclick='$(this).parent().children(\".dropdown\").slideToggle(); $(this).attr(\"src\", $(this).attr(\"src\") == \"img/dropdown-active.png\" ? \"img/dropdown-inactive.png\" : \"img/dropdown-active.png\")'/>"+ 
 		  classes[i] + "<ul class='dropdown' style='display:none'>\
                                     <li>Subclass-1</li>\
                                     <li>Subclass-2</li>\
