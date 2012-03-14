@@ -5,6 +5,8 @@ import tornado.web
 import os
 import time
 import datetime
+import simplejson
+import subprocess
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 
 #import models
@@ -54,8 +56,34 @@ class ChatUpdateHandler(tornado.web.RequestHandler):
 		if len(zephyrs) == 0 and longpoll.lower() == "true":
 			MessageWaitor.wait_for_messages(self,sub)
 		else:
-			self.write(str(list(zephyrs)))
+			response = []
+			for zephyr in zephyrs:
+                            values = {
+                                    'message': zephyr.message,
+                                    'sender': zephyr.sender,
+                                    'date': (zephyr.date - datetime.datetime.fromtimestamp(0)).total_seconds()*1000,
+                                    'class': zephyr.dst.class_name,
+                                    'instance': zephyr.dst.instance,
+                                    'recipient': zephyr.dst.recipient
+                                }
+                            response.append(values)
+			self.set_header('Content-Type', 'text/plain')
+			self.write(simplejson.dumps(response))
 			self.finish()
+	
+	def post(self, *args, **kwargs):
+		class_name = self.get_argument('class', 'message')
+		instance = self.get_argument('instance', 'personal')
+		recipient = self.get_argument('recipient', '*')
+		signature = self.get_argument('signature', None)
+		message = self.get_argument('message')
+		if signature is not None:
+			signature = "username" + " (" + signature + ")"
+		else:
+			signature = "username"
+		proc = subprocess.Popen(["zwrite", "-c", class_name, "-i", instance, "-s", signature, recipient], stdin=subprocess.PIPE)
+		proc.stdin.write(message)
+		proc.stdin.close()
 
 application = tornado.web.Application([
 	(r"/chat", ChatUpdateHandler),

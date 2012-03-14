@@ -22,14 +22,18 @@ var maxPersonals = 5;
 // Load the personals to display in the sidebar
 var loadPersonals = function()
 {
+    // TODO: Make an AJAX call to get the personals data
+
     root = $("#personals_anchor");
     ul = $("<ul></ul>");
+
     console.log("loading personals");
     console.log(maxPersonals);
     for (var i = 0; i < personals.length; i++)
     {
 	ul.append("<li>" + personals[i] + "</li>");
     }
+
     root.html(ul);
 };
 
@@ -39,13 +43,40 @@ var maxClasses = 5;
 // Load the classes to display in the sidebar
 var loadClasses = function()
 {
+    // TODO: Load the classes via AJAX
+
     root = $("#classes_anchor");
     ul = $("<ul></ul>");
-    console.log("loading classes");
-    console.log(classes);
     for (var i = 0; i < classes.length; i++)
     {
-	ul.append("<li>" + classes[i] + "</li>");
+	if (i == maxClasses)
+	{
+	    break;
+	}
+	ul.append("<li class='classes_entry'><img src='img/dropdown-inactive.png' onclick='$(this).parent().children(\".dropdown\").slideToggle(); $(this).attr(\"src\", $(this).attr(\"src\") == \"img/dropdown-active.png\" ? \"img/dropdown-inactive.png\" : \"img/dropdown-active.png\")'/>"+ 
+		  "<span onclick='fillMessages(\""+classes[i]+"\")'>" + classes[i] + "</span>" +
+		  "<ul class='dropdown' style='display:none'>\
+                       <li onclick='fillMessages(\""+classes[i]+"\", \"Subclass 1\")'>Subclass-1</li>\
+                       <li onclick='fillMessages(\""+classes[i]+"\", \"Subclass 2\")'>Subclass-2</li>\
+                   </ul></li>");
     }
     root.html(ul);
 };
+
+var fillMessages = function(klass, instance)
+{
+    var headerText = "all classes";
+    // Class is defined
+    if (klass)
+    {
+	headerText += " >  " + klass;
+    }
+    // Instance is defined
+    if (instance)
+    {
+	headerText += " > " + instance;
+    }
+
+    $("#chatheader").text(headerText);
+};
+
