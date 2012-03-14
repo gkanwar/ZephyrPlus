@@ -71,10 +71,22 @@ body
     padding: 7px;
     background-color: #2d2d2d;
 }
-.classes_entry:hover
+.classes_entry
 {
     padding: 0px 7px 0px 17px;
     margin: 0px -7px 0px -17px;
+}
+.classes_entry:hover
+{
+    background-color: #575757;
+}
+.instances_entry
+{
+    padding: 0px 7px 0px 60px;
+    margin: 0px -7px 0px -60px;
+}
+.instances_entry:hover
+{
     background-color: #575757;
 }
 

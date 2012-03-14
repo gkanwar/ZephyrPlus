@@ -58,23 +58,27 @@ var loadClasses = function()
 	(function()
 	 {
 	     var curClass = classes[i];
-	     var class_entry = $("<li class='classes_entry'/>");
-	     var dropdown_triangle = $("<img src='img/dropdown-inactive.png'/>")
-		 .click(function()
-			{
-			    $(this).parent().children(".dropdown").slideToggle();
-			    $(this).attr("src", $(this).attr("src") == "img/dropdown-active.png" ? "img/dropdown-inactive.png" : "img/dropdown-active.png");
-			});
-	     var class_name = $("<span/>")
-		 .text(curClass.name)
-		 .addClass("class_id_"+curClass.id)
-		 .css("color", curClass.color)
+	     var class_entry = $("<li/>");
+	     var class_entry_div = $("<div/>")
+		 .addClass("classes_entry")
 		 .click(function()
 			{
 			    fillMessages(curClass.id);
 			});
+	     var dropdown_triangle = $("<img src='img/dropdown-inactive.png'/>")
+		 .click(function()
+			{
+			    $(this).parent().parent().children(".dropdown").slideToggle();
+			    $(this).attr("src", $(this).attr("src") == "img/dropdown-active.png" ? "img/dropdown-inactive.png" : "img/dropdown-active.png");
+			    return false;
+			});
+	     var class_name = $("<span/>")
+		 .text(curClass.name)
+		 .addClass("class_id_"+curClass.id)
+		 .css("color", curClass.color);
 	     ul.append(class_entry);
-	     class_entry.append(dropdown_triangle).append(class_name);
+	     class_entry.append(class_entry_div);
+	     class_entry_div.append(dropdown_triangle).append(class_name);
 	     
 	     var instances_ul = $("<ul class='dropdown' style='display:none'/>");
 	     class_entry.append(instances_ul);
@@ -88,6 +92,7 @@ var loadClasses = function()
 		      var instance_li = $("<li/>")
 			  .text(curInstance.name)
 			  .addClass("instance_id_"+curInstance.id)
+			  .addClass("instances_entry")
 			  .css("color", curInstance.color)
 			  .click(function()
 				 {
