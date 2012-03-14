@@ -1,6 +1,19 @@
 // When the document loads, populate the personals
 $(document).ready(function()
 {
+    $("#personals_sidebar").resizable({handles:'s',minHeight: 20});
+    $("#personals_anchor").css({height:$("#personals_sidebar").height()-20});
+    $("#classes_anchor").css({height:$("#dropdown").height()-$("#personals_sidebar").height()-20});
+				 
+    $("#personals_sidebar").resize(function()
+				  {
+				      $("#personals_anchor").css({height:$("#personals_sidebar").height()-20});
+				      $("#classes_sidebar").css({height:$("#dropdown").height()-$("#personals_sidebar").height()});
+				      $("#classes_anchor").css({height:$("#dropdown").height()-$("#personals_sidebar").height()-20});
+				  });    
+
+        $('#messages').lionbars();
+
     loadPersonals();
     loadClasses();
 });
@@ -15,18 +28,14 @@ var loadPersonals = function()
 
     root = $("#personals_anchor");
     ul = $("<ul></ul>");
+
+    console.log("loading personals");
+    console.log(maxPersonals);
     for (var i = 0; i < personals.length; i++)
     {
-	if (i == maxPersonals)
-	{
-	    break;
-	}
-	ul.append("<li class='personals_entry'>" + personals[i] + "</li>");
+	ul.append("<li>" + personals[i] + "</li>");
     }
-    if (personals.length > maxPersonals)
-    {
-	ul.append("<li class='personals_entry'>...</li>");
-    }
+
     root.html(ul);
 };
 
@@ -58,10 +67,6 @@ var loadClasses = function()
 	{
 	    instances_ul.append("<li onclick='fillMessages(\""+classes[i].id+"\", \""+instances[j].id+"\")'>"+instances[j].name+"</li>");
 	}
-    }
-    if (classes.length > maxClasses)
-    {
-	ul.append("<li>...</li>");
     }
     root.html(ul);
 };
@@ -100,3 +105,4 @@ var fillMessages = function(class_id, instance_id)
 
     $("#chatheader").text(headerText);
 };
+

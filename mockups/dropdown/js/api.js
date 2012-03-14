@@ -63,6 +63,11 @@ var personals = [
     'mikewu',
     'zeidman',
     'mr.unknown',
+    'ashketchup',
+    'ruthie',
+    'mprat',
+    'pkoms',
+    'taylors',
 ];
 
 // TODO: Have functions to load all this data from the server
