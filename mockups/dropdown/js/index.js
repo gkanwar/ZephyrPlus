@@ -2,8 +2,8 @@
 $(document).ready(function()
 {
     $("#personals_sidebar").resizable({handles:'s',minHeight: 20});
-    $("#personals_anchor").css({height:$("#personals_sidebar").height()-20}); 
-    $("#classes_anchor").css({height:$("#dropdown").height()-$("#personals_sidebar").height()-20})
+    $("#personals_anchor").css({height:$("#personals_sidebar").height()-20});
+    $("#classes_anchor").css({height:$("#dropdown").height()-$("#personals_sidebar").height()-20});
 				 
     $("#personals_sidebar").resize(function()
 				  {
@@ -11,6 +11,8 @@ $(document).ready(function()
 				      $("#classes_sidebar").css({height:$("#dropdown").height()-$("#personals_sidebar").height()});
 				      $("#classes_anchor").css({height:$("#dropdown").height()-$("#personals_sidebar").height()-20});
 				  });    
+
+        $('#messages').lionbars();
 
     loadPersonals();
     loadClasses();
