@@ -46,6 +46,14 @@ var classes = [
 	color: "#ffff00",
 	instances: [instances[0], instances[1]],
 	messages:[messages[0], messages[1]],
+    },
+    {
+	id: 1,
+	name: "sipb",
+	last_messaged: '01-01-9999 21:59',
+	color: "#0099ff",
+	instances: [],
+	messages: [],
     }
 ];
 

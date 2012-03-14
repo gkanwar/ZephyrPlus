@@ -53,18 +53,50 @@ var loadClasses = function()
 	{
 	    break;
 	}
-	var class_entry = $("<li class='classes_entry'><img src='img/dropdown-inactive.png' onclick='$(this).parent().children(\".dropdown\").slideToggle(); $(this).attr(\"src\", $(this).attr(\"src\") == \"img/dropdown-active.png\" ? \"img/dropdown-inactive.png\" : \"img/dropdown-active.png\")'/>" + 
-		  "<span class='class_id_"+classes[i].id+"' style='color:"+classes[i].color+"' onclick='fillMessages(\""+classes[i].id+"\")'>" + classes[i].name + "</span>" +
-	          "</li>");
-	ul.append(class_entry);
 
-	var instances_ul = $("<ul class='dropdown' style='display:none'/>");
-	class_entry.append(instances_ul);
-
-	for (var j = 0; j < classes[i].instances.length; j++)
-	{
-	    instances_ul.append("<li class='instance_id_"+instances[j].id+"' style='color:"+instances[j].color+"' onclick='fillMessages(\""+classes[i].id+"\", \""+instances[j].id+"\")'>"+instances[j].name+"</li>");
-	}
+	// Call everything in its own function to make it scope right
+	(function()
+	 {
+	     var curClass = classes[i];
+	     var class_entry = $("<li class='classes_entry'/>");
+	     var dropdown_triangle = $("<img src='img/dropdown-inactive.png'/>")
+		 .click(function()
+			{
+			    $(this).parent().children(".dropdown").slideToggle();
+			    $(this).attr("src", $(this).attr("src") == "img/dropdown-active.png" ? "img/dropdown-inactive.png" : "img/dropdown-active.png");
+			});
+	     var class_name = $("<span/>")
+		 .text(curClass.name)
+		 .addClass("class_id_"+curClass.id)
+		 .css("color", curClass.color)
+		 .click(function()
+			{
+			    fillMessages(curClass.id);
+			});
+	     ul.append(class_entry);
+	     class_entry.append(dropdown_triangle).append(class_name);
+	     
+	     var instances_ul = $("<ul class='dropdown' style='display:none'/>");
+	     class_entry.append(instances_ul);
+	     
+	     for (var j = 0; j < curClass.instances.length; j++)
+	     {
+		 // Call everything in its own function so that the variables scope right
+		 (function()
+		  {
+		      var curInstance = curClass.instances[j];
+		      var instance_li = $("<li/>")
+			  .text(curInstance.name)
+			  .addClass("instance_id_"+curInstance.id)
+			  .css("color", curInstance.color)
+			  .click(function()
+				 {
+				     fillMessages(curClass.id, curInstance.id);
+				 });
+		      instances_ul.append(instance_li);
+		  })();
+	     }
+	 })();
     }
     root.html(ul);
 };
@@ -74,11 +106,11 @@ var fillMessages = function(class_id, instance_id)
     var headerText = "all classes";
     var messages;
     // Class is defined
-    if (class_id)
+    if (typeof(class_id) != 'undefined')
     {
 	headerText += " >  " + classes[class_id].name;
 	// Instance is defined
-	if (instance_id)
+	if (typeof(instance_id) != 'undefined')
 	{
 	    headerText += " > " + instances[instance_id].name;
 	    messages = instances[instance_id].messages;
