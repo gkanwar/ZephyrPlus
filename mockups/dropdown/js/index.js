@@ -1,6 +1,17 @@
 // When the document loads, populate the personals
 $(document).ready(function()
 {
+    $("#personals_sidebar").resizable({handles:'s',minHeight: 20});
+    $("#personals_anchor").css({height:$("#personals_sidebar").height()-20}); 
+    $("#classes_anchor").css({height:$("#dropdown").height()-$("#personals_sidebar").height()-20})
+				 
+    $("#personals_sidebar").resize(function()
+				  {
+				      $("#personals_anchor").css({height:$("#personals_sidebar").height()-20});
+				      $("#classes_sidebar").css({height:$("#dropdown").height()-$("#personals_sidebar").height()});
+				      $("#classes_anchor").css({height:$("#dropdown").height()-$("#personals_sidebar").height()-20});
+				  });    
+
     loadPersonals();
     loadClasses();
 });
@@ -14,18 +25,10 @@ var loadPersonals = function()
     root = $("#personals_anchor");
     ul = $("<ul></ul>");
     console.log("loading personals");
-    console.log(personals);
+    console.log(maxPersonals);
     for (var i = 0; i < personals.length; i++)
     {
-	if (i == maxPersonals)
-	{
-	    break;
-	}
 	ul.append("<li>" + personals[i] + "</li>");
-    }
-    if (personals.length > maxPersonals)
-    {
-	ul.append("<li>...</li>");
     }
     root.html(ul);
 };
@@ -42,15 +45,7 @@ var loadClasses = function()
     console.log(classes);
     for (var i = 0; i < classes.length; i++)
     {
-	if (i == maxClasses)
-	{
-	    break;
-	}
 	ul.append("<li>" + classes[i] + "</li>");
-    }
-    if (personals.length > maxPersonals)
-    {
-	ul.append("<li>...</li>");
     }
     root.html(ul);
 };

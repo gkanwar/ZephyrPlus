@@ -49,11 +49,13 @@ body
 }
 #personals_sidebar
 {
+    height: 30%;
     padding: 7px;
     background-color: #464646;
 }
 #classes_sidebar
 {
+    height:70%; 
     padding: 7px;
     background-color: #2d2d2d;
 }
@@ -126,4 +128,17 @@ body
     border: none;
     font-family: monospace;
     float: right;
+}
+
+
+#personals_anchor
+{
+overflow:scroll;
+overflow-x:hidden;
+}
+
+#classes_anchor
+{
+overflow:scroll;
+overflow-x:hidden;
 }
