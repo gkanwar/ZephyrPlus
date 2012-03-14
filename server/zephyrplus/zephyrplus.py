@@ -16,8 +16,12 @@ from models import Zephyr, Subscription, Account
 #settings.configure(DATABASE_ENGINE='sqlite3', DATABASE_NAME='zephyrs.db')
 
 class MainPageHandler(tornado.web.RequestHandler):
-	def get(self):
-		self.write("Main Page")
+    def get(self):
+        logged_in = False
+        if not logged_in:
+            self.render("templates/login.html")
+        else:
+            self.render("templates/index.html")
 
 class MessageWaitor(object):
 	# waiter stores (request, Subscription)
@@ -85,10 +89,18 @@ class ChatUpdateHandler(tornado.web.RequestHandler):
 		proc.stdin.write(message)
 		proc.stdin.close()
 
+settings = {
+    "static_path": os.path.join(os.path.dirname(__file__), "static"),
+    "cookie_secret": "rS24mrw/2iCQUSwtuptW8p1jbidrs5eqV3hdPuJ8894L",
+    "login_url": "/login",
+    "xsrf_cookies": True,
+}
+
 application = tornado.web.Application([
 	(r"/chat", ChatUpdateHandler),
 	(r"/", MainPageHandler),
-		])
+        (r"/static/(.*)", tornado.web.StaticFileHandler, {"path": settings["static_path"]}),
+		], debug=True)
 
 def main():
 	http_server = tornado.httpserver.HTTPServer(application)
