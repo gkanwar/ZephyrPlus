@@ -1,6 +1,17 @@
 // When the document loads, populate the personals
 $(document).ready(function()
 {
+    $("#personals_sidebar").resizable({handles:'s',minHeight: 20});
+    $("#personals_anchor").css({height:$("#personals_sidebar").height()-20}); 
+    $("#classes_anchor").css({height:$("#dropdown").height()-$("#personals_sidebar").height()-20})
+				 
+    $("#personals_sidebar").resize(function()
+				  {
+				      $("#personals_anchor").css({height:$("#personals_sidebar").height()-20});
+				      $("#classes_sidebar").css({height:$("#dropdown").height()-$("#personals_sidebar").height()});
+				      $("#classes_anchor").css({height:$("#dropdown").height()-$("#personals_sidebar").height()-20});
+				  });    
+
     loadPersonals();
     loadClasses();
 });
@@ -15,20 +26,14 @@ var loadPersonals = function()
 
     root = $("#personals_anchor");
     ul = $("<ul></ul>");
+
     console.log("loading personals");
-    console.log(personals);
+    console.log(maxPersonals);
     for (var i = 0; i < personals.length; i++)
     {
-	if (i == maxPersonals)
-	{
-	    break;
-	}
 	ul.append("<li>" + personals[i] + "</li>");
     }
-    if (personals.length > maxPersonals)
-    {
-	ul.append("<li>...</li>");
-    }
+
     root.html(ul);
 };
 
@@ -42,23 +47,36 @@ var loadClasses = function()
 
     root = $("#classes_anchor");
     ul = $("<ul></ul>");
-    console.log("loading classes");
-    console.log(classes);
     for (var i = 0; i < classes.length; i++)
     {
 	if (i == maxClasses)
 	{
 	    break;
 	}
-	ul.append("<li><img src='img/dropdown-inactive.png' onclick='$(this).parent().children(\".dropdown\").slideToggle(); $(this).attr(\"src\", $(this).attr(\"src\") == \"img/dropdown-active.png\" ? \"img/dropdown-inactive.png\" : \"img/dropdown-active.png\")'/>"+ 
-		  classes[i] + "<ul class='dropdown' style='display:none'>\
-                                    <li>Subclass-1</li>\
-                                    <li>Subclass-2</li>\
-                                </ul></li>");
-    }
-    if (classes.length > maxClasses)
-    {
-	ul.append("<li>...</li>");
+	ul.append("<li class='classes_entry'><img src='img/dropdown-inactive.png' onclick='$(this).parent().children(\".dropdown\").slideToggle(); $(this).attr(\"src\", $(this).attr(\"src\") == \"img/dropdown-active.png\" ? \"img/dropdown-inactive.png\" : \"img/dropdown-active.png\")'/>"+ 
+		  "<span onclick='fillMessages(\""+classes[i]+"\")'>" + classes[i] + "</span>" +
+		  "<ul class='dropdown' style='display:none'>\
+                       <li onclick='fillMessages(\""+classes[i]+"\", \"Subclass 1\")'>Subclass-1</li>\
+                       <li onclick='fillMessages(\""+classes[i]+"\", \"Subclass 2\")'>Subclass-2</li>\
+                   </ul></li>");
     }
     root.html(ul);
 };
+
+var fillMessages = function(klass, instance)
+{
+    var headerText = "all classes";
+    // Class is defined
+    if (klass)
+    {
+	headerText += " >  " + klass;
+    }
+    // Instance is defined
+    if (instance)
+    {
+	headerText += " > " + instance;
+    }
+
+    $("#chatheader").text(headerText);
+};
+

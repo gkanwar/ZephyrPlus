@@ -15,6 +15,11 @@ var classes = [
     'zephyrplus',
     'galisteo',
     'random',
+    '6.004',
+    '6.006',
+    '6.042',
+    '21W.786',
+    'lobby10'
 ];
 
 var personals = [
@@ -24,6 +29,11 @@ var personals = [
     'mikewu',
     'zeidman',
     'mr.unknown',
+    'ashketchup',
+    'ruthie',
+    'mprat',
+    'pkoms',
+    'taylors',
 ];
 
 // TODO: Have functions to load all this data from the server

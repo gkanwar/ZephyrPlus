@@ -49,17 +49,31 @@ body
 }
 #dropdown li ul
 {
-    padding-left: 30px;
+    margin-left: 30px;
 }
 #personals_sidebar
 {
+    height: 30%;
     padding: 7px;
     background-color: #464646;
 }
+.personals_entry:hover
+{
+    padding: 0px 7px 0px 17px;
+    margin: 0px -7px 0px -17px;
+    background-color: #575757;
+}
 #classes_sidebar
 {
+    height:70%; 
     padding: 7px;
     background-color: #2d2d2d;
+}
+.classes_entry:hover
+{
+    padding: 0px 7px 0px 17px;
+    margin: 0px -7px 0px -17px;
+    background-color: #575757;
 }
 
 /* Main chat area properties */
@@ -130,4 +144,17 @@ body
     border: none;
     font-family: monospace;
     float: right;
+}
+
+
+#personals_anchor
+{
+overflow:scroll;
+overflow-x:hidden;
+}
+
+#classes_anchor
+{
+overflow:scroll;
+overflow-x:hidden;
 }
