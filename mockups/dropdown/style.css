@@ -104,6 +104,19 @@ body
     background-color: #171717;
     color: #c5c5c5;
 }
+.messages_entry
+{
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+.message_header
+{
+    /* Nothing for now */
+}
+.message_body
+{
+    margin-left: 20px;
+}
 #sendarea
 {
     width: 700px;

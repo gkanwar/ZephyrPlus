@@ -12,8 +12,6 @@ $(document).ready(function()
 				      $("#classes_anchor").css({height:$("#dropdown").height()-$("#personals_sidebar").height()-20});
 				  });    
 
-        $('#messages').lionbars();
-
     loadPersonals();
     loadClasses();
 });
@@ -56,7 +54,7 @@ var loadClasses = function()
 	    break;
 	}
 	var class_entry = $("<li class='classes_entry'><img src='img/dropdown-inactive.png' onclick='$(this).parent().children(\".dropdown\").slideToggle(); $(this).attr(\"src\", $(this).attr(\"src\") == \"img/dropdown-active.png\" ? \"img/dropdown-inactive.png\" : \"img/dropdown-active.png\")'/>" + 
-		  "<span onclick='fillMessages(\""+classes[i].id+"\")'>" + classes[i].name + "</span>" +
+		  "<span class='class_id_"+classes[i].id+"' style='color:"+classes[i].color+"' onclick='fillMessages(\""+classes[i].id+"\")'>" + classes[i].name + "</span>" +
 	          "</li>");
 	ul.append(class_entry);
 
@@ -65,7 +63,7 @@ var loadClasses = function()
 
 	for (var j = 0; j < classes[i].instances.length; j++)
 	{
-	    instances_ul.append("<li onclick='fillMessages(\""+classes[i].id+"\", \""+instances[j].id+"\")'>"+instances[j].name+"</li>");
+	    instances_ul.append("<li class='instance_id_"+instances[j].id+"' style='color:"+instances[j].color+"' onclick='fillMessages(\""+classes[i].id+"\", \""+instances[j].id+"\")'>"+instances[j].name+"</li>");
 	}
     }
     root.html(ul);
@@ -94,8 +92,8 @@ var fillMessages = function(class_id, instance_id)
 	$("#messages").html('');
 	for (var i in messages)
 	{
-	    var message_entry = $("<div class='message_entry'/>");
-	    var header = $("<div class='message_header'/>").text(messages[i].sender); // For now
+	    var message_entry = $("<div class='messages_entry'/>");
+	    var header = $("<div class='message_header'/>").html("<span class='class_id_"+messages[i].parent_class.id+"' style='color:"+messages[i].parent_class.color+";'>"+messages[i].parent_class.name+"</span> / <span class='instance_id_"+messages[i].parent_instance.id+"' style='color:"+messages[i].parent_instance.color+";'>"+messages[i].parent_instance.name+"</span> / " + messages[i].sender); // For now
 	    var body = $("<div class='message_body'/>").text(messages[i].message);
 	    message_entry.append(header).append(body);
 	    $("#messages").append(message_entry);
