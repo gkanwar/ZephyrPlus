@@ -1,4 +1,4 @@
-@include 'lionbars.css';
+@import url('../../jquery/lionbars.css');
 
 /* Overall properties */
 html
@@ -31,7 +31,7 @@ body
 #dropdown
 {
     width: 250px;
-    height: 500px;
+    height: 474px;
     background-color: #2d2d2d;
     float: left;
     line-height: 1.5em;
@@ -151,12 +151,15 @@ body
 
 #personals_anchor
 {
-overflow:scroll;
-overflow-x:hidden;
+    overflow-y:scroll;
 }
 
 #classes_anchor
 {
-overflow:scroll;
-overflow-x:hidden;
+    overflow-y:scroll;
+}
+
+li.classes_entry
+{
+    overflow-x:hidden;
 }

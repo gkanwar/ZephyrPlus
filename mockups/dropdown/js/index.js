@@ -12,7 +12,9 @@ $(document).ready(function()
 				      $("#classes_anchor").css({height:$("#dropdown").height()-$("#personals_sidebar").height()-20});
 				  });    
 
-        $('#messages').lionbars();
+    $("#messages").lionbars();
+    $("#personals_anchor").lionbars();
+    $("#classes_anchor").lionbars();
 
     loadPersonals();
     loadClasses();
