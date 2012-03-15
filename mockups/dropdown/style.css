@@ -177,11 +177,14 @@ body
 #personals_anchor
 {
     overflow-y:scroll;
+    overflow-x:hidden;
+    
 }
 
 #classes_anchor
 {
     overflow-y:scroll;
+    overflow-x:hidden !important;
 }
 
 li.classes_entry
