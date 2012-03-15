@@ -13,8 +13,8 @@ $(document).ready(function()
 				  });    
 
     $("#messages").lionbars();
-//    $("#personals_anchor").lionbars();
-//    $("#classes_anchor").lionbars();
+    $("#personals_anchor").lionbars();
+    $("#classes_anchor").lionbars();
 
     loadPersonals();
     loadClasses();
