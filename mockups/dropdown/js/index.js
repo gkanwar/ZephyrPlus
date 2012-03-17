@@ -12,7 +12,9 @@ $(document).ready(function()
 				      $("#classes_anchor").css({height:$("#dropdown").height()-$("#personals_sidebar").height()-20});
 				  });    
 
-        $('#messages').lionbars();
+    $("#messages").lionbars();
+    $("#personals_anchor").lionbars();
+    $("#classes_anchor").lionbars();
 
     loadPersonals();
     loadClasses();
@@ -55,18 +57,55 @@ var loadClasses = function()
 	{
 	    break;
 	}
-	var class_entry = $("<li class='classes_entry'><img src='img/dropdown-inactive.png' onclick='$(this).parent().children(\".dropdown\").slideToggle(); $(this).attr(\"src\", $(this).attr(\"src\") == \"img/dropdown-active.png\" ? \"img/dropdown-inactive.png\" : \"img/dropdown-active.png\")'/>" + 
-		  "<span onclick='fillMessages(\""+classes[i].id+"\")'>" + classes[i].name + "</span>" +
-	          "</li>");
-	ul.append(class_entry);
 
-	var instances_ul = $("<ul class='dropdown' style='display:none'/>");
-	class_entry.append(instances_ul);
-
-	for (var j = 0; j < classes[i].instances.length; j++)
-	{
-	    instances_ul.append("<li onclick='fillMessages(\""+classes[i].id+"\", \""+instances[j].id+"\")'>"+instances[j].name+"</li>");
-	}
+	// Call everything in its own function to make it scope right
+	(function()
+	 {
+	     var curClass = classes[i];
+	     var class_entry = $("<li/>");
+	     var class_entry_div = $("<div/>")
+		 .addClass("classes_entry")
+		 .click(function()
+			{
+			    fillMessages(curClass.id);
+			});
+	     var dropdown_triangle = $("<img src='img/dropdown-inactive.png'/>")
+		 .click(function()
+			{
+			    $(this).parent().parent().children(".dropdown").slideToggle();
+			    $(this).attr("src", $(this).attr("src") == "img/dropdown-active.png" ? "img/dropdown-inactive.png" : "img/dropdown-active.png");
+			    return false;
+			});
+	     var class_name = $("<span/>")
+		 .text(curClass.name)
+		 .addClass("class_id_"+curClass.id)
+		 .css("color", curClass.color);
+	     ul.append(class_entry);
+	     class_entry.append(class_entry_div);
+	     class_entry_div.append(dropdown_triangle).append(class_name);
+	     
+	     var instances_ul = $("<ul class='dropdown' style='display:none'/>");
+	     class_entry.append(instances_ul);
+	     
+	     for (var j = 0; j < curClass.instances.length; j++)
+	     {
+		 // Call everything in its own function so that the variables scope right
+		 (function()
+		  {
+		      var curInstance = curClass.instances[j];
+		      var instance_li = $("<li/>")
+			  .text(curInstance.name)
+			  .addClass("instance_id_"+curInstance.id)
+			  .addClass("instances_entry")
+			  .css("color", curInstance.color)
+			  .click(function()
+				 {
+				     fillMessages(curClass.id, curInstance.id);
+				 });
+		      instances_ul.append(instance_li);
+		  })();
+	     }
+	 })();
     }
     root.html(ul);
 };
@@ -76,11 +115,11 @@ var fillMessages = function(class_id, instance_id)
     var headerText = "all classes";
     var messages;
     // Class is defined
-    if (class_id)
+    if (typeof(class_id) != 'undefined')
     {
 	headerText += " >  " + classes[class_id].name;
 	// Instance is defined
-	if (instance_id)
+	if (typeof(instance_id) != 'undefined')
 	{
 	    headerText += " > " + instances[instance_id].name;
 	    messages = instances[instance_id].messages;
@@ -94,8 +133,8 @@ var fillMessages = function(class_id, instance_id)
 	$("#messages").html('');
 	for (var i in messages)
 	{
-	    var message_entry = $("<div class='message_entry'/>");
-	    var header = $("<div class='message_header'/>").text(messages[i].sender); // For now
+	    var message_entry = $("<div class='messages_entry'/>");
+	    var header = $("<div class='message_header'/>").html("<span class='class_id_"+messages[i].parent_class.id+"' style='color:"+messages[i].parent_class.color+";'>"+messages[i].parent_class.name+"</span> / <span class='instance_id_"+messages[i].parent_instance.id+"' style='color:"+messages[i].parent_instance.color+";'>"+messages[i].parent_instance.name+"</span> / " + messages[i].sender); // For now
 	    var body = $("<div class='message_body'/>").text(messages[i].message);
 	    message_entry.append(header).append(body);
 	    $("#messages").append(message_entry);

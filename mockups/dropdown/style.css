@@ -1,4 +1,4 @@
-@include 'lionbars.css';
+@import url('../../jquery/lionbars.css');
 
 /* Overall properties */
 html
@@ -31,7 +31,7 @@ body
 #dropdown
 {
     width: 250px;
-    height: 500px;
+    height: 474px;
     background-color: #2d2d2d;
     float: left;
     line-height: 1.5em;
@@ -71,10 +71,22 @@ body
     padding: 7px;
     background-color: #2d2d2d;
 }
-.classes_entry:hover
+.classes_entry
 {
     padding: 0px 7px 0px 17px;
     margin: 0px -7px 0px -17px;
+}
+.classes_entry:hover
+{
+    background-color: #575757;
+}
+.instances_entry
+{
+    padding: 0px 7px 0px 60px;
+    margin: 0px -7px 0px -60px;
+}
+.instances_entry:hover
+{
     background-color: #575757;
 }
 
@@ -103,6 +115,19 @@ body
     padding-right: 27px;
     background-color: #171717;
     color: #c5c5c5;
+}
+.messages_entry
+{
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+.message_header
+{
+    /* Nothing for now */
+}
+.message_body
+{
+    margin-left: 20px;
 }
 #sendarea
 {
@@ -151,12 +176,18 @@ body
 
 #personals_anchor
 {
-overflow:scroll;
-overflow-x:hidden;
+    overflow-y:scroll;
+    overflow-x:hidden;
+    
 }
 
 #classes_anchor
 {
-overflow:scroll;
-overflow-x:hidden;
+    overflow-y:scroll;
+    overflow-x:hidden !important;
+}
+
+li.classes_entry
+{
+    overflow-x:hidden;
 }
