@@ -1,8 +1,4 @@
-import tornado.httpserver
-import tornado.ioloop
-import tornado.web
-
-
+import tornado.httpserver, tornado.ioloop, tornado.web, tornado.auth
 import os
 import time
 import datetime
@@ -20,13 +16,39 @@ import django.db.models.signals
 #from django.conf import settings
 #settings.configure(DATABASE_ENGINE='sqlite3', DATABASE_NAME='zephyrs.db')
 
-class MainPageHandler(tornado.web.RequestHandler):
+
+class BaseHandler(tornado.web.RequestHandler):
+    def get_current_user(self):
+        return self.get_secure_cookie("user")
+
+class MainPageHandler(BaseHandler):
     def get(self):
-        logged_in = False
-        if not logged_in:
+        user = self.get_current_user()
+        if user is None:
             self.render("templates/login.html")
         else:
             self.render("templates/index.html")
+
+class LoginHandler(tornado.web.RequestHandler, tornado.auth.OpenIdMixin):
+    @tornado.web.asynchronous
+    def get(self):
+        if self.get_argument("openid.mode", None):
+            self.get_authenticated_user(self._on_auth)
+            return
+        self.authenticate_redirect()
+
+    def _on_auth(self, user):
+        if user is None or "email" not in user:
+            self.redirect("/")
+            return
+        self.set_secure_cookie("user", user["email"])
+        self.redirect(self.get_argument("next", "/"))
+
+class GoogleLoginHandler(LoginHandler, tornado.auth.GoogleMixin):
+    pass
+
+class CertsLoginHandler(LoginHandler):
+    _OPENID_ENDPOINT = "https://garywang.scripts.mit.edu/openid/login.py"
 
 class MessageWaitor(object):
 	# waiter stores (request, Subscription)
@@ -55,8 +77,9 @@ class MessageWaitor(object):
 				waitee[0].finish()
 				cls.waiters.remove(waitee)
 
-class ChatUpdateHandler(tornado.web.RequestHandler):
+class ChatUpdateHandler(BaseHandler):
 	@tornado.web.asynchronous
+	@tornado.web.authenticated
 	def get(self, *args, **kwargs):
 		class_name=self.get_argument('class')
 		instance = self.get_argument('instance', "*")
@@ -94,6 +117,7 @@ class ChatUpdateHandler(tornado.web.RequestHandler):
 			self.write(simplejson.dumps(response))
 			self.finish()
 	
+        @tornado.web.authenticated
 	def post(self, *args, **kwargs):
 		class_name = self.get_argument('class', 'message')
 		instance = self.get_argument('instance', 'personal')
@@ -120,14 +144,16 @@ settings = {
     "cookie_secret": "rS24mrw/2iCQUSwtuptW8p1jbidrs5eqV3hdPuJ8894L",
     "login_url": "/login",
     "xsrf_cookies": True,
+    "debug": True,
 }
 
 application = tornado.web.Application([
-	(r"/chat", ChatUpdateHandler),
-	(r"/update", NewZephyrHandler),
-	(r"/", MainPageHandler),
+        (r"/chat", ChatUpdateHandler),
+        (r"/update", NewZephyrHandler),
+        (r"/login", CertsLoginHandler),
+        (r"/", MainPageHandler),
         (r"/static/(.*)", tornado.web.StaticFileHandler, {"path": settings["static_path"]}),
-		], debug=True)
+    ], **settings)
 
 def main():
 	http_server = tornado.httpserver.HTTPServer(application)
