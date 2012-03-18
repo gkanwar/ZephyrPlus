@@ -16,6 +16,15 @@ $(document).ready(function()
     $("#personals_anchor").lionbars();
     $("#classes_anchor").lionbars();
 
+    $("#classes_title").click(function()
+			      {
+				  fillMessagesByClass();
+			      });
+    $("#personals_title").click(function()
+				{
+				    fillMessagesByPersonal();
+				});
+
     loadPersonals();
     loadClasses();
 });
@@ -67,7 +76,7 @@ var loadClasses = function()
 		 .addClass("classes_entry")
 		 .click(function()
 			{
-			    fillMessages(curClass.id);
+			    fillMessagesByClass(curClass.id);
 			});
 	     var dropdown_triangle = $("<img src='img/dropdown-inactive.png'/>")
 		 .click(function()
@@ -100,7 +109,7 @@ var loadClasses = function()
 			  .css("color", curInstance.color)
 			  .click(function()
 				 {
-				     fillMessages(curClass.id, curInstance.id);
+				     fillMessagesByClass(curClass.id, curInstance.id);
 				 });
 		      instances_ul.append(instance_li);
 		  })();
@@ -110,10 +119,11 @@ var loadClasses = function()
     root.html(ul);
 };
 
-var fillMessages = function(class_id, instance_id)
+var fillMessagesByClass = function(class_id, instance_id)
 {
     var headerText = "all classes";
-    var messages;
+    var messagesOut;
+
     // Class is defined
     if (typeof(class_id) != 'undefined')
     {
@@ -122,26 +132,76 @@ var fillMessages = function(class_id, instance_id)
 	if (typeof(instance_id) != 'undefined')
 	{
 	    headerText += " > " + instances[instance_id].name;
-	    messages = instances[instance_id].messages;
+	    messagesOut = instances[instance_id].messages;
 	}
 	else
 	{
-	    messages = classes[class_id].messages;
+	    messagesOut = classes[class_id].messages;
 	}
+    }
+    // No class selected
+    else
+    {
+	messagesOut = classes_messages;
+    }
 
-	// Actually fill in the messages
-	$("#messages").html('');
-	for (var i in messages)
-	{
-	    var message_entry = $("<div class='messages_entry'/>");
-	    var header = $("<div class='message_header'/>").html("<span class='class_id_"+messages[i].parent_class.id+"' style='color:"+messages[i].parent_class.color+";'>"+messages[i].parent_class.name+"</span> / <span class='instance_id_"+messages[i].parent_instance.id+"' style='color:"+messages[i].parent_instance.color+";'>"+messages[i].parent_instance.name+"</span> / " + messages[i].sender); // For now
-	    var body = $("<div class='message_body'/>").text(messages[i].message);
-	    message_entry.append(header).append(body);
-	    $("#messages").append(message_entry);
-	}
+    // Actually fill in the messages
+    $("#messages").html('');
+    for (var i in messagesOut)
+    {
+	var message_entry = $("<div class='messages_entry'/>");
+	var header = $("<div class='message_header'/>");
+	var header_class = $("<span />")
+	    .addClass("class_id_"+messagesOut[i].parent_class.id)
+	    .css("color", messagesOut[i].parent_class.color)
+	    .text(messagesOut[i].parent_class.name);
+	var header_instance = $("<span />")
+	    .addClass("instance_id_"+messagesOut[i].parent_instance.id)
+	    .css("color", messagesOut[i].parent_instance.color)
+	    .text(messagesOut[i].parent_instance.name)
+        var header_sender = messagesOut[i].sender;
+	header.append(header_class).append(" / ")
+	    .append(header_instance).append(" / ")
+	    .append(header_sender);
+        var body = $("<div class='message_body'/>").text(messagesOut[i].message);
+	message_entry.append(header).append(body);
+	$("#messages").append(message_entry);
+    }
+    
+    $("#chatheader").text(headerText);
+};
 
+var fillMessagesByPersonal = function(personal_id)
+{
+    var headerText = "personals";
+    var messagesOut;
+
+    // If we are looking a specific person
+    if (personal_id)
+    {
+	// Do stuff
+    }
+    // See all personals
+    else
+    {
+	messagesOut = personal_messages;
+    }
+
+    console.log("fillMessagesByPersonal");
+    console.log(messagesOut);
+
+    // Actually fill in the messages
+    $("#messages").html('');
+    for (var i in messagesOut)
+    {
+	console.log(messagesOut[i]);
+	var message_entry = $("<div class='messages_entry'/>");
+	var header = $("<div class='message_header'/>")
+	    .text(messagesOut[i].sender);
+        var body = $("<div class='message_body'/>").text(messagesOut[i].message);
+	message_entry.append(header).append(body);
+	$("#messages").append(message_entry);
     }
 
     $("#chatheader").text(headerText);
 };
-

@@ -16,6 +16,15 @@ var messages = [
 	sender: 'mikewu',
 	timestamp: '01-01-9999 21:59',
 	recipient: null,
+    },
+    {
+	id: 2,
+	parent_class: null,
+	parent_instance: null,
+	message: "Nom nom nom babies",
+	sender: 'garywang',
+	timestamp: '01-01-9999 21:59',
+	recipient: 'gurtej',
     }
 ];
 
@@ -56,6 +65,9 @@ var classes = [
 	messages: [],
     }
 ];
+
+var personal_messages = [messages[2]];
+var classes_messages = [messages[0], messages[1]];
 
 messages[0].parent_class = classes[0];
 messages[0].parent_instance = instances[0];
