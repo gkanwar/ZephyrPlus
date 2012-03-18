@@ -9,13 +9,8 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 #import models
 from models import Zephyr, Subscription, Account
 
-# signals for notification
-from django.dispatch import receiver
-import django.db.models.signals
-
 #from django.conf import settings
 #settings.configure(DATABASE_ENGINE='sqlite3', DATABASE_NAME='zephyrs.db')
-
 
 class BaseHandler(tornado.web.RequestHandler):
     def get_current_user(self):
