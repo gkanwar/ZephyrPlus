@@ -78,11 +78,11 @@ var loadClasses = function()
 			{
 			    fillMessagesByClass(curClass.id);
 			});
-	     var dropdown_triangle = $("<img src='img/dropdown-inactive.png'/>")
+	     var dropdown_triangle = $("<img src='/static/img/dropdown-inactive.png'/>")
 		 .click(function()
 			{
 			    $(this).parent().parent().children(".dropdown").slideToggle();
-			    $(this).attr("src", $(this).attr("src") == "img/dropdown-active.png" ? "img/dropdown-inactive.png" : "img/dropdown-active.png");
+			    $(this).attr("src", $(this).attr("src") == "/static/img/dropdown-active.png" ? "/static/img/dropdown-inactive.png" : "/static/img/dropdown-active.png");
 			    return false;
 			});
 	     var class_name = $("<span/>")
