@@ -14,12 +14,14 @@ from models import Zephyr, Subscription, Account
 
 class BaseHandler(tornado.web.RequestHandler):
     def get_current_user(self):
-        return self.get_secure_cookie("user")
+        username = self.get_secure_cookie("user")
+        if username is not None:
+            return Account.objects.get_or_create(username=username)[0]
+        return None
 
 class MainPageHandler(BaseHandler):
     def get(self):
-        user = self.get_current_user()
-        if user is None:
+        if self.current_user is None:
             self.render("templates/login.html")
         else:
             self.render("templates/index.html")
@@ -36,7 +38,10 @@ class LoginHandler(tornado.web.RequestHandler, tornado.auth.OpenIdMixin):
         if user is None or "email" not in user:
             self.redirect("/")
             return
-        self.set_secure_cookie("user", user["email"])
+        username = user["email"].lower()
+        if username.endswith("@mit.edu"):
+            username = username.split("@")[0]
+        self.set_secure_cookie("user", username)
         self.redirect(self.get_argument("next", "/"))
 
 class GoogleLoginHandler(LoginHandler, tornado.auth.GoogleMixin):
@@ -134,6 +139,21 @@ class NewZephyrHandler(tornado.web.RequestHandler):
 			z = Zephyr.objects.filter(id=z_id)
 			MessageWaitor.new_message(z[0])
 
+class UserHandler(BaseHandler):
+    @tornado.web.authenticated
+    def get(self):
+        user = self.current_user
+        self.set_header('Content-Type', 'text/plain')
+        self.write(simplejson.dumps({
+                "username": user.username,
+                "subscriptions": [{
+                        "class": sub.class_name,
+                        "instance": sub.instance,
+                        "recipient": sub.recipient
+                    } for sub in user.subscriptions.all()]
+            }))
+    
+
 settings = {
     "static_path": os.path.join(os.path.dirname(__file__), "static"),
     "cookie_secret": "rS24mrw/2iCQUSwtuptW8p1jbidrs5eqV3hdPuJ8894L",
@@ -146,6 +166,7 @@ application = tornado.web.Application([
         (r"/chat", ChatUpdateHandler),
         (r"/update", NewZephyrHandler),
         (r"/login", CertsLoginHandler),
+        (r"/user", UserHandler),
         (r"/", MainPageHandler),
         (r"/static/(.*)", tornado.web.StaticFileHandler, {"path": settings["static_path"]}),
     ], **settings)
