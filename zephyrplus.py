@@ -124,10 +124,12 @@ class ChatUpdateHandler(BaseHandler):
 		recipient = self.get_argument('recipient', '*')
 		signature = self.get_argument('signature', None)
 		message = self.get_argument('message')
+		username = self.current_user.username
 		if signature is not None:
-			signature = "username" + " (" + signature + ")"
+			signature = username + " (" + signature + ")"
 		else:
-			signature = "username"
+			signature = username
+                signature += " via ZephyrPlus"
 		proc = subprocess.Popen(["zwrite", "-c", class_name, "-i", instance, "-s", signature, recipient], stdin=subprocess.PIPE)
 		proc.stdin.write(message)
 		proc.stdin.close()
