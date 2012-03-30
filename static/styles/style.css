@@ -31,7 +31,7 @@ body
 #dropdown
 {
     width: 250px;
-    height: 474px;
+    height: 500px;
     background-color: #2d2d2d;
     float: left;
     line-height: 1.5em;
@@ -183,7 +183,7 @@ body
 
 #classes_anchor
 {
-    overflow-y:scroll;
+    overflow-y:auto;
     overflow-x:hidden !important;
 }
 
