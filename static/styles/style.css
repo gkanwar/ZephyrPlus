@@ -93,6 +93,7 @@ body
 /* Main chat area properties */
 #chatarea
 {
+    position: relative;
     width: 714px;
     height: 500px;
     float: right;
@@ -108,8 +109,10 @@ body
 }
 #messages
 {
+    position: absolute;
+    top: 29px;
+    bottom: 98px;
     width: 660px;
-    height: 382px;
     overflow-y: scroll;
     padding-left: 27px;
     padding-right: 27px;
@@ -131,14 +134,19 @@ body
 }
 #sendarea
 {
+    position: absolute;
+    bottom: 0px;
     width: 700px;
-    height: 75px;
-    padding: 7px;
+    height: 88px;
+    padding-left: 7px;
+    padding-right: 7px;
+    padding-top: 3px;
+    padding-bottom: 7px;
 }
 #sendarea textarea
 {
-    width: 550px;
-    height: 75px;
+    width: 700px;
+    height: 60px;
     border: none;
     background-color: #ffffff;
     float: left;
@@ -146,9 +154,12 @@ body
 }
 #buttonarea
 {
-    width: 150px;
+    width: 700px;
+    height: 25px;
     float: right;
+    margin-bottom: 3px;
 }
+/*
 #buttonarea input[type=submit]
 {
     width: 145px;
@@ -172,7 +183,7 @@ body
     font-family: monospace;
     float: right;
 }
-
+*/
 
 #personals_anchor
 {

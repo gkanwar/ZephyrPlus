@@ -1,6 +1,7 @@
 // When the document loads, populate the personals
 $(document).ready(function()
 {
+    // Dealing with styling the sidebar
     $("#personals_sidebar").resizable({handles:'s',minHeight: 20});
     $("#personals_anchor").css({height:$("#personals_sidebar").height()-20});
     $("#classes_anchor").css({height:$("#dropdown").height()-$("#personals_sidebar").height()-20});
@@ -22,9 +23,16 @@ $(document).ready(function()
 				});
 
     fillMessagesByClass();
-
+    // Loading the personals and classes lists
     loadPersonals();
     loadClasses();
+
+    // Setting the form submission handler
+    $("#chatsend").submit(function(event)
+			  {
+			      console.log($(this).find("textarea").val());
+			      return false;
+			  });
 });
 
 // Constant defining max number of personals to display in the sidebar

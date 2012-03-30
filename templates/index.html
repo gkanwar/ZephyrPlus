@@ -6,8 +6,6 @@
     <link href="/static/js/jquery/jquery-ui-1.8.18.custom.css" type="text/css" rel="stylesheet" />
     <script src="/static/js/jquery/jquery-1.7.1.min.js"></script>
     <script src="/static/js/jquery/jquery-ui-1.8.18.custom.min.js"></script>
-  
-
     <script src="/static/js/api.js"></script>
     <script src="/static/js/index.js"></script>
   </head>
@@ -57,12 +55,22 @@
 	  
 	</div>
 	<div id="sendarea">
-	  <textarea></textarea>
-	  <div id="buttonarea">
-	    <input type="submit" value="send" />
-	    <input type="text" value="instance name..."/>
-	    
-	  </div>
+	  <form id="chatsend" method="post" action="chat">
+	    <div id="buttonarea">
+	      <select name="class">
+		<option value="saab">Saab</option>
+		<option value="volvo">Volvo</option>
+		<option value="honda">Honda</option>
+	      </select>
+	      <select name="instance">
+		<option value="whatwhatwhat">What what what</option>
+		<option value="waitplaypong!">Wait, play pong!</option>
+		<option value="withyourzephyr">With your; Zephyr</option>
+	      </select>
+	      <input type="submit" name="submit" value="send" />
+	    </div>
+	    <textarea name="message"></textarea>
+	  </form>
 	</div>
       </div>
     </div>
