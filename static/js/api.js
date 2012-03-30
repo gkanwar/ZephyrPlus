@@ -25,6 +25,15 @@ var messages = [
 	sender: 'garywang',
 	timestamp: '01-01-9999 21:59',
 	recipient: 'gurtej',
+    },
+    {
+	id: 3,
+	parent_class: null,
+	parent_instance: null,
+	message: "yay sipb",
+	sender: 'timyang',
+	timestamp: '02-05-9999 11:11',
+	recipient: null,
     }
 ];
 
@@ -44,6 +53,14 @@ var instances = [
 	color: "#cc6600",
 	parent_class: null,
 	messages: [messages[1]]
+    },
+    {
+	id:2,
+	name: "hooray",
+	last_messaged: '02-04-9999 11:11',
+	color: "#c66600",
+	parent_class: null,
+	messages: [messages[3]]
     }
 ];
 
@@ -61,13 +78,13 @@ var classes = [
 	name: "sipb",
 	last_messaged: '01-01-9999 21:59',
 	color: "#0099ff",
-	instances: [],
-	messages: [],
+	instances: [instances[2]],
+	messages: [messages[3]],
     }
 ];
 
 var personal_messages = [messages[2]];
-var classes_messages = [messages[0], messages[1]];
+var classes_messages = [messages[0], messages[1], messages[3]];
 
 messages[0].parent_class = classes[0];
 messages[0].parent_instance = instances[0];
@@ -75,6 +92,11 @@ messages[1].parent_class = classes[0];
 messages[1].parent_instance = instances[1];
 instances[0].parent_class = classes[0];
 instances[1].parent_class = classes[0];
+
+messages[3].parent_class = classes[1];
+messages[3].parent_instance = instances[2];
+instances[2].parent_class = classes[1];
+
 
 var personals = [
     'gurtej',

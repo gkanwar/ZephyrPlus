@@ -12,10 +12,6 @@ $(document).ready(function()
 				      $("#classes_anchor").css({height:$("#dropdown").height()-$("#personals_sidebar").height()-20});
 				  });    
 
-    $("#messages").lionbars();
-    $("#personals_anchor").lionbars();
-    $("#classes_anchor").lionbars();
-
     $("#classes_title").click(function()
 			      {
 				  fillMessagesByClass();
@@ -24,6 +20,8 @@ $(document).ready(function()
 				{
 				    fillMessagesByPersonal();
 				});
+
+//    fillMessagesByClass();
 
     loadPersonals();
     loadClasses();
@@ -121,17 +119,50 @@ var loadClasses = function()
 
 var fillMessagesByClass = function(class_id, instance_id)
 {
-    var headerText = "all classes";
+    console.log(class_id);
+    console.log(instance_id);
+//    var headerText = "all classes";
+//    var headerText = $("<div class='message_box_header'/>")
+    var allClassesHeader = $("<span/>")
+	.text("all classes")
+	.click(function()
+	       {
+		   fillMessagesByClass();
+	       });
+    var headerText = $("#chatheader")
+	.html(allClassesHeader)
+	.off("click");
     var messagesOut;
 
     // Class is defined
     if (typeof(class_id) != 'undefined')
     {
-	headerText += " >  " + classes[class_id].name;
-	// Instance is defined
+	//	headerText += " >  " + classes[class_id].name;
+	console.log("Adding class header");
+	var headerText_class = $("<span />")
+	    .addClass("class_id_"+classes[class_id])
+	    .text(classes[class_id].name)
+	    .click(function()
+		   {
+		       console.log('headerText_class clicked');
+		       console.log(class_id);
+		       fillMessagesByClass(class_id);
+		   });
+	headerText.append(" > ").append(headerText_class);
+    	// Instance is defined
 	if (typeof(instance_id) != 'undefined')
 	{
-	    headerText += " > " + instances[instance_id].name;
+//	    headerText += " > " + instances[instance_id].name;
+	    var headerText_instance = $("<span />")
+		.addClass("instance_id_"+instances[instance_id])
+		.text(instances[instance_id].name)
+		.click(function()
+		       {
+			   console.log('headerText_instance clicked');
+			   console.log(classes[class_id].name+" "+instances[instance_id].name);
+			   fillMessagesByClass(class_id, instance_id);
+		       });
+	    headerText.append(" > ").append(headerText_instance);
 	    messagesOut = instances[instance_id].messages;
 	}
 	else
@@ -147,25 +178,45 @@ var fillMessagesByClass = function(class_id, instance_id)
 
     // Actually fill in the messages
     $("#messages").html('');
-    for (var i in messagesOut)
+    for (var messageNum in messagesOut)
     {
-	var message_entry = $("<div class='messages_entry'/>");
-	var header = $("<div class='message_header'/>");
-	var header_class = $("<span />")
-	    .addClass("class_id_"+messagesOut[i].parent_class.id)
-	    .css("color", messagesOut[i].parent_class.color)
-	    .text(messagesOut[i].parent_class.name);
-	var header_instance = $("<span />")
-	    .addClass("instance_id_"+messagesOut[i].parent_instance.id)
-	    .css("color", messagesOut[i].parent_instance.color)
-	    .text(messagesOut[i].parent_instance.name)
-        var header_sender = messagesOut[i].sender;
-	header.append(header_class).append(" / ")
-	    .append(header_instance).append(" / ")
-	    .append(header_sender);
-        var body = $("<div class='message_body'/>").text(messagesOut[i].message);
-	message_entry.append(header).append(body);
-	$("#messages").append(message_entry);
+	(function(){
+	    var i = messageNum;
+	    var message_entry = $("<div class='messages_entry'/>");
+	    var header = $("<div class='message_header'/>");
+	    var header_class = $("<span />")
+		.addClass("class_id_"+messagesOut[i].parent_class.id)
+		.css("color", messagesOut[i].parent_class.color)
+		.text(messagesOut[i].parent_class.name)
+		.click(function()
+		       {
+			   console.log("Clicked on class name");
+			   console.log(i);
+			   console.log(messagesOut);
+			   console.log(messagesOut[i].parent_class.name);
+			   console.log("/Clicked");
+			   fillMessagesByClass(messagesOut[i].parent_class.id);
+		       });
+	    var header_instance = $("<span />")
+		.addClass("instance_id_"+messagesOut[i].parent_instance.id)
+		.css("color", messagesOut[i].parent_instance.color)
+		.text(messagesOut[i].parent_instance.name)
+		.click(function()
+		       {
+			   console.log("Clicked on instance name");
+			   console.log(i);
+			   console.log(messagesOut[i].parent_instance.name);
+			   console.log("/Clicked");
+			   fillMessagesByClass(messagesOut[i].parent_class.id, messagesOut[i].parent_instance.id);
+		       });
+            var header_sender = messagesOut[i].sender;
+	    header.append(header_class).append(" / ")
+		.append(header_instance).append(" / ")
+		.append(header_sender);
+            var body = $("<div class='message_body'/>").text(messagesOut[i].message);
+	    message_entry.append(header).append(body);
+	    $("#messages").append(message_entry);
+	})();
     }
     
     $("#chatheader").text(headerText);
