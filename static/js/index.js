@@ -21,7 +21,7 @@ $(document).ready(function()
 				    fillMessagesByPersonal();
 				});
 
-//    fillMessagesByClass();
+    fillMessagesByClass();
 
     loadPersonals();
     loadClasses();
