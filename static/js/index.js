@@ -33,6 +33,12 @@ $(document).ready(function()
 			      console.log($(this).find("textarea").val());
 			      return false;
 			  });
+
+    // Add class by clicking on "+"
+    $("#add_class").click(function()
+			  {
+			      addClass();
+			  });
 });
 
 // Constant defining max number of personals to display in the sidebar
@@ -263,4 +269,11 @@ var fillMessagesByPersonal = function(personal_id)
     }
 
     $("#chatheader").text(headerText);
+};
+
+var addClass = function()
+{
+    var new_class_name = prompt("Please enter the class you want to add.");
+    console.log(new_class_name);
+    //TODO: make this actually add a class
 };

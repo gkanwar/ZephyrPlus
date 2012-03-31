@@ -76,6 +76,19 @@ body
     padding: 7px;
     background-color: #2d2d2d;
 }
+#add_class
+{
+    float:right;
+    margin: -4px 4px 5px 0px;
+    font-weight: 700;
+    font-size: 150%;
+    color: #B5B5B5;
+    cursor: default;
+}
+#add_class:hover
+{
+    color:#efefef;
+}
 .classes_entry
 {
     padding: 0px 7px 0px 17px;
