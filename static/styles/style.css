@@ -135,8 +135,15 @@ body
 }
 .message_body
 {
-    margin-left: 20px;
+    padding: 0px 2px 0px 27px;
+    margin: 0px -2px 0px -7px;
 }
+
+.message_body:hover
+{
+    background-color: #575757;
+}
+
 #sendarea
 {
     position: absolute;
