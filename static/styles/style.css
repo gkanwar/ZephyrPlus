@@ -10,6 +10,7 @@ body
     margin-right: auto;
 /*    font-family: monospace;*/
     font-family: 'Ubuntu Mono', sans-serif;
+    cursor: default;
 }
 
 
