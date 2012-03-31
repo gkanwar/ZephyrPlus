@@ -8,7 +8,8 @@ body
     width: 1000px;
     margin-left: auto;
     margin-right: auto;
-    font-family: monospace;
+/*    font-family: monospace;*/
+    font-family: 'Ubuntu Mono', sans-serif;
 }
 
 
@@ -135,8 +136,8 @@ body
 }
 .message_body
 {
-    padding: 0px 2px 0px 27px;
-    margin: 0px -2px 0px -7px;
+    padding: 0px 2px 0px 34px;
+    margin: 0px -18px 0px -18px;
 }
 
 .message_body:hover
