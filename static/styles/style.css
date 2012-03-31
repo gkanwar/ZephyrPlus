@@ -1,5 +1,3 @@
-@import url('/static/jquery/lionbars.css');
-
 /* Overall properties */
 html
 {
@@ -19,19 +17,23 @@ body
 {
     margin-top: 50px;
     margin-bottom: 20px;
+    height:5%;
 }
 
 /* Overall main properties */
 #main
 {
     width: 1000px;
+    height: 95%;
+    margin-bottom: 0px;
 }
 
 /* Dropdown properties */
 #dropdown
 {
     width: 250px;
-    height: 500px;
+/*    height: 500px;*/
+    height:100%;
     background-color: #2d2d2d;
     float: left;
     line-height: 1.5em;
@@ -95,7 +97,8 @@ body
 {
     position: relative;
     width: 714px;
-    height: 500px;
+/*    height: 500px;*/
+    height:100%;
     float: right;
     background-color: #dddddd;
 }
@@ -196,9 +199,16 @@ body
 {
     overflow-y:auto;
     overflow-x:hidden !important;
+    height: 100%;
 }
 
 li.classes_entry
 {
     overflow-x:hidden;
+}
+
+#classdropdown
+{
+    border:none;
+    background-color:#ffffff;
 }
