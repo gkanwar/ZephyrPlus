@@ -15,8 +15,8 @@ body
 /* Header properties */
 #header
 {
-    margin-top: 50px;
-    margin-bottom: 20px;
+    margin-top: 0px;
+    margin-bottom: 0px;
     height:5%;
 }
 
@@ -211,4 +211,32 @@ li.classes_entry
 {
     border:none;
     background-color:#ffffff;
+}
+
+#header_logo
+{
+    float: left;
+    font-size:150%;
+    font-weight: 700;
+}
+
+#site_links
+{
+    float: right;
+}
+
+#logged_user
+{
+    font-weight: 700;
+}
+
+a:link
+{
+    color: #454545;
+    text-decoration:none;
+}
+
+a:hover
+{
+    color:#000000;
 }
