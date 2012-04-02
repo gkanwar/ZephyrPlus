@@ -1,7 +1,8 @@
 /* Overall properties */
 html
 {
-    background-color: #efefef;
+/*    background-color: #efefef;*/
+    background-image: url(../img/bgnoise.gif);
 }
 body
 {
@@ -38,7 +39,8 @@ body
     width: 250px;
 /*    height: 500px;*/
     height:100%;
-    background-color: #2d2d2d;
+/*    background-color: #2d2d2d;*/
+    background-image: url(../img/broken_noise_light.png);
     float: left;
     line-height: 1.5em;
     color: #efefef;
@@ -75,7 +77,7 @@ body
 {
     height:70%; 
     padding: 7px;
-    background-color: #2d2d2d;
+/*    background-color: #2d2d2d;*/
 }
 #add_class
 {
@@ -118,6 +120,7 @@ body
     height:100%;
     float: right;
     background-color: #dddddd;
+
 }
 #chatheader
 {
@@ -136,7 +139,8 @@ body
     overflow-y: scroll;
     padding-left: 27px;
     padding-right: 27px;
-    background-color: #171717;
+/*    background-color: #171717;*/
+    background-image: url(../img/broken_noise.png);
     color: #c5c5c5;
 }
 .messages_entry
