@@ -74,10 +74,10 @@ var loadClasses = function()
     var ul = $("<ul></ul>");
     for (var i = 0; i < classes.length; i++)
     {
-	if (i == maxClasses)
+/*	if (i == maxClasses)
 	{
 	    break;
-	}
+	}*/
 
 	// Call everything in its own function to make it scope right
 	(function()
