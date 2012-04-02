@@ -106,7 +106,7 @@ class ChatUpdateHandler(BaseHandler):
                             values = {
                                     'message': zephyr.message,
                                     'sender': zephyr.sender,
-                                    'date': (zephyr.date - datetime.datetime.fromtimestamp(0)).total_seconds()*1000,
+                                    'date': int((zephyr.date - datetime.datetime.fromtimestamp(0)).total_seconds()*1000),
                                     'class': zephyr.dst.class_name,
                                     'instance': zephyr.dst.instance,
                                     'recipient': zephyr.dst.recipient
