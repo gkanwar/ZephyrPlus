@@ -84,8 +84,7 @@ class ChatUpdateHandler(BaseHandler):
 		class_name=self.get_argument('class')
 		instance = self.get_argument('instance', "*")
 		recipient = self.get_argument('recipient', "*")
-		startdate = self.get_argument('statedate', time.time()*1000)
-		#startdate = self.get_argument('startdate', "0") # change later to 2 weeks ago
+		startdate = self.get_argument('startdate', "0") # change later to 2 weeks ago
 		enddate = self.get_argument('enddate', str(1000*2**35)) # if longpolling, should not have end date
 		longpoll = self.get_argument('longpoll', "False")
 		#TODO: do input validation on arguments
