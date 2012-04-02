@@ -63,7 +63,7 @@ var loadPersonals = function()
 };
 
 // Constant defining max number of classes to display in the sidebar
-var maxClasses = 5;
+//var maxClasses = 5;
 
 // Load the classes to display in the sidebar
 var loadClasses = function()
