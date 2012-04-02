@@ -289,20 +289,45 @@ var addZephyrClass = function()
     //TODO: make this actually add a class
 };
 
-function hashStringToColor(string){
-    return intToARGB(hashCode(string)).slice(0,6);
-}
-function hashCode(str) { // java String#hashCode
-    var hash = 0;
-    for (var i = 0; i < str.length; i++) {
-	hash = str.charCodeAt(i) + ((hash << 5) - hash);
+function hashStringToColor(str){
+    var sum=0;
+    for(var n=0; n<str.length; n++){
+        sum+=str.charCodeAt(n);
+        sum*=17;
+        sum%=32452843;
     }
-    return hash;
-} 
+    var colors=[0, 0, 0];
+    for(var n=0; n<24; n++){
+        colors[n%3]*=2;
+        colors[n%3]+=sum%2;
+        sum=Math.floor(sum/2);
+    }
+    colors=hsvToRgb(colors[0]/255, colors[1]/255, (colors[2]/255+1)/2); //Increase brightness
+    var colorStr="#";
+    for(var n=0; n<3; n++){
+        var s=Math.floor(colors[n]).toString(16);
+        colorStr+=(s.length==2) ? s : ("0"+s);
+    }
+    return colorStr;
+}
 
-function intToARGB(i){
-    return ((i>>24)&0xFF).toString(16) + 
-        ((i>>16)&0xFF).toString(16) + 
-        ((i>>8)&0xFF).toString(16) + 
-        (i&0xFF).toString(16);
+function hsvToRgb(h, s, v){
+    var r, g, b;
+
+    var i = Math.floor(h * 6);
+    var f = h * 6 - i;
+    var p = v * (1 - s);
+    var q = v * (1 - f * s);
+    var t = v * (1 - (1 - f) * s);
+
+    switch(i % 6){
+        case 0: r = v, g = t, b = p; break;
+        case 1: r = q, g = v, b = p; break;
+        case 2: r = p, g = v, b = t; break;
+        case 3: r = p, g = q, b = v; break;
+        case 4: r = t, g = p, b = v; break;
+        case 5: r = v, g = p, b = q; break;
+    }
+
+    return [r * 255, g * 255, b * 255];
 }
