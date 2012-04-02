@@ -37,7 +37,7 @@ $(document).ready(function()
     // Add class by clicking on "+"
     $("#add_class").click(function()
 			  {
-			      addClass();
+			      addZephyrClass();
 			  });
 });
 
@@ -271,9 +271,19 @@ var fillMessagesByPersonal = function(personal_id)
     $("#chatheader").text(headerText);
 };
 
-var addClass = function()
+var addZephyrClass = function()
 {
     var new_class_name = prompt("Please enter the class you want to add.");
-    console.log(new_class_name);
+    console.log(new_class_name);  
+    classes.push(
+	{
+	    id:classes.length,
+	    name: new_class_name,
+	    last_messaged: null,
+	    color: "#ffffff", //TODO: auto-generate this color
+	    instances: [],
+	    messages: []
+	});
+    loadClasses();
     //TODO: make this actually add a class
 };
