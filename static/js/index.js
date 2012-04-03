@@ -250,7 +250,12 @@ var fillMessagesByClass = function(class_id, instance_id)
     {
 	(function(){
 	    var i = messageNum;
-	    var message_entry = $("<div class='messages_entry'/>");
+	    var message_entry = $("<div class='messages_entry'/>")
+		.click(function()
+		       {
+			   fillInstancesDropDown(messagesOut[i].parent_instance.id);
+			   fillClassesDropDown(messagesOut[i].parent_class.id);
+		       });
 	    var header = $("<div class='message_header'/>");
 	    var header_class = $("<span />")
 		.addClass("class_id_"+messagesOut[i].parent_class.id)
@@ -389,13 +394,11 @@ var addZephyrClass = function()
 	    id:classes.length,
 	    name: new_class_name,
 	    last_messaged: null,
-//	    color: "#ffffff", //TODO: auto-generate this color
 	    color: hashStringToColor(new_class_name),
 	    instances: [],
 	    messages: []
 	});
     loadClasses();
-    //TODO: make this actually add a class
 };
 
 function hashStringToColor(str){
