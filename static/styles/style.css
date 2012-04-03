@@ -249,10 +249,18 @@ li.classes_entry
 
 #classdropdown
 {
-    border:none;
-    background-color:#ffffff;
+    border-color: #AAAAAA;
+    background-color:#FFFFFF;
 }
-
+#instancedropdown
+{
+    border-color: #AAAAAA;
+    background-color: #FFFFFF;
+}
+#sendzephyr
+{
+    background-color: #FFFFFF;
+}
 #header_logo
 {
     float: left;
