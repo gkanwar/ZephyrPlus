@@ -116,6 +116,11 @@ class ChatUpdateHandler(BaseHandler):
 			self.write(simplejson.dumps(response))
 			self.finish()
 	
+	def on_connection_close(self):
+            for waitee in MessageWaitor.waiters:
+                if waitee[0] == self:
+                    MessageWaitor.waiters.remove(waitee)
+	
         @tornado.web.authenticated
 	def post(self, *args, **kwargs):
 		class_name = self.get_argument('class', 'message')
