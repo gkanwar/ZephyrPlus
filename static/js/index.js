@@ -16,29 +16,89 @@ $(document).ready(function()
     $("#classes_title").click(function()
 			      {
 				  fillMessagesByClass();
+				  fillButtonArea();
 			      });
     $("#personals_title").click(function()
 				{
 				    fillMessagesByPersonal();
+				    fillButtonArea();
 				});
 
     fillMessagesByClass();
+    fillButtonArea();
     // Loading the personals and classes lists
     loadPersonals();
     loadClasses();
 
     // Setting the form submission handler
-    $("#chatsend").submit(function(event)
-			  {
-			      console.log($(this).find("textarea").val());
-			      return false;
-			  });
+    $("#chatsend").submit(
+	function(event)
+	{
+	    var messageTextArea = $(this).find("#messagetextarea");
+	    var messageText = messageTextArea.val();
+	    messageTextArea.val('');
+	    var classDropDown = $(this).find("#classdropdown");
+	    var classText = classes[classDropDown.val()].name;
+	    var instanceDropDown = $(this).find("#instancedropdown");
+	    var instanceId = instanceDropDown.val();
+	    var instanceText;
+	    if (instanceId == "new")
+	    {
+		instanceText = $(this).find("#instancetext").val();
+	    }
+	    else
+	    {
+		instanceText = instances[instanceId].name;
+	    }
+
+	    console.log("Vals: " + instanceText + " " + classText + " " + messageText);
+	    console.log(event);
+
+	    $.ajax({
+		url: "/chat",
+		data:
+		{
+		    'class': classText,
+		    'instance': instanceText,
+		    'message': messageText,
+		},
+		success: function()
+		{
+		    console.log("Success!");
+		}
+	    });
+	    return false;
+	});
 
     // Add class by clicking on "+"
-    $("#add_class").click(function()
-			  {
-			      addZephyrClass();
-			  });
+    $("#add_class").click(
+	function()
+	{
+	    addZephyrClass();
+	});
+
+    // Changes instances options on class selection change
+    $("#classdropdown").change(
+	function()
+	{
+	    fillInstancesDropDown();
+	});
+
+    // Hide/display the instance test box if "New instance" is selected
+    $("#instancedropdown").change(
+	function()
+	{
+	    console.log("Instance drop down changed");
+	    console.log($(this).val());
+	    if ($(this).val() == "new")
+	    {
+		$("#instancetext").show();
+	    }
+	    else
+	    {
+		$("#instancetext").hide();
+	    }
+	});
 });
 
 // Constant defining max number of personals to display in the sidebar
@@ -52,8 +112,6 @@ var loadPersonals = function()
     root = $("#personals_anchor");
     ul = $("<ul></ul>");
 
-    console.log("loading personals");
-    console.log(maxPersonals);
     for (var i = 0; i < personals.length; i++)
     {
 	ul.append("<li>" + personals[i] + "</li>");
@@ -89,6 +147,7 @@ var loadClasses = function()
 		 .click(function()
 			{
 			    fillMessagesByClass(curClass.id);
+			    fillButtonArea(curClass.id);
 			});
 	     var dropdown_triangle = $("<img src='/static/img/dropdown-inactive.png'/>")
 		 .click(function()
@@ -122,6 +181,7 @@ var loadClasses = function()
 			  .click(function()
 				 {
 				     fillMessagesByClass(curClass.id, curInstance.id);
+				     fillButtonArea(curClass.id, curInstance.id);
 				 });
 		      instances_ul.append(instance_li);
 		  })();
@@ -133,15 +193,12 @@ var loadClasses = function()
 
 var fillMessagesByClass = function(class_id, instance_id)
 {
-    console.log(class_id);
-    console.log(instance_id);
-//    var headerText = "all classes";
-//    var headerText = $("<div class='message_box_header'/>")
     var allClassesHeader = $("<span/>")
 	.text("all classes")
 	.click(function()
 	       {
 		   fillMessagesByClass();
+		   fillButtonArea();
 	       });
     var headerText = $("#chatheader")
 	.html(allClassesHeader)
@@ -152,15 +209,13 @@ var fillMessagesByClass = function(class_id, instance_id)
     if (typeof(class_id) != 'undefined')
     {
 	//	headerText += " >  " + classes[class_id].name;
-	console.log("Adding class header");
 	var headerText_class = $("<span />")
 	    .addClass("class_id_"+classes[class_id])
 	    .text(classes[class_id].name)
 	    .click(function()
 		   {
-		       console.log('headerText_class clicked');
-		       console.log(class_id);
 		       fillMessagesByClass(class_id);
+		       fillButtonArea(class_id);
 		   });
 	headerText.append(" > ").append(headerText_class);
     	// Instance is defined
@@ -172,9 +227,8 @@ var fillMessagesByClass = function(class_id, instance_id)
 		.text(instances[instance_id].name)
 		.click(function()
 		       {
-			   console.log('headerText_instance clicked');
-			   console.log(classes[class_id].name+" "+instances[instance_id].name);
 			   fillMessagesByClass(class_id, instance_id);
+			   fillButtonArea(class_id, instance_id);
 		       });
 	    headerText.append(" > ").append(headerText_instance);
 	    messagesOut = instances[instance_id].messages;
@@ -204,12 +258,8 @@ var fillMessagesByClass = function(class_id, instance_id)
 		.text(messagesOut[i].parent_class.name)
 		.click(function()
 		       {
-			   console.log("Clicked on class name");
-			   console.log(i);
-			   console.log(messagesOut);
-			   console.log(messagesOut[i].parent_class.name);
-			   console.log("/Clicked");
 			   fillMessagesByClass(messagesOut[i].parent_class.id);
+			   fillButtonArea(messagesOut[i].parent_class.id);
 		       });
 	    var header_instance = $("<span />")
 		.addClass("instance_id_"+messagesOut[i].parent_instance.id)
@@ -217,11 +267,8 @@ var fillMessagesByClass = function(class_id, instance_id)
 		.text(messagesOut[i].parent_instance.name)
 		.click(function()
 		       {
-			   console.log("Clicked on instance name");
-			   console.log(i);
-			   console.log(messagesOut[i].parent_instance.name);
-			   console.log("/Clicked");
 			   fillMessagesByClass(messagesOut[i].parent_class.id, messagesOut[i].parent_instance.id);
+			   fillButtonArea(messagesOut[i].parent_class.id, messagesOut[i].parent_instance.id);
 		       });
             var header_sender = messagesOut[i].sender;
 	    header.append(header_class).append(" / ")
@@ -252,14 +299,10 @@ var fillMessagesByPersonal = function(personal_id)
 	messagesOut = personal_messages;
     }
 
-    console.log("fillMessagesByPersonal");
-    console.log(messagesOut);
-
     // Actually fill in the messages
     $("#messages").html('');
     for (var i in messagesOut)
     {
-	console.log(messagesOut[i]);
 	var message_entry = $("<div class='messages_entry'/>");
 	var header = $("<div class='message_header'/>")
 	    .text(messagesOut[i].sender);
@@ -271,10 +314,76 @@ var fillMessagesByPersonal = function(personal_id)
     $("#chatheader").text(headerText);
 };
 
+var fillButtonArea = function(class_id, instance_id)
+{
+    fillClassesDropDown(class_id);
+    fillInstancesDropDown(instance_id);
+};
+
+var fillClassesDropDown = function(class_id)
+{
+    console.log("Filling classes drop down: " + class_id);
+    // Clear the dropdown
+    $("#classdropdown").html('');
+    // Loop through the classes and add them
+    for(var i = 0; i < classes.length; i++)
+    {
+	var curClass = classes[i];
+	var option = $("<option/>")
+	    .val(curClass.id)
+	    .attr("id", "option_class_id_"+curClass.id)
+	    .text(curClass.name);
+	$("#classdropdown").append(option);
+    }
+
+    // If we're given a default class, make it selected
+    if (typeof(class_id) != 'undefined')
+    {
+	var class_option = $("#option_class_id_"+class_id);
+	class_option.attr('selected', true);
+	selectedClass = class_id;
+    }
+};
+
+var fillInstancesDropDown = function(instance_id)
+{
+    // Figure out which class is selected (or fill in a default if there isn't one)
+    var selectedClass = 0;
+    if (typeof($("#classdropdown").val()) != 'undefined')
+    {
+	selectedClass = $("#classdropdown").val();
+    }
+
+    // Clear the dropdown
+    $("#instancedropdown").html('');
+    // Loop through that class's instances and create an option for each one
+    for(var i = 0; i < classes[selectedClass].instances.length; i++)
+    {
+	var curInstance = classes[selectedClass].instances[i];
+	var option = $("<option/>")
+	    .val(curInstance.id)
+	    .attr("id", "option_instance_id_"+curInstance.id)
+	    .text(curInstance.name);
+	$("#instancedropdown").append(option);
+    }
+    // Add in the new instance option
+    var option = $("<option/>")
+	.val("new")
+	.attr("id", "option_instance_id_new")
+	.text("New instance");
+    $("#instancedropdown").append(option);
+
+    // If there's a particular default instance, make it selected
+    if (typeof(instance_id) != 'undefined')
+    {
+	var instance_option = $("#option_instance_id_"+instance_id);
+	instance_option.attr('selected', true);
+    }
+};
+
 var addZephyrClass = function()
 {
     var new_class_name = prompt("Please enter the class you want to add.");
-    console.log(new_class_name);  
     classes.push(
 	{
 	    id:classes.length,
