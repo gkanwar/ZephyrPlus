@@ -148,6 +148,16 @@ body
 {
     padding-top: 5px;
     padding-bottom: 5px;
+
+    padding-left:20px;
+    padding-right:20px;
+
+    margin-left:-20px;
+    margin-right:-20px;
+}
+.messages_entry:hover
+{
+    background-color: #575757;
 }
 .message_header
 {
@@ -158,11 +168,11 @@ body
     padding: 0px 2px 0px 34px;
     margin: 0px -18px 0px -18px;
 }
-
+/*
 .message_body:hover
 {
     background-color: #575757;
-}
+}*/
 
 #sendarea
 {
