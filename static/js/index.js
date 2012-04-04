@@ -253,8 +253,7 @@ var fillMessagesByClass = function(class_id, instance_id)
 	    var message_entry = $("<div class='messages_entry'/>")
 		.click(function()
 		       {
-			   fillInstancesDropDown(messagesOut[i].parent_instance.id);
-			   fillClassesDropDown(messagesOut[i].parent_class.id);
+			   fillButtonArea(messagesOut[i].parent_class.id,messagesOut[i].parent_instance.id);
 		       });
 	    var header = $("<div class='message_header'/>");
 	    var header_class = $("<span />")
@@ -443,3 +442,4 @@ function hsvToRgb(h, s, v){
 
     return [r * 255, g * 255, b * 255];
 }
+
