@@ -164,7 +164,7 @@ settings = {
     "static_path": os.path.join(os.path.dirname(__file__), "static"),
     "cookie_secret": "rS24mrw/2iCQUSwtuptW8p1jbidrs5eqV3hdPuJ8894L",
     "login_url": "/login",
-    "xsrf_cookies": True,
+    "xsrf_cookies": False,
     "debug": True,
 }
 
