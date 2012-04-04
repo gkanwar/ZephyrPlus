@@ -1,38 +1,47 @@
-@import url('/static/jquery/lionbars.css');
-
 /* Overall properties */
 html
 {
-    background-color: #efefef;
+/*    background-color: #efefef;*/
+    background-image: url(../img/bgnoise.gif);
 }
 body
 {
     width: 1000px;
     margin-left: auto;
     margin-right: auto;
-    font-family: monospace;
+/*    font-family: monospace;*/
+    font-family: 'Ubuntu Mono', sans-serif;
+    cursor: default;
 }
 
 
 /* Header properties */
 #header
 {
-    margin-top: 50px;
-    margin-bottom: 20px;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    height:10px;
+    line-height: 1em;
+    text-shadow: #ffffff 0px 1px 0px;
 }
 
 /* Overall main properties */
 #main
 {
     width: 1000px;
+    margin-top:15px;
+    height: 95%;
+    margin-bottom: 0px;
 }
 
 /* Dropdown properties */
 #dropdown
 {
     width: 250px;
-    height: 474px;
-    background-color: #2d2d2d;
+/*    height: 500px;*/
+    height:100%;
+/*    background-color: #2d2d2d;*/
+    background-image: url(../img/broken_noise_light.png);
     float: left;
     line-height: 1.5em;
     color: #efefef;
@@ -67,9 +76,22 @@ body
 }
 #classes_sidebar
 {
-    height:70%; 
+    height:100%; 
     padding: 7px;
-    background-color: #2d2d2d;
+/*    background-color: #2d2d2d;*/
+}
+#add_class
+{
+    float:right;
+    margin: -4px 4px 5px 0px;
+    font-weight: 700;
+    font-size: 150%;
+    color: #B5B5B5;
+    cursor: default;
+}
+#add_class:hover
+{
+    color:#efefef;
 }
 .classes_entry
 {
@@ -93,10 +115,13 @@ body
 /* Main chat area properties */
 #chatarea
 {
+    position: relative;
     width: 714px;
-    height: 500px;
+/*    height: 500px;*/
+    height:100%;
     float: right;
     background-color: #dddddd;
+
 }
 #chatheader
 {
@@ -108,18 +133,31 @@ body
 }
 #messages
 {
+    position: absolute;
+    top: 29px;
+    bottom: 98px;
     width: 660px;
-    height: 382px;
     overflow-y: scroll;
     padding-left: 27px;
     padding-right: 27px;
-    background-color: #171717;
+/*    background-color: #171717;*/
+    background-image: url(../img/broken_noise.png);
     color: #c5c5c5;
 }
 .messages_entry
 {
     padding-top: 5px;
     padding-bottom: 5px;
+
+    padding-left:20px;
+    padding-right:20px;
+
+    margin-left:-20px;
+    margin-right:-20px;
+}
+.messages_entry:hover
+{
+    background-color: #575757;
 }
 .message_header
 {
@@ -127,18 +165,30 @@ body
 }
 .message_body
 {
-    margin-left: 20px;
+    padding: 0px 2px 0px 34px;
+    margin: 0px -18px 0px -18px;
 }
+/*
+.message_body:hover
+{
+    background-color: #575757;
+}*/
+
 #sendarea
 {
+    position: absolute;
+    bottom: 0px;
     width: 700px;
-    height: 75px;
-    padding: 7px;
+    height: 88px;
+    padding-left: 7px;
+    padding-right: 7px;
+    padding-top: 3px;
+    padding-bottom: 7px;
 }
 #sendarea textarea
 {
-    width: 550px;
-    height: 75px;
+    width: 700px;
+    height: 60px;
     border: none;
     background-color: #ffffff;
     float: left;
@@ -146,9 +196,12 @@ body
 }
 #buttonarea
 {
-    width: 150px;
+    width: 700px;
+    height: 25px;
     float: right;
+    margin-bottom: 3px;
 }
+/*
 #buttonarea input[type=submit]
 {
     width: 145px;
@@ -172,7 +225,7 @@ body
     font-family: monospace;
     float: right;
 }
-
+*/
 
 #personals_anchor
 {
@@ -183,11 +236,55 @@ body
 
 #classes_anchor
 {
-    overflow-y:scroll;
+    overflow-y:auto;
     overflow-x:hidden !important;
+    height: 100% !important;
+
 }
 
 li.classes_entry
 {
     overflow-x:hidden;
+}
+
+#classdropdown
+{
+    border-color: #AAAAAA;
+    background-color:#FFFFFF;
+}
+#instancedropdown
+{
+    border-color: #AAAAAA;
+    background-color: #FFFFFF;
+}
+#sendzephyr
+{
+    background-color: #FFFFFF;
+}
+#header_logo
+{
+    float: left;
+    font-size:150%;
+    font-weight: 700;
+}
+
+#site_links
+{
+    float: right;
+}
+
+#logged_user
+{
+    font-weight: 700;
+}
+
+a:link
+{
+    color: #454545;
+    text-decoration:none;
+}
+
+a:hover
+{
+    color:#000000;
 }

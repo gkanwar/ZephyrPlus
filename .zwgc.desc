@@ -49,7 +49,8 @@ endcase
 case $class
 match "WG_CTL_CLASS"
   exit
-match "message"
+endcase
+
   if ($number_of_fields == "1") then
     fields body
     set signature = ""
@@ -62,8 +63,6 @@ match "message"
 #    $recipient+")\n\n"
 #  print $body
 #  print $class $instance $recipient $sender $message"\n"
-put "/usr/bin/python2" "./insert_zephyr.py" $class $instance $recipient $sender $message
-exec "/usr/bin/python2" "./insert_zephyr.py" $class $instance $recipient $sender $message
-#put
+#  put
+exec "/usr/bin/python2" "./insert_zephyr.py" $class $instance $recipient $sender $body
 exit
-endcase

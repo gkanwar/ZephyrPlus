@@ -3,29 +3,37 @@
     <title>ZephyrPlus!</title>
     <link href="/static/styles/style.css" type="text/css" rel="stylesheet" />
 
-    <link href="/static/js/jquery/jquery-ui-1.8.18.custom.css" type="text/css" rel="stylesheet"/>
+    <link href="http://fonts.googleapis.com/css?family=Ubuntu+Mono" rel="stylesheet" type="text/css">
+
+    <link href="/static/js/jquery/jquery-ui-1.8.18.custom.css" type="text/css" rel="stylesheet" />
     <script src="/static/js/jquery/jquery-1.7.1.min.js"></script>
     <script src="/static/js/jquery/jquery-ui-1.8.18.custom.min.js"></script>
-   
-    <script src="/static/js/jquery/jquery.lionbars.0.3.js"></script>
-
     <script src="/static/js/api.js"></script>
     <script src="/static/js/index.js"></script>
   </head>
   <body>
     <div id="header">
-      <img src="/static/img/logo.png" width="300px" height="125px"/>
+<!--      <img src="/static/img/logo.png" width="120px" height="50px"/>-->
+      <div id="header_logo">zephyr+plus</div>
+      <div id="site_links">
+	<a href="/about">about</a> | 
+	<a href="/help">help</a> | 
+	<a href="/settings">settings</a> | 
+	logged in as <span id="logged_user">logged_user</span> | 
+	<a href="/logout">logout</a>
+      </div>
     </div>
     <div id="main">
       <div id="dropdown">
-	<div id="personals_sidebar">
+<!--	<div id="personals_sidebar">
 	  <p id="personals_title">personals</p>
 	  <div id="personals_anchor">
 	    Loading...
 	  </div>
-	</div>
+	</div>-->
 	<div id="classes_sidebar">
-	  <p id="classes_title">classes</p>
+	  <p id="classes_title">classes
+	  <span id="add_class">+</span></p>
 	  <div id="classes_anchor">
 	    Loading...
 	  </div>
@@ -58,12 +66,17 @@
 	  
 	</div>
 	<div id="sendarea">
-	  <textarea></textarea>
-	  <div id="buttonarea">
-	    <input type="submit" value="send" />
-	    <input type="text" value="instance name..."/>
-	    
-	  </div>
+	  <form id="chatsend" method="post" action="chat">
+	    <div id="buttonarea">
+	      <select name="class" id="classdropdown">
+	      </select>
+	      <select name="instance" id="instancedropdown">
+	      </select>
+	      <input type="text" name="instanceText" id="instancetext" style="display:none" />
+	      <input type="submit" name="submit" id="sendzephyr" value="send" />
+	    </div>
+	    <textarea id="messagetextarea" name="message"></textarea>
+	  </form>
 	</div>
       </div>
     </div>

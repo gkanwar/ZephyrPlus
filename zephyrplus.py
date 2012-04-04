@@ -85,8 +85,7 @@ class ChatUpdateHandler(BaseHandler):
 		class_name=self.get_argument('class')
 		instance = self.get_argument('instance', "*")
 		recipient = self.get_argument('recipient', "*")
-		startdate = self.get_argument('statedate', time.time()*1000)
-		#startdate = self.get_argument('startdate', "0") # change later to 2 weeks ago
+		startdate = self.get_argument('startdate', "0") # change later to 2 weeks ago
 		enddate = self.get_argument('enddate', str(1000*2**35)) # if longpolling, should not have end date
 		longpoll = self.get_argument('longpoll', "False")
 		#TODO: do input validation on arguments
@@ -108,7 +107,7 @@ class ChatUpdateHandler(BaseHandler):
                             values = {
                                     'message': zephyr.message,
                                     'sender': zephyr.sender,
-                                    'date': (zephyr.date - datetime.datetime.fromtimestamp(0)).total_seconds()*1000,
+                                    'date': int((zephyr.date - datetime.datetime.fromtimestamp(0)).total_seconds()*1000),
                                     'class': zephyr.dst.class_name,
                                     'instance': zephyr.dst.instance,
                                     'recipient': zephyr.dst.recipient
@@ -117,6 +116,11 @@ class ChatUpdateHandler(BaseHandler):
 			self.set_header('Content-Type', 'text/plain')
 			self.write(simplejson.dumps(response))
 			self.finish()
+	
+	def on_connection_close(self):
+            for waitee in MessageWaitor.waiters:
+                if waitee[0] == self:
+                    MessageWaitor.waiters.remove(waitee)
 	
         @tornado.web.authenticated
 	def post(self, *args, **kwargs):

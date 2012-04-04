@@ -4,7 +4,8 @@ body
     margin-left: auto;
     margin-right: auto;
     font-family: monospace;
-    background-color: #efefef
+/*    background-color: #efefef*/
+    background-image: url(../img/bgnoise.gif);
 }
 
 
