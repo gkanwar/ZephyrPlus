@@ -104,15 +104,17 @@ class ChatUpdateHandler(BaseHandler):
 		else:
 			response = []
 			for zephyr in zephyrs:
-                            values = {
-                                    'message': zephyr.message,
-                                    'sender': zephyr.sender,
-                                    'date': int((zephyr.date - datetime.datetime.fromtimestamp(0)).total_seconds()*1000),
-                                    'class': zephyr.dst.class_name,
-                                    'instance': zephyr.dst.instance,
-                                    'recipient': zephyr.dst.recipient
-                                }
-                            response.append(values)
+				td = zephyr.date - datetime.datetime.fromtimestamp(0)
+				totalSeconds = int((td.microseconds + (td.seconds + td.days*24*3600)*10**6) / 10**6 * 1000)
+				values = {
+						'message': zephyr.message,
+						'sender': zephyr.sender,
+						'date': totalSeconds,
+						'class': zephyr.dst.class_name,
+						'instance': zephyr.dst.instance,
+						'recipient': zephyr.dst.recipient
+					}
+				response.append(values)
 			self.set_header('Content-Type', 'text/plain')
 			self.write(simplejson.dumps(response))
 			self.finish()
@@ -126,7 +128,7 @@ class ChatUpdateHandler(BaseHandler):
 	def post(self, *args, **kwargs):
 		class_name = self.get_argument('class', 'message')
 		instance = self.get_argument('instance', 'personal')
-		recipient = self.get_argument('recipient', '*')
+		recipient = self.get_argument('recipient', '')
 		signature = self.get_argument('signature', None)
 		message = self.get_argument('message')
 		username = self.current_user.username
