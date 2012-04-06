@@ -162,6 +162,25 @@ class UserHandler(BaseHandler):
                     } for sub in user.subscriptions.all()]
             }))
     
+    @tornado.web.authenticated
+    def post(self):
+        user = self.current_user
+        action = self.get_argument('action').lower()
+        if action == 'subscribe' or action == 'unsubscribe':
+            class_name = self.get_argument('class', 'message').lower()
+            instance = self.get_argument('instance', '*').lower()
+            recipient = self.get_argument('recipient', '*').lower()
+            sub = Subscription.objects.get_or_create(class_name=class_name, instance=instance, recipient=recipient)[0]
+            if action == 'subscribe':
+                user.subscriptions.add(sub)
+            else:
+                user.subscriptions.remove(sub)
+            self.set_header('Content-Type', 'text/plain')
+            self.write(simplejson.dumps({
+                            "class": sub.class_name,
+                            "instance": sub.instance,
+                            "recipient": sub.recipient
+                        }))
 
 settings = {
     "static_path": os.path.join(os.path.dirname(__file__), "static"),

@@ -165,6 +165,10 @@ var personals = [
             getMessages(sub, true);
         }
         
+        function unsubscribe(sub){
+            sub.unsubscribed = true;
+        }
+        
         function getMessages(sub, repeat){
             $.get("/chat", {
                 class: sub.class,
@@ -173,6 +177,8 @@ var personals = [
                 startdate: sub.last_messaged-0,
                 longpoll: true
             }, function(messages){
+                if(sub.unsubscribed)
+                    return;
                 for(var n=0; n<messages.length; n++){
                     messages[n] = {
                         parent_class: findClass(messages[n].class),
@@ -245,18 +251,44 @@ var personals = [
                 throw new Error("ZephyrAPI not ready yet");
         }
         
-        api.addSubscription = function(className, instanceName, recipientName){
+        api.addSubscription = function(className, instanceName, recipientName, callback){
             checkReady();
             if(!instanceName)
                 instanceName = "*";
             if(!recipientName)
                 recipientName = "*";
-            throw new Error("Not yet implemented");
+            return $.post("/user", {
+                action: "subscribe",
+                class: className,
+                instance: instanceName,
+                recipient: recipientName
+            }, function(sub){
+                api.subscriptions.push(sub);
+                subscribe(sub);
+                if(callback)
+                    callback();
+            }, "json").error(api.onerror);
         }
         
-        api.removeSubscription = function(className, instanceName, recipientName){
+        api.removeSubscription = function(className, instanceName, recipientName, callback){
             checkReady();
-            throw new Error("Not yet implemented");
+            return $.post("/user", {
+                action: "unsubscribe",
+                class: className,
+                instance: instanceName,
+                recipient: recipientName
+            }, function(sub){
+                var subs=[];
+                for(var n=0; n<api.subscriptions.length; n++)
+                    if(api.subscriptions[n].class != sub.class ||
+                            api.subscriptions[n].instance != sub.instance ||
+                            api.subscriptions[n].recipient != sub.recipient)
+                        subs.push(api.subscriptions[n]);
+                api.subscriptions=subs;
+                unsubscribe(sub);
+                if(callback)
+                    callback();
+            }, "json").error(api.onerror);
         }
         
         api.sendZephyr = function(message, className, instanceName, recipientName, callback){
