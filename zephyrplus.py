@@ -105,7 +105,7 @@ class ChatUpdateHandler(BaseHandler):
 			response = []
 			for zephyr in zephyrs:
 				td = zephyr.date - datetime.datetime.fromtimestamp(0)
-				totalSeconds = int((td.microseconds + (td.seconds + td.days*24*3600)*10**6) / 10**6 * 1000)
+				totalSeconds = int((td.microseconds + (td.seconds + td.days*24*3600)*10**6) / 10.**6 * 1000)
 				values = {
 						'message': zephyr.message,
 						'sender': zephyr.sender,
