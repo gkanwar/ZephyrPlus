@@ -41,7 +41,8 @@ body
 /*    height: 500px;*/
     height:100%;
 /*    background-color: #2d2d2d;*/
-    background-image: url(../img/broken_noise_light.png);
+/*    background-image: url(../img/broken_noise_light.png);*/
+    background-image: url(../img/broken_noise.png);
     float: left;
     line-height: 1.5em;
     color: #efefef;
@@ -129,7 +130,8 @@ body
     height: 15px;
     padding: 7px;
     color: #171717;
-    background-color: #c5c5c5;
+/*    background-color: #c5c5c5;*/
+    background-image:url(../img/noise_light_gray.png);
 }
 #messages
 {
@@ -157,7 +159,8 @@ body
 }
 .messages_entry:hover
 {
-    background-color: #575757;
+/*    background-color: #575757;*/
+    background-image:url(../img/noise_hover_gray.png);
 }
 .message_header
 {
@@ -184,6 +187,7 @@ body
     padding-right: 7px;
     padding-top: 3px;
     padding-bottom: 7px;
+    background-image:url(../img/noise_light_gray.png);
 }
 #sendarea textarea
 {
