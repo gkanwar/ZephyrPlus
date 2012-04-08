@@ -27,11 +27,15 @@ body
     position:absolute;
     z-index:2;
 }
+#loginandlink{
+    position:relative;
+    margin-top: 50px;
+}
 #loginbutton
 {
     position:relative;
-    top:-110px;
-    left:40px;
+    top:0px;
+    left:0px;
     
 }
 #loginbutton input[type=submit]
@@ -49,8 +53,8 @@ body
 #abouthelp
 {
     position: relative;
-    top: -175px;
-    right:50px;
+    top: -64px;
+    right:90px;
     font-size:2em;
     font-familiy:monospace;
 }
