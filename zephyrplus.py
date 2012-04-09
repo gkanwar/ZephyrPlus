@@ -52,7 +52,6 @@ class CertsLoginHandler(LoginHandler):
     _OPENID_ENDPOINT = "https://garywang.scripts.mit.edu/openid/login.py"
 
 class LogoutHandler(BaseHandler):
-    @tornado.web.authenticated
     def get(self):
         self.clear_cookie("user")
         self.redirect("/")
