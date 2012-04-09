@@ -15,7 +15,7 @@ from models import Zephyr, Subscription, Account
 
 class BaseHandler(tornado.web.RequestHandler):
     def get_current_user(self):
-        username = self.get_secure_cookie("user")
+        username = self.get_secure_cookie("user", max_age_days=31)
         if username is not None:
             return Account.objects.get_or_create(username=username)[0]
         return None
@@ -42,7 +42,7 @@ class LoginHandler(tornado.web.RequestHandler, tornado.auth.OpenIdMixin):
         username = user["email"].lower()
         if username.endswith("@mit.edu"):
             username = username.split("@")[0]
-        self.set_secure_cookie("user", username)
+        self.set_secure_cookie("user", username, expires_days=31)
         self.redirect(self.get_argument("next", "/"))
 
 class GoogleLoginHandler(LoginHandler, tornado.auth.GoogleMixin):
@@ -50,6 +50,12 @@ class GoogleLoginHandler(LoginHandler, tornado.auth.GoogleMixin):
 
 class CertsLoginHandler(LoginHandler):
     _OPENID_ENDPOINT = "https://garywang.scripts.mit.edu/openid/login.py"
+
+class LogoutHandler(BaseHandler):
+    @tornado.web.authenticated
+    def get(self):
+        self.clear_cookie("user")
+        self.redirect("/")
 
 class MessageWaitor(object):
 	# waiter stores (request, Subscription)
@@ -63,19 +69,7 @@ class MessageWaitor(object):
 	def new_message(cls, zephyr):
 		for waitee in cls.waiters:
 			if waitee[1].match(zephyr):
-				response = []
-				values = {
-						'message': zephyr.message,
-						'sender': zephyr.sender,
-						'date': (zephyr.date - datetime.datetime.fromtimestamp(0)).total_seconds()*1000,
-						'class': zephyr.dst.class_name,
-						'instance': zephyr.dst.instance,
-						'recipient': zephyr.dst.recipient
-						}
-				response.append(values)
-				waitee[0].set_header('Content-Type', 'text/plain')
-				waitee[0].write(simplejson.dumps(response))
-				waitee[0].finish()
+				waitee[0].write_zephyrs([zephyr])
 				cls.waiters.remove(waitee)
 
 class ChatUpdateHandler(BaseHandler):
@@ -102,22 +96,26 @@ class ChatUpdateHandler(BaseHandler):
 		if len(zephyrs) == 0 and longpoll.lower() == "true":
 			MessageWaitor.wait_for_messages(self,sub)
 		else:
-			response = []
-			for zephyr in zephyrs:
-				td = zephyr.date - datetime.datetime.fromtimestamp(0)
-				totalSeconds = int((td.microseconds + (td.seconds + td.days*24*3600)*10**6) / 10.**6 * 1000)
-				values = {
-						'message': zephyr.message,
-						'sender': zephyr.sender,
-						'date': totalSeconds,
-						'class': zephyr.dst.class_name,
-						'instance': zephyr.dst.instance,
-						'recipient': zephyr.dst.recipient
-					}
-				response.append(values)
-			self.set_header('Content-Type', 'text/plain')
-			self.write(simplejson.dumps(response))
-			self.finish()
+			self.write_zephyrs(zephyrs)
+	
+	def write_zephyrs(self, zephyrs):
+            response = []
+            for zephyr in zephyrs:
+                td = zephyr.date - datetime.datetime.fromtimestamp(0)
+                totalSeconds = int((td.microseconds + (td.seconds + td.days*24*3600)*10**6) / 10.**6 * 1000)
+                values = {
+                            'id': zephyr.id,
+                            'message': zephyr.message,
+                            'sender': zephyr.sender,
+                            'date': totalSeconds,
+                            'class': zephyr.dst.class_name,
+                            'instance': zephyr.dst.instance,
+                            'recipient': zephyr.dst.recipient
+                        }
+                response.append(values)
+            self.set_header('Content-Type', 'text/plain')
+            self.write(simplejson.dumps(response))
+            self.finish()
 	
 	def on_connection_close(self):
             for waitee in MessageWaitor.waiters:
@@ -196,6 +194,7 @@ application = tornado.web.Application([
         (r"/chat", ChatUpdateHandler),
         (r"/update", NewZephyrHandler),
         (r"/login", CertsLoginHandler),
+        (r"/logout", LogoutHandler),
         (r"/user", UserHandler),
         (r"/", MainPageHandler),
         (r"/static/(.*)", tornado.web.StaticFileHandler, {"path": settings["static_path"]}),
