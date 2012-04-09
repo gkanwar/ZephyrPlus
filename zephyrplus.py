@@ -173,6 +173,8 @@ class UserHandler(BaseHandler):
             sub = Subscription.objects.get_or_create(class_name=class_name, instance=instance, recipient=recipient)[0]
             if action == 'subscribe':
                 user.subscriptions.add(sub)
+                proc = subprocess.Popen(["zctl", "add", sub.class_name, sub.instance], stdin=subprocess.PIPE)
+                proc.stdin.close()
             else:
                 user.subscriptions.remove(sub)
             self.set_header('Content-Type', 'text/plain')
@@ -187,7 +189,7 @@ settings = {
     "cookie_secret": "rS24mrw/2iCQUSwtuptW8p1jbidrs5eqV3hdPuJ8894L",
     "login_url": "/login",
     "xsrf_cookies": False,
-    "debug": True,
+    "debug": False,
 }
 
 application = tornado.web.Application([
