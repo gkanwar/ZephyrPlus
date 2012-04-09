@@ -69,19 +69,7 @@ class MessageWaitor(object):
 	def new_message(cls, zephyr):
 		for waitee in cls.waiters:
 			if waitee[1].match(zephyr):
-				response = []
-				values = {
-						'message': zephyr.message,
-						'sender': zephyr.sender,
-						'date': (zephyr.date - datetime.datetime.fromtimestamp(0)).total_seconds()*1000,
-						'class': zephyr.dst.class_name,
-						'instance': zephyr.dst.instance,
-						'recipient': zephyr.dst.recipient
-						}
-				response.append(values)
-				waitee[0].set_header('Content-Type', 'text/plain')
-				waitee[0].write(simplejson.dumps(response))
-				waitee[0].finish()
+				waitee[0].write_zephyrs([zephyr])
 				cls.waiters.remove(waitee)
 
 class ChatUpdateHandler(BaseHandler):
@@ -108,22 +96,26 @@ class ChatUpdateHandler(BaseHandler):
 		if len(zephyrs) == 0 and longpoll.lower() == "true":
 			MessageWaitor.wait_for_messages(self,sub)
 		else:
-			response = []
-			for zephyr in zephyrs:
-				td = zephyr.date - datetime.datetime.fromtimestamp(0)
-				totalSeconds = int((td.microseconds + (td.seconds + td.days*24*3600)*10**6) / 10.**6 * 1000)
-				values = {
-						'message': zephyr.message,
-						'sender': zephyr.sender,
-						'date': totalSeconds,
-						'class': zephyr.dst.class_name,
-						'instance': zephyr.dst.instance,
-						'recipient': zephyr.dst.recipient
-					}
-				response.append(values)
-			self.set_header('Content-Type', 'text/plain')
-			self.write(simplejson.dumps(response))
-			self.finish()
+			self.write_zephyrs(zephyrs)
+	
+	def write_zephyrs(self, zephyrs):
+            response = []
+            for zephyr in zephyrs:
+                td = zephyr.date - datetime.datetime.fromtimestamp(0)
+                totalSeconds = int((td.microseconds + (td.seconds + td.days*24*3600)*10**6) / 10.**6 * 1000)
+                values = {
+                            'id': zephyr.id,
+                            'message': zephyr.message,
+                            'sender': zephyr.sender,
+                            'date': totalSeconds,
+                            'class': zephyr.dst.class_name,
+                            'instance': zephyr.dst.instance,
+                            'recipient': zephyr.dst.recipient
+                        }
+                response.append(values)
+            self.set_header('Content-Type', 'text/plain')
+            self.write(simplejson.dumps(response))
+            self.finish()
 	
 	def on_connection_close(self):
             for waitee in MessageWaitor.waiters:
