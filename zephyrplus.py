@@ -15,7 +15,7 @@ from models import Zephyr, Subscription, Account
 
 class BaseHandler(tornado.web.RequestHandler):
     def get_current_user(self):
-        username = self.get_secure_cookie("user")
+        username = self.get_secure_cookie("user", max_age_days=31)
         if username is not None:
             return Account.objects.get_or_create(username=username)[0]
         return None
@@ -42,7 +42,7 @@ class LoginHandler(tornado.web.RequestHandler, tornado.auth.OpenIdMixin):
         username = user["email"].lower()
         if username.endswith("@mit.edu"):
             username = username.split("@")[0]
-        self.set_secure_cookie("user", username)
+        self.set_secure_cookie("user", username, expires_days=31)
         self.redirect(self.get_argument("next", "/"))
 
 class GoogleLoginHandler(LoginHandler, tornado.auth.GoogleMixin):
