@@ -10,7 +10,16 @@ body
     margin-left: auto;
     margin-right: auto;
 /*    font-family: monospace;*/
-    font-family: 'Ubuntu Mono', sans-serif;
+/*    font-family: 'Ubuntu Mono', sans-serif;*/
+/*    font-family:'Electrolize',sans-serif;*/
+/*    font-family: 'Open Sans', sans-serif;
+    font-family: 'Questrial', sans-serif;
+    font-family: 'Oswald', sans-serif;
+    font-family: 'Oxygen', sans-serif;
+    font-family: 'Dosis', sans-serif;
+    font-family: 'Inconsolata', sans-serif;*/
+    font-family: 'Lucida Console', Monaco, monospace;
+    font-size: 0.75em;
     cursor: default;
 }
 
@@ -153,8 +162,8 @@ a:visited
 }
 .messages_entry
 {
-    padding-top: 5px;
-    padding-bottom: 5px;
+    padding-top: 0px;
+    padding-bottom: 0px;
 
     padding-left:20px;
     padding-right:20px;
@@ -174,7 +183,7 @@ a:visited
 .message_body
 {
     padding: 0px 2px 0px 34px;
-    margin: 0px -18px 0px -18px;
+    margin: -4px -18px 0px -18px;
 }
 /*
 .message_body:hover
@@ -248,6 +257,7 @@ a:visited
     overflow-y:auto;
     overflow-x:hidden !important;
     height: 100% !important;
+    width: 100%;
 
 }
 
@@ -259,16 +269,28 @@ li.classes_entry
 #classdropdown
 {
     border-color: #AAAAAA;
-    background-color:#FFFFFF;
+    background-color: #ffffff;
+    font-family: 'Lucida Console', Monaco, monospace;
+    font-size:0.75em;
 }
 #instancedropdown
 {
     border-color: #AAAAAA;
-    background-color: #FFFFFF;
+    background-color: #ffffff;
+    font-family: 'Lucida Console', Monaco, monospace;
+    font-size:0.75em;
 }
 #sendzephyr
 {
     background-color: #FFFFFF;
+    font-family: 'Lucida Console', Monaco, monospace;
+    font-size:0.75em;
+}
+#instancetext
+{
+    border-color: #AAAAAA;
+    font-family: 'Lucida Console', Monaco, monospace;
+    font-size:0.75em;
 }
 #header_logo
 {
