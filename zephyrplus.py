@@ -135,7 +135,7 @@ class ChatUpdateHandler(BaseHandler):
 		else:
 			signature = username
                 signature += " via ZephyrPlus"
-		proc = subprocess.Popen(["zwrite", "-c", class_name, "-i", instance, "-s", signature, recipient], stdin=subprocess.PIPE)
+		proc = subprocess.Popen(["zwrite", "-n", "-c", class_name, "-i", instance, "-s", signature, recipient], stdin=subprocess.PIPE)
 		proc.stdin.write(message)
 		proc.stdin.close()
 
