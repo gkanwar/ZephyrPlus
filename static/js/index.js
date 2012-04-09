@@ -24,11 +24,17 @@ $(document).ready(function()
 				    fillButtonArea();
 				});
 
+    // Loads classes on the sidebar
     fillMessagesByClass();
+
+    // Fills button area near chat
     fillButtonArea();
     // Loading the personals and classes lists
     loadPersonals();
     loadClasses();
+
+    // Loads logged in username
+    loadLoginArea();
 
     // Setting the form submission handler
     $("#chatsend").submit(
@@ -441,3 +447,16 @@ function hsvToRgb(h, s, v){
     return [r * 255, g * 255, b * 255];
 }
 
+//Makes logged_user the logged in user
+function loadLoginArea(){
+    if (api.username == null)
+    {
+	$("#loginarea")
+	    .html("<a href='/login'>Login</a>");
+    }
+    else
+    {
+	$("#loginarea")
+	    .text("logged in as "+api.username);
+    }
+}
