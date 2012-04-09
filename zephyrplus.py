@@ -51,6 +51,12 @@ class GoogleLoginHandler(LoginHandler, tornado.auth.GoogleMixin):
 class CertsLoginHandler(LoginHandler):
     _OPENID_ENDPOINT = "https://garywang.scripts.mit.edu/openid/login.py"
 
+class LogoutHandler(BaseHandler):
+    @tornado.web.authenticated
+    def get(self):
+        self.clear_cookie("user")
+        self.redirect("/")
+
 class MessageWaitor(object):
 	# waiter stores (request, Subscription)
 	waiters = [] # table that deals with long polling requests
@@ -194,6 +200,7 @@ application = tornado.web.Application([
         (r"/chat", ChatUpdateHandler),
         (r"/update", NewZephyrHandler),
         (r"/login", CertsLoginHandler),
+        (r"/logout", LogoutHandler),
         (r"/user", UserHandler),
         (r"/", MainPageHandler),
         (r"/static/(.*)", tornado.web.StaticFileHandler, {"path": settings["static_path"]}),
