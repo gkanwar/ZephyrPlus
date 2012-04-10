@@ -1,3 +1,6 @@
+/*
+OLD API STRUCTURE
+
 var messages = [
     {
 	id: 0,
@@ -111,6 +114,8 @@ var personals = [
     'pkoms',
     'taylors',
 ];
+*/
+
 
 // TODO: Have functions to load all this data from the server
 
@@ -181,6 +186,7 @@ var personals = [
                     return;
                 for(var n=0; n<messages.length; n++){
                     messages[n] = {
+			id: messages[n].id,
                         parent_class: findClass(messages[n].class),
                         parent_instance: findInstance(messages[n].instance, messages[n].class),
                         sender: messages[n].sender,
@@ -207,12 +213,14 @@ var personals = [
         function findClass(name){
             if(api.classDict[name] == undefined){
                 api.classDict[name] = {
+		    id: api.classes.length,
                     name: name,
                     last_messaged: new Date(0),
                     color: hashStringToColor(name),
                     instances: [],
                     instanceDict: {},
-                    messages: []
+                    messages: [],
+		    missedMessages: []
                 }
                 api.classes.push(api.classDict[name]);
             }
@@ -223,11 +231,13 @@ var personals = [
             var parent = findClass(className);
             if(parent.instanceDict[name] == undefined){
                 parent.instanceDict[name] = {
+		    id: api.instances.length,
                     name: name,
                     last_messaged: new Date(0),
                     color: hashStringToColor(name),
                     parent_class: parent,
-                    messages: []
+                    messages: [],
+		    missedMessages: []
                 }
                 parent.instances.push(parent.instanceDict[name]);
                 api.instances.push(parent.instanceDict[name]);
