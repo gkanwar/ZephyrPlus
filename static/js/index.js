@@ -24,17 +24,61 @@ $(document).ready(function()
 				    fillButtonArea();
 				});
 
-    // Loads classes on the sidebar
-    fillMessagesByClass();
 
-    // Fills button area near chat
-    fillButtonArea();
-    // Loading the personals and classes lists
-    loadPersonals();
-    loadClasses();
+    // Create the API object and define the callbacks
+    api = new ZephyrAPI();
+    api.onready = function()
+    {
+	needsToBeSetup = true;
+    };
+    api.onzephyr = function(zephyrs)
+    {
+	// Only perform this setup on the very first onzephyr call
+	if (needsToBeSetup) 
+	{
+	    // Set some global variables
+	    curView = 0; // 0 = Class view, 1 = Personal view
+	    curClass = null;
+	    curInstance = null;
+	    curPersonal = null;
+	    needsToBeSetup = false;
+	    
+            // Fill in the messages and button area
+    	    fillMessagesByClass();
+            fillButtonArea();
+            // Fill in the personals and classes sidebar
+            //fillPersonals(); // Personals don't exist anymore
+            fillClasses();
+        }
 
-    // Loads logged in username
-    loadLoginArea();
+	// Determine whether the message would be displayed in the current view
+	// Dynamically update if it would;
+	// TODO: otherwise do something (bold + nums in parens)
+	for (var i = 0; i < zephyrs.length; i++)
+	{
+	    curZephyr = zephyrs[i];
+	    // If we're in the class view, compare class id and instance id
+	    if (curView == 0 && curZephyr.parent_class.id == curClass && curZephyr.parent_instance.id == curInstance)
+	    {
+		// TODO: Add the zephyr to our view
+		
+	    }
+	    // If we're in the personal view, we don't do this!
+	    else if (curView == 1)
+	    {
+		// ERROR: We don't do this
+		console.log("Error: trying to add a personal");
+	    }
+	    // Otherwise, set the class/instance name to bold and increment the missed message counter
+	    else
+	    {
+		addMissedMessage(curZephyr);
+	    }
+	}
+	
+	updateMissedMessages();
+    };
+
 
     // Setting the form submission handler
     $("#chatsend").submit(
@@ -44,7 +88,7 @@ $(document).ready(function()
 	    var messageText = messageTextArea.val();
 	    messageTextArea.val('');
 	    var classDropDown = $(this).find("#classdropdown");
-	    var classText = classes[classDropDown.val()].name;
+	    var classText = api.classes[classDropDown.val()].name;
 	    var instanceDropDown = $(this).find("#instancedropdown");
 	    var instanceId = instanceDropDown.val();
 	    var instanceText;
@@ -54,46 +98,41 @@ $(document).ready(function()
 	    }
 	    else
 	    {
-		instanceText = instances[instanceId].name;
+		instanceText = api.instances[instanceId].name;
 	    }
 
-	    console.log("Vals: " + instanceText + " " + classText + " " + messageText);
-	    console.log(event);
-
 	    $.post("/chat",
-		{
-		    'class': classText,
-		    'instance': instanceText,
-		    'message': messageText,
-		},
-		function()
-		{
-		    console.log("Success!");
-		}
-	    );
+		   {
+		       'class': classText,
+		       'instance': instanceText,
+		       'message': messageText,
+		   },
+		   function()
+		   {
+		       console.log("Success!");
+		   }
+		  );
 	    return false;
-	});
+	}
+    );
 
     // Add class by clicking on "+"
     $("#add_class").click(
-	function()
-	{
+	function() {
 	    addZephyrClass();
-	});
+	}
+    );
 
     // Changes instances options on class selection change
     $("#classdropdown").change(
-	function()
-	{
+	function() {
 	    fillInstancesDropDown();
-	});
+	}
+    );
 
     // Hide/display the instance test box if "New instance" is selected
     $("#instancedropdown").change(
-	function()
-	{
-	    console.log("Instance drop down changed");
-	    console.log($(this).val());
+	function() {
 	    if ($(this).val() == "new")
 	    {
 		$("#instancetext").show();
@@ -102,17 +141,79 @@ $(document).ready(function()
 	    {
 		$("#instancetext").hide();
 	    }
-	});
+	}
+    );
 });
+
+var addMissedMessage = function(message)
+{
+    if (!message.parent_class || !message.parent_instance)
+    {
+	// We need to have both (since we don't deal with personals)
+	return -1;
+    }
+    
+    message.parent_class.missedMessages.push(message);
+    message.parent_instance.missedMessages.push(message);
+};
+
+var updateMissedMessages = function()
+{
+    for (var i = 0; i < api.classes.length; i++)
+    {
+	var curClass = api.classes[i];
+	updateClassMissedMessages(curClass);
+	for (var j = 0; j < curClass.instances.length; j++)
+	{
+	    updateInstanceMissedMessages(curClass.instances[j]);
+	}
+    }
+};
+
+var updateClassMissedMessages = function(classObj)
+{
+    var numMissed = classObj.missedMessages.length;
+    if (numMissed != 0)
+    {
+	$("#classes_entry_id_"+classObj.id)
+	    .children(".class_text")
+	    .text(classObj.name+" ("+numMissed+")")
+	    .addClass("missed_messages");
+    }
+    else
+    {
+	$("#classes_entry_id_"+classObj.id)
+	    .children(".class_text")
+	    .text(classObj.name)
+	    .removeClass("missed_messages");
+    }
+};
+
+var updateInstanceMissedMessages = function(instanceObj)
+{
+    var numMissed = instanceObj.missedMessages.length;
+    if (numMissed != 0)
+    {
+	$("#instances_entry_id_"+instanceObj.id)
+	    .text(instanceObj.name+" ("+numMissed+")")
+	    .addClass("missed_messages");
+    }
+    else
+    {
+	$("#instances_entry_id_"+instanceObj.id)
+	    .text(instanceObj.name)
+	    .removeClass("missed_messages");
+    }
+};
+	
 
 // Constant defining max number of personals to display in the sidebar
 var maxPersonals = 5;
 
-// Load the personals to display in the sidebar
-var loadPersonals = function()
+// Fill the personals in the sidebar
+/* PERSONALS DON'T EXIST ANYMORE
+var fillPersonals = function()
 {
-    // TODO: Make an AJAX call to get the personals data
-
     root = $("#personals_anchor");
     ul = $("<ul></ul>");
 
@@ -123,18 +224,17 @@ var loadPersonals = function()
 
     root.html(ul);
 };
+*/
 
 // Constant defining max number of classes to display in the sidebar
 //var maxClasses = 5;
 
 // Load the classes to display in the sidebar
-var loadClasses = function()
+var fillClasses = function()
 {
-    // TODO: Load the classes via AJAX
-
     var root = $("#classes_anchor");
     var ul = $("<ul></ul>");
-    for (var i = 0; i < classes.length; i++)
+    for (var i = 0; i < api.classes.length; i++)
     {
 /*	if (i == maxClasses)
 	{
@@ -144,9 +244,10 @@ var loadClasses = function()
 	// Call everything in its own function to make it scope right
 	(function()
 	 {
-	     var curClass = classes[i];
+	     var curClass = api.classes[i];
 	     var class_entry = $("<li/>");
 	     var class_entry_div = $("<div/>")
+		 .attr("id", "classes_entry_id_"+curClass.id)
 		 .addClass("classes_entry")
 		 .click(function()
 			{
@@ -162,7 +263,7 @@ var loadClasses = function()
 			});
 	     var class_name = $("<span/>")
 		 .text(curClass.name)
-		 .addClass("class_id_"+curClass.id)
+		 .addClass("class_text")
 		 .css("color", curClass.color);
 	     ul.append(class_entry);
 	     class_entry.append(class_entry_div);
@@ -178,6 +279,7 @@ var loadClasses = function()
 		  {
 		      var curInstance = curClass.instances[j];
 		      var instance_li = $("<li/>")
+			  .attr("id", "instances_entry_id_"+curInstance.id)
 			  .text(curInstance.name)
 			  .addClass("instance_id_"+curInstance.id)
 			  .addClass("instances_entry")
@@ -197,6 +299,11 @@ var loadClasses = function()
 
 var fillMessagesByClass = function(class_id, instance_id)
 {
+	// Set global variables
+	curClass = class_id;
+	curInstance = instance_id;
+	curView = 0;
+	
     var allClassesHeader = $("<span/>")
 	.text("all classes")
 	.click(function()
@@ -214,8 +321,8 @@ var fillMessagesByClass = function(class_id, instance_id)
     {
 	//	headerText += " >  " + classes[class_id].name;
 	var headerText_class = $("<span />")
-	    .addClass("class_id_"+classes[class_id])
-	    .text(classes[class_id].name)
+	    .addClass("class_id_"+api.classes[class_id].name)
+	    .text(api.classes[class_id].name)
 	    .click(function()
 		   {
 		       fillMessagesByClass(class_id);
@@ -227,25 +334,25 @@ var fillMessagesByClass = function(class_id, instance_id)
 	{
 //	    headerText += " > " + instances[instance_id].name;
 	    var headerText_instance = $("<span />")
-		.addClass("instance_id_"+instances[instance_id])
-		.text(instances[instance_id].name)
+		.addClass("instance_id_"+api.instances[instance_id].name)
+		.text(api.instances[instance_id].name)
 		.click(function()
 		       {
 			   fillMessagesByClass(class_id, instance_id);
 			   fillButtonArea(class_id, instance_id);
 		       });
 	    headerText.append(" > ").append(headerText_instance);
-	    messagesOut = instances[instance_id].messages;
+	    messagesOut = api.instances[instance_id].messages;
 	}
 	else
 	{
-	    messagesOut = classes[class_id].messages;
+	    messagesOut = api.classes[class_id].messages;
 	}
     }
     // No class selected
     else
     {
-	messagesOut = classes_messages;
+	messagesOut = api.messages;
     }
 
     // Actually fill in the messages
@@ -282,7 +389,7 @@ var fillMessagesByClass = function(class_id, instance_id)
 	    header.append(header_class).append(" / ")
 		.append(header_instance).append(" / ")
 		.append(header_sender);
-            var body = $("<div class='message_body'/>").text(messagesOut[i].message);
+            var body = $("<div class='message_body'/>").text(messagesOut[i].message_body);
 	    message_entry.append(header).append(body);
 	    $("#messages").append(message_entry);
 	})();
@@ -293,6 +400,10 @@ var fillMessagesByClass = function(class_id, instance_id)
 
 var fillMessagesByPersonal = function(personal_id)
 {
+	// Set a global variable
+	curPersonal = personal_id;
+	curView = 1;
+	
     var headerText = "personals";
     var messagesOut;
 
@@ -330,13 +441,12 @@ var fillButtonArea = function(class_id, instance_id)
 
 var fillClassesDropDown = function(class_id)
 {
-    console.log("Filling classes drop down: " + class_id);
     // Clear the dropdown
     $("#classdropdown").html('');
     // Loop through the classes and add them
-    for(var i = 0; i < classes.length; i++)
+    for(var i = 0; i < api.classes.length; i++)
     {
-	var curClass = classes[i];
+	var curClass = api.classes[i];
 	var option = $("<option/>")
 	    .val(curClass.id)
 	    .attr("id", "option_class_id_"+curClass.id)
@@ -365,9 +475,9 @@ var fillInstancesDropDown = function(instance_id)
     // Clear the dropdown
     $("#instancedropdown").html('');
     // Loop through that class's instances and create an option for each one
-    for(var i = 0; i < classes[selectedClass].instances.length; i++)
+    for(var i = 0; i < api.classes[selectedClass].instances.length; i++)
     {
-	var curInstance = classes[selectedClass].instances[i];
+	var curInstance = api.classes[selectedClass].instances[i];
 	var option = $("<option/>")
 	    .val(curInstance.id)
 	    .attr("id", "option_instance_id_"+curInstance.id)
@@ -392,16 +502,16 @@ var fillInstancesDropDown = function(instance_id)
 var addZephyrClass = function()
 {
     var new_class_name = prompt("Please enter the class you want to add.");
-    classes.push(
+    api.classes.push(
 	{
-	    id:classes.length,
+	    id:api.classes.length,
 	    name: new_class_name,
 	    last_messaged: null,
 	    color: hashStringToColor(new_class_name),
 	    instances: [],
 	    messages: []
 	});
-    loadClasses();
+    fillClasses();
 };
 
 function hashStringToColor(str){
@@ -447,16 +557,3 @@ function hsvToRgb(h, s, v){
     return [r * 255, g * 255, b * 255];
 }
 
-//Makes logged_user the logged in user
-function loadLoginArea(){
-    if (api.username == null)
-    {
-	$("#loginarea")
-	    .html("<a href='/login'>Login</a>");
-    }
-    else
-    {
-	$("#loginarea")
-	    .text("logged in as "+api.username);
-    }
-}
