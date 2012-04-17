@@ -41,7 +41,6 @@ $(document).ready(function()
 	    curClass = null;
 	    curInstance = null;
 	    curPersonal = null;
-	    needsToBeSetup = false;
 	    
             // Fill in the messages and button area
     	    fillMessagesByClass();
@@ -49,6 +48,8 @@ $(document).ready(function()
             // Fill in the personals and classes sidebar
             //fillPersonals(); // Personals don't exist anymore
             fillClasses();
+	    // Scroll to the bottom of the messages div
+	    $("#messages").prop({ scrollTop: $("#messages").prop("scrollHeight") });
         }
 
 	// Determine whether the message would be displayed in the current view
@@ -58,18 +59,20 @@ $(document).ready(function()
 	{
 	    curZephyr = zephyrs[i];
 	    // If we're in the class view, compare class id and instance id
-	    if (curView == 0 && curZephyr.parent_class.id == curClass && curZephyr.parent_instance.id == curInstance)
+	    if (!needsToBeSetup && curView == 0 && (curZephyr.parent_class.id == curClass || typeof(curClass) == 'undefined') && (curZephyr.parent_instance.id == curInstance || typeof(curInstance) == 'undefined'))
 	    {
-		// TODO: Add the zephyr to our view
-		
+		// Add the zephyr to our view
+		var messageEntry = createMessage(curZephyr);
+		$("#messages").append(messageEntry);
+		// Scroll to the bottom of the messages div
+		$("#messages").animate({ scrollTop: $("#messages").prop("scrollHeight") }, 1000);
 	    }
 	    // If we're in the personal view, we don't do this!
-	    else if (curView == 1)
+	    else if (!needsToBeSetup && curView == 1)
 	    {
 		// ERROR: We don't do this
 		console.log("Error: trying to add a personal");
 	    }
-	    // Otherwise, set the class/instance name to bold and increment the missed message counter
 	    else
 	    {
 		addMissedMessage(curZephyr);
@@ -77,6 +80,8 @@ $(document).ready(function()
 	}
 	
 	updateMissedMessages();
+
+	needsToBeSetup = false;
     };
 
 
@@ -297,6 +302,44 @@ var fillClasses = function()
     root.html(ul);
 };
 
+var createMessage = function(message)
+{
+    var classObj = message.parent_class;
+    var instanceObj = message.parent_instance;
+    var sender_text = message.sender;
+    var message_text = message.message_body;
+    var message_entry = $("<div class='messages_entry'/>")
+	.click(function()
+	       {
+		   fillButtonArea(classObj.id, instanceObj.id);
+	       });
+    var header = $("<div class='message_header'/>");
+    var header_class = $("<span />")
+	.addClass("class_id_"+classObj.id)
+	.css("color", classObj.color)
+	.text(classObj.name)
+	.click(function()
+	       {
+		   fillMessagesByClass(classObj.id);
+		   fillButtonArea(classObj.id);
+	       });
+    var header_instance = $("<span />")
+	.addClass("instance_id_"+instanceObj.id)
+	.css("color", instanceObj.color)
+	.text(instanceObj.name)
+	.click(function()
+	       {
+		   fillMessagesByClass(classObj.id, instanceObj.id);
+		   fillButtonArea(classObj.id, instanceObj.id);
+	       });
+    header.append(header_class).append(" / ")
+	.append(header_instance).append(" / ")
+	.append(sender_text);
+    var body = $("<div class='message_body'/>").text(message_text);
+    message_entry.append(header).append(body);
+    return message_entry
+}
+
 var fillMessagesByClass = function(class_id, instance_id)
 {
 	// Set global variables
@@ -361,36 +404,7 @@ var fillMessagesByClass = function(class_id, instance_id)
     {
 	(function(){
 	    var i = messageNum;
-	    var message_entry = $("<div class='messages_entry'/>")
-		.click(function()
-		       {
-			   fillButtonArea(messagesOut[i].parent_class.id,messagesOut[i].parent_instance.id);
-		       });
-	    var header = $("<div class='message_header'/>");
-	    var header_class = $("<span />")
-		.addClass("class_id_"+messagesOut[i].parent_class.id)
-		.css("color", messagesOut[i].parent_class.color)
-		.text(messagesOut[i].parent_class.name)
-		.click(function()
-		       {
-			   fillMessagesByClass(messagesOut[i].parent_class.id);
-			   fillButtonArea(messagesOut[i].parent_class.id);
-		       });
-	    var header_instance = $("<span />")
-		.addClass("instance_id_"+messagesOut[i].parent_instance.id)
-		.css("color", messagesOut[i].parent_instance.color)
-		.text(messagesOut[i].parent_instance.name)
-		.click(function()
-		       {
-			   fillMessagesByClass(messagesOut[i].parent_class.id, messagesOut[i].parent_instance.id);
-			   fillButtonArea(messagesOut[i].parent_class.id, messagesOut[i].parent_instance.id);
-		       });
-            var header_sender = messagesOut[i].sender;
-	    header.append(header_class).append(" / ")
-		.append(header_instance).append(" / ")
-		.append(header_sender);
-            var body = $("<div class='message_body'/>").text(messagesOut[i].message_body);
-	    message_entry.append(header).append(body);
+	    var message_entry = createMessage(messagesOut[i]);
 	    $("#messages").append(message_entry);
 	})();
     }
