@@ -163,50 +163,53 @@ var personals = [
         api.classDict = {};
         api.instances = [];
         api.messages = [];
+        api.last_messaged = 0;
         
-        function subscribe(sub){
-            findClass(sub.class);
-            sub.last_messaged = new Date(0);
-            getMessages(sub, true);
+        function procMessages(messages){
+            for(var n=0; n<messages.length; n++){
+                messages[n] = {
+                    id: messages[n].id,
+                    parent_class: findClass(messages[n].class),
+                    parent_instance: findInstance(messages[n].instance, messages[n].class),
+                    sender: messages[n].sender,
+                    timestamp: new Date(messages[n].date),
+                    message_body: messages[n].message
+                }
+                if(messages[n].parent_class.last_messaged < messages[n].timestamp)
+                    messages[n].parent_class.last_messaged = messages[n].timestamp;
+                if(messages[n].parent_instance.last_messaged < messages[n].timestamp)
+                    messages[n].parent_instance.last_messaged = messages[n].timestamp;
+                if(api.last_messaged < messages[n].timestamp)
+                    api.last_messaged = messages[n].timestamp;
+                messages[n].parent_class.messages.push(messages[n]);
+                messages[n].parent_instance.messages.push(messages[n]);
+                api.messages.push(messages[n]);
+            }
+            if(api.onzephyr)
+                api.onzephyr(messages);
         }
         
-        function unsubscribe(sub){
-            sub.unsubscribed = true;
+        function getSubbedMessages(){
+            $.get("/chat", {
+                startdate: api.last_messaged-0,
+                longpoll: true
+            }, function(messages){
+                procMessages(messages);
+                getSubbedMessages();
+            }, "json").error(api.onerror);
         }
         
-        function getMessages(sub, repeat){
+        function getOldMessages(sub, startdate){
+            if(startdate == undefined)
+                startdate = new Date() - 1000*60*60*24;
             $.get("/chat", {
                 class: sub.class,
                 instance: sub.instance,
                 recipient: sub.recipient,
-                startdate: sub.last_messaged-0,
-                longpoll: true
+                startdate: startdate-0,
+                longpoll: false
             }, function(messages){
-                if(sub.unsubscribed)
-                    return;
-                for(var n=0; n<messages.length; n++){
-                    messages[n] = {
-			id: messages[n].id,
-                        parent_class: findClass(messages[n].class),
-                        parent_instance: findInstance(messages[n].instance, messages[n].class),
-                        sender: messages[n].sender,
-                        timestamp: new Date(messages[n].date),
-                        message_body: messages[n].message
-                    }
-                    if(messages[n].parent_class.last_messaged < messages[n].timestamp)
-                        messages[n].parent_class.last_messaged = messages[n].timestamp;
-                    if(messages[n].parent_instance.last_messaged < messages[n].timestamp)
-                        messages[n].parent_instance.last_messaged = messages[n].timestamp;
-                    if(sub.last_messaged < messages[n].timestamp)
-                        sub.last_messaged = messages[n].timestamp;
-                    messages[n].parent_class.messages.push(messages[n]);
-                    messages[n].parent_instance.messages.push(messages[n]);
-                    api.messages.push(messages[n]);
-                }
-                if(api.onzephyr)
-                    api.onzephyr(messages);
-                if(repeat)
-                    getMessages(sub);
+                procMessages(messages);
             }, "json").error(api.onerror);
         }
         
@@ -249,11 +252,12 @@ var personals = [
             api.username = data.username;
             api.subscriptions = data.subscriptions;
             for(var n=0; n<api.subscriptions.length; n++){
-                subscribe(api.subscriptions[n]);
+                findClass(api.subscriptions[n].class);
             }
             api.ready = true;
             if(api.onready)
                 api.onready();
+            getSubbedMessages();
         }, "json").error(api.onerror);
         
         function checkReady(){
@@ -274,7 +278,8 @@ var personals = [
                 recipient: recipientName
             }, function(sub){
                 api.subscriptions.push(sub);
-                subscribe(sub);
+                findClass(sub.class);
+                getOldMessages(sub);
                 if(callback)
                     callback();
             }, "json").error(api.onerror);
@@ -295,7 +300,6 @@ var personals = [
                             api.subscriptions[n].recipient != sub.recipient)
                         subs.push(api.subscriptions[n]);
                 api.subscriptions=subs;
-                unsubscribe(sub);
                 if(callback)
                     callback();
             }, "json").error(api.onerror);
