@@ -66,10 +66,13 @@ class MessageWaitor(object):
 
 	@classmethod
 	def new_message(cls, zephyr):
-		for waitee in cls.waiters:
-			if waitee[1].match(zephyr):
-				waitee[0].write_zephyrs([zephyr])
-				cls.waiters.remove(waitee)
+            new_waiters = []
+            for waitee in cls.waiters:
+                if waitee[1].match(zephyr):
+                    waitee[0].write_zephyrs([zephyr])
+                else:
+                    new_waiters.append(waitee)
+            cls.waiters = new_waiters
 
 class ChatUpdateHandler(BaseHandler):
 	@tornado.web.asynchronous
