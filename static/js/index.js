@@ -516,6 +516,7 @@ var fillInstancesDropDown = function(instance_id)
 var addZephyrClass = function()
 {
     var new_class_name = prompt("Please enter the class you want to add.");
+    api.addSubscription(new_class_name);
     api.classes.push(
 	{
 	    id:api.classes.length,
