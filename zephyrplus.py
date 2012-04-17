@@ -17,7 +17,9 @@ class BaseHandler(tornado.web.RequestHandler):
     def get_current_user(self):
         username = self.get_secure_cookie("user", max_age_days=31)
         if username is not None:
-            return Account.objects.get_or_create(username=username)[0]
+            account = Account.objects.get_or_create(username=username)[0]
+            account.subscriptions.add(Subscription.objects.get_or_create(class_name="zephyrplus-lobby", instance="*", recipient="*")[0])
+            return account
         return None
 
 class MainPageHandler(BaseHandler):
