@@ -13,6 +13,8 @@ from models import Zephyr, Subscription, Account
 #from django.conf import settings
 #settings.configure(DATABASE_ENGINE='sqlite3', DATABASE_NAME='zephyrs.db')
 
+subFile = "/ZephyrPlus/.zephyrs.subs"
+
 class BaseHandler(tornado.web.RequestHandler):
     def get_current_user(self):
         username = self.get_secure_cookie("user", max_age_days=31)
@@ -177,6 +179,11 @@ class UserHandler(BaseHandler):
             sub = Subscription.objects.get_or_create(class_name=class_name, instance=instance, recipient=recipient)[0]
             if action == 'subscribe':
                 user.subscriptions.add(sub)
+                subString = sub.class_name + " " + sub.instance + " " + sub.recipient
+                proc = subprocess.Popen(["zctl"], stdin=subprocess.PIPE)
+                proc.stdin.write("file " + subFile + "\n")
+                proc.stdin.write("add " + subString + "\n")
+                proc.stdin.write("quit\n");
             else:
                 user.subscriptions.remove(sub)
             self.set_header('Content-Type', 'text/plain')
