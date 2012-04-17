@@ -22,12 +22,12 @@ class Subscription(models.Model):
 	recipient = models.CharField(max_length=20)
 
 	def get_filter(self):
-		zephyrs = Zephyr.objects.filter(dst__class_name=self.class_name)
-		if self.instance != '*':
-			zephyrs = zephyrs.filter(dst__instance=self.instance)
-		if self.recipient != '*':
-			zephyrs = zephyrs.filter(dst__recipient=self.recipient)
-		return zephyrs
+            q = models.Q(dst__class_name=self.class_name)
+            if self.instance != '*':
+                q &= models.Q(dst__instance=self.instance)
+            if self.recipient != '*':
+                q &= models.Q(dst__recipient=self.recipient)
+            return q
 
 	def match(self,zephyr):
 		if self.class_name != zephyr.dst.class_name:
@@ -48,6 +48,19 @@ class Subscription(models.Model):
 class Account(models.Model):
 	username = models.CharField(max_length=20,primary_key=True)
 	subscriptions = models.ManyToManyField(Subscription)
+	
+	def get_filter(self):
+            q = models.Q()
+            for sub in self.subscriptions.all():
+                q |= sub.get_filter()
+            return q
+	
+	def match(self, zephyr):
+            for sub in self.subscriptions.all():
+                if sub.match(zephyr):
+                    return True
+            return False
+	
 	class Meta:
 		app_label = APPLICATION_NAME
 		db_table = 'chat_account'

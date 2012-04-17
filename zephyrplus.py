@@ -75,21 +75,23 @@ class ChatUpdateHandler(BaseHandler):
 	@tornado.web.asynchronous
 	@tornado.web.authenticated
 	def get(self, *args, **kwargs):
-		class_name=self.get_argument('class')
+		class_name=self.get_argument('class', None)
 		instance = self.get_argument('instance', "*")
 		recipient = self.get_argument('recipient', "*")
 		startdate = self.get_argument('startdate', "0") # change later to 2 weeks ago
 		enddate = self.get_argument('enddate', str(1000*2**35)) # if longpolling, should not have end date
 		longpoll = self.get_argument('longpoll', "False")
 		#TODO: do input validation on arguments
-		sub = Subscription(class_name=class_name, instance=instance, recipient=recipient)
+		if class_name is not None:
+                    sub = Subscription(class_name=class_name, instance=instance, recipient=recipient)
+                else:
+                    sub = self.current_user
 		print('\n');
 		print sub
-		print sub.get_filter()
 		print "startdate:" + str(datetime.datetime.fromtimestamp(float(startdate)/1000))
 		print "enddate:" + str(datetime.datetime.fromtimestamp(float(enddate)/1000))
 
-		zephyrs = sub.get_filter().filter(date__gt=datetime.datetime.fromtimestamp(float(startdate)/1000),
+		zephyrs = Zephyr.objects.filter(sub.get_filter(), date__gt=datetime.datetime.fromtimestamp(float(startdate)/1000),
 										  date__lt=datetime.datetime.fromtimestamp(float(enddate)/1000))
 
 		if len(zephyrs) == 0 and longpoll.lower() == "true":
