@@ -179,6 +179,8 @@ a:visited
 {
     padding: 0px 2px 0px 34px;
     margin: 0px -18px 0px -18px;
+    font-family: inherit;
+    font-size: inherit;
 }
 /*
 .message_body:hover

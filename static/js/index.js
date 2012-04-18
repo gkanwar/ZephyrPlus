@@ -376,7 +376,7 @@ var createMessage = function(message)
     header.append(header_class).append(" / ")
 	.append(header_instance).append(" / ")
 	.append(sender_text);
-    var body = $("<div class='message_body'/>").text(message_text);
+    var body = $("<pre class='message_body'/>").text(message_text);
     message_entry.append(header).append(body);
     return message_entry
 }
