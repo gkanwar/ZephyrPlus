@@ -163,7 +163,7 @@ var personals = [
         api.classDict = {};
         api.instances = [];
         api.messages = [];
-        api.last_messaged = 0;
+        api.last_messaged = new Date() - 3*24*60*60*1000;
         
         function procMessages(messages){
             for(var n=0; n<messages.length; n++){
