@@ -8,6 +8,7 @@ class Zephyr(models.Model):
 	sender = models.CharField(max_length=20)
 	date = models.DateTimeField()
 	dst = models.ForeignKey('Subscription')
+	signature = models.TextField(blank=True, null=True)
 
 	class Meta:
 		app_label = APPLICATION_NAME

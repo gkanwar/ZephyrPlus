@@ -117,6 +117,10 @@ a:visited
 {
     background-color: #575757;
 }
+.missed_messages
+{
+    font-weight: bold;
+}
 
 /* Main chat area properties */
 #chatarea

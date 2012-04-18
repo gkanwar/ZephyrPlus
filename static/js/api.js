@@ -173,7 +173,8 @@ var personals = [
                     parent_instance: findInstance(messages[n].instance, messages[n].class),
                     sender: messages[n].sender,
                     timestamp: new Date(messages[n].date),
-                    message_body: messages[n].message
+                    message_body: messages[n].message,
+                    signature: messages[n].signature
                 }
                 if(messages[n].parent_class.last_messaged < messages[n].timestamp)
                     messages[n].parent_class.last_messaged = messages[n].timestamp;
@@ -189,13 +190,13 @@ var personals = [
                 api.onzephyr(messages);
         }
         
-        function getSubbedMessages(){
+        function getSubbedMessages(longpoll){
             $.get("/chat", {
                 startdate: api.last_messaged-0,
-                longpoll: true
+                longpoll: longpoll
             }, function(messages){
                 procMessages(messages);
-                getSubbedMessages();
+                getSubbedMessages(true);
             }, "json").error(api.onerror);
         }
         
@@ -257,7 +258,7 @@ var personals = [
             api.ready = true;
             if(api.onready)
                 api.onready();
-            getSubbedMessages();
+            getSubbedMessages(false);
         }, "json").error(api.onerror);
         
         function checkReady(){

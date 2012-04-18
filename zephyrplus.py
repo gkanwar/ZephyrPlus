@@ -118,7 +118,8 @@ class ChatUpdateHandler(BaseHandler):
                             'date': totalSeconds,
                             'class': zephyr.dst.class_name,
                             'instance': zephyr.dst.instance,
-                            'recipient': zephyr.dst.recipient
+                            'recipient': zephyr.dst.recipient,
+                            'signature': zephyr.signature
                         }
                 response.append(values)
             self.set_header('Content-Type', 'text/plain')

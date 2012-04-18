@@ -24,6 +24,14 @@ $(document).ready(function()
 				    fillButtonArea();
 				});
 
+    //Dropdown 'class' header loads all classes upon clicking.
+    $("#classestitleheader")
+	.click(function()
+	       {
+		   fillMessagesByClass();
+		   fillButtonArea();
+	       })
+	.css("cursor", "pointer");
 
     // Create the API object and define the callbacks
     api = new ZephyrAPI();
@@ -64,8 +72,6 @@ $(document).ready(function()
 		// Add the zephyr to our view
 		var messageEntry = createMessage(curZephyr);
 		$("#messages").append(messageEntry);
-		// Scroll to the bottom of the messages div
-		$("#messages").animate({ scrollTop: $("#messages").prop("scrollHeight") }, 1000);
 	    }
 	    // If we're in the personal view, we don't do this!
 	    else if (!needsToBeSetup && curView == 1)
@@ -78,12 +84,19 @@ $(document).ready(function()
 		addMissedMessage(curZephyr);
 	    }
 	}
-	
+
+	// Scroll to the bottom of the messages div
+	$("#messages").animate({ scrollTop: $("#messages").prop("scrollHeight") }, 1000);
+
+	//Load logged in username
+	$("#logged_user")
+	    .text(api.username);
+
+	// Update the missed messages counters
 	updateMissedMessages();
 
 	needsToBeSetup = false;
     };
-
 
     // Setting the form submission handler
     $("#chatsend").submit(
@@ -100,6 +113,11 @@ $(document).ready(function()
 	    if (instanceId == "new")
 	    {
 		instanceText = $(this).find("#instancetext").val();
+		if (instanceText == "")
+		{
+		    alert('Please enter an instance (subject) for your message!');
+		    return false;
+		}
 	    }
 	    else
 	    {
@@ -148,7 +166,14 @@ $(document).ready(function()
 	    }
 	}
     );
+
+
+
+
 });
+
+
+
 
 var addMissedMessage = function(message)
 {
@@ -177,7 +202,13 @@ var updateMissedMessages = function()
 
 var updateClassMissedMessages = function(classObj)
 {
-    var numMissed = classObj.missedMessages.length;
+    // Compute the number of missed messages in the class
+    var numMissed = 0;
+    for (var i = 0; i < classObj.instances.length; i++)
+    {
+	numMissed += classObj.instances[i].missedMessages.length;
+    }
+
     if (numMissed != 0)
     {
 	$("#classes_entry_id_"+classObj.id)
@@ -196,7 +227,9 @@ var updateClassMissedMessages = function(classObj)
 
 var updateInstanceMissedMessages = function(instanceObj)
 {
+    // Get the number of missed messages in the instance
     var numMissed = instanceObj.missedMessages.length;
+
     if (numMissed != 0)
     {
 	$("#instances_entry_id_"+instanceObj.id)
@@ -269,6 +302,7 @@ var fillClasses = function()
 	     var class_name = $("<span/>")
 		 .text(curClass.name)
 		 .addClass("class_text")
+		 .css("cursor", "pointer")
 		 .css("color", curClass.color);
 	     ul.append(class_entry);
 	     class_entry.append(class_entry_div);
@@ -289,6 +323,7 @@ var fillClasses = function()
 			  .addClass("instance_id_"+curInstance.id)
 			  .addClass("instances_entry")
 			  .css("color", curInstance.color)
+			  .css("cursor", "pointer")
 			  .click(function()
 				 {
 				     fillMessagesByClass(curClass.id, curInstance.id);
@@ -317,6 +352,7 @@ var createMessage = function(message)
     var header_class = $("<span />")
 	.addClass("class_id_"+classObj.id)
 	.css("color", classObj.color)
+        .css("cursor", "pointer")
 	.text(classObj.name)
 	.click(function()
 	       {
@@ -326,6 +362,7 @@ var createMessage = function(message)
     var header_instance = $("<span />")
 	.addClass("instance_id_"+instanceObj.id)
 	.css("color", instanceObj.color)
+        .css("cursor", "pointer")
 	.text(instanceObj.name)
 	.click(function()
 	       {
@@ -342,13 +379,16 @@ var createMessage = function(message)
 
 var fillMessagesByClass = function(class_id, instance_id)
 {
-	// Set global variables
-	curClass = class_id;
-	curInstance = instance_id;
-	curView = 0;
+    // Set global variables
+    curClass = class_id;
+    classObj = api.classes[class_id];
+    curInstance = instance_id;
+    instanceObj = api.instances[instance_id];
+    curView = 0;
 	
     var allClassesHeader = $("<span/>")
 	.text("all classes")
+	.css("cursor", "pointer")
 	.click(function()
 	       {
 		   fillMessagesByClass();
@@ -366,6 +406,7 @@ var fillMessagesByClass = function(class_id, instance_id)
 	var headerText_class = $("<span />")
 	    .addClass("class_id_"+api.classes[class_id].name)
 	    .text(api.classes[class_id].name)
+	    .css("cursor", "pointer")
 	    .click(function()
 		   {
 		       fillMessagesByClass(class_id);
@@ -375,20 +416,31 @@ var fillMessagesByClass = function(class_id, instance_id)
     	// Instance is defined
 	if (typeof(instance_id) != 'undefined')
 	{
-//	    headerText += " > " + instances[instance_id].name;
+	    // Clear missed messages for this instance
+	    instanceObj.missedMessages = [];
+	    updateClassMissedMessages(classObj);
+	    updateInstanceMissedMessages(instanceObj);
+
 	    var headerText_instance = $("<span />")
-		.addClass("instance_id_"+api.instances[instance_id].name)
-		.text(api.instances[instance_id].name)
+		.addClass("instance_id_"+instanceObj.name)
+		.text(instanceObj.name)
+		.css("cursor", "pointer")
 		.click(function()
 		       {
 			   fillMessagesByClass(class_id, instance_id);
 			   fillButtonArea(class_id, instance_id);
 		       });
 	    headerText.append(" > ").append(headerText_instance);
-	    messagesOut = api.instances[instance_id].messages;
+	    messagesOut = instanceObj.messages;
 	}
 	else
 	{
+	    // Clear missed messages for the class
+	    for (var i = 0; i < classObj.instances.length; i++)
+	    {
+		classObj.instances[i].missedMessages = [];
+	    }
+	    updateClassMissedMessages(api.classes[class_id]);
 	    messagesOut = api.classes[class_id].messages;
 	}
     }
@@ -408,6 +460,9 @@ var fillMessagesByClass = function(class_id, instance_id)
 	    $("#messages").append(message_entry);
 	})();
     }
+
+    // Scroll to the bottom of the messages div
+    $("#messages").prop({ scrollTop: $("#messages").prop("scrollHeight") });
     
     $("#chatheader").text(headerText);
 };
@@ -504,6 +559,16 @@ var fillInstancesDropDown = function(instance_id)
 	.attr("id", "option_instance_id_new")
 	.text("New instance");
     $("#instancedropdown").append(option);
+
+    // Check for the new instance option being selected
+    if ($("#instancedropdown").val() == "new")
+    {
+	$("#instancetext").show();
+    }
+    else
+    {
+	$("#instancetext").hide();
+    }
 
     // If there's a particular default instance, make it selected
     if (typeof(instance_id) != 'undefined')
