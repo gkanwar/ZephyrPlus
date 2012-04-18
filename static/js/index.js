@@ -102,6 +102,11 @@ $(document).ready(function()
 	    if (instanceId == "new")
 	    {
 		instanceText = $(this).find("#instancetext").val();
+		if (instanceText == "")
+		{
+		    alert('Please enter an instance (subject) for your message!');
+		    return false;
+		}
 	    }
 	    else
 	    {
