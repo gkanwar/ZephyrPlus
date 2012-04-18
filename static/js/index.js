@@ -510,6 +510,16 @@ var fillInstancesDropDown = function(instance_id)
 	.text("New instance");
     $("#instancedropdown").append(option);
 
+    // Check for the new instance option being selected
+    if ($("#instancedropdown").val() == "new")
+    {
+	$("#instancetext").show();
+    }
+    else
+    {
+	$("#instancetext").hide();
+    }
+
     // If there's a particular default instance, make it selected
     if (typeof(instance_id) != 'undefined')
     {
