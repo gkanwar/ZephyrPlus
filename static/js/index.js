@@ -24,6 +24,15 @@ $(document).ready(function()
 				    fillButtonArea();
 				});
 
+    $("#classestitleheader")
+	.click(function()
+	       {
+		   fillMessagesByClass();
+		   fillButtonArea();
+	       })
+	.css("cursor", "pointer");
+
+
 
     // Create the API object and define the callbacks
     api = new ZephyrAPI();
@@ -64,8 +73,6 @@ $(document).ready(function()
 		// Add the zephyr to our view
 		var messageEntry = createMessage(curZephyr);
 		$("#messages").append(messageEntry);
-		// Scroll to the bottom of the messages div
-		$("#messages").animate({ scrollTop: $("#messages").prop("scrollHeight") }, 1000);
 	    }
 	    // If we're in the personal view, we don't do this!
 	    else if (!needsToBeSetup && curView == 1)
@@ -78,7 +85,11 @@ $(document).ready(function()
 		addMissedMessage(curZephyr);
 	    }
 	}
-	
+
+	// Scroll to the bottom of the messages div
+	$("#messages").animate({ scrollTop: $("#messages").prop("scrollHeight") }, 1000);
+
+	// Update the missed messages counters
 	updateMissedMessages();
 
 	needsToBeSetup = false;
@@ -269,6 +280,7 @@ var fillClasses = function()
 	     var class_name = $("<span/>")
 		 .text(curClass.name)
 		 .addClass("class_text")
+		 .css("cursor", "pointer")
 		 .css("color", curClass.color);
 	     ul.append(class_entry);
 	     class_entry.append(class_entry_div);
@@ -289,6 +301,7 @@ var fillClasses = function()
 			  .addClass("instance_id_"+curInstance.id)
 			  .addClass("instances_entry")
 			  .css("color", curInstance.color)
+			  .css("cursor", "pointer")
 			  .click(function()
 				 {
 				     fillMessagesByClass(curClass.id, curInstance.id);
@@ -317,6 +330,7 @@ var createMessage = function(message)
     var header_class = $("<span />")
 	.addClass("class_id_"+classObj.id)
 	.css("color", classObj.color)
+        .css("cursor", "pointer")
 	.text(classObj.name)
 	.click(function()
 	       {
@@ -326,6 +340,7 @@ var createMessage = function(message)
     var header_instance = $("<span />")
 	.addClass("instance_id_"+instanceObj.id)
 	.css("color", instanceObj.color)
+        .css("cursor", "pointer")
 	.text(instanceObj.name)
 	.click(function()
 	       {
@@ -342,13 +357,14 @@ var createMessage = function(message)
 
 var fillMessagesByClass = function(class_id, instance_id)
 {
-	// Set global variables
-	curClass = class_id;
-	curInstance = instance_id;
-	curView = 0;
+    // Set global variables
+    curClass = class_id;
+    curInstance = instance_id;
+    curView = 0;
 	
     var allClassesHeader = $("<span/>")
 	.text("all classes")
+	.css("cursor", "pointer")
 	.click(function()
 	       {
 		   fillMessagesByClass();
@@ -366,6 +382,7 @@ var fillMessagesByClass = function(class_id, instance_id)
 	var headerText_class = $("<span />")
 	    .addClass("class_id_"+api.classes[class_id].name)
 	    .text(api.classes[class_id].name)
+	    .css("cursor", "pointer")
 	    .click(function()
 		   {
 		       fillMessagesByClass(class_id);
@@ -379,6 +396,7 @@ var fillMessagesByClass = function(class_id, instance_id)
 	    var headerText_instance = $("<span />")
 		.addClass("instance_id_"+api.instances[instance_id].name)
 		.text(api.instances[instance_id].name)
+		.css("cursor", "pointer")
 		.click(function()
 		       {
 			   fillMessagesByClass(class_id, instance_id);
@@ -408,6 +426,9 @@ var fillMessagesByClass = function(class_id, instance_id)
 	    $("#messages").append(message_entry);
 	})();
     }
+
+    // Scroll to the bottom of the messages div
+    $("#messages").prop({ scrollTop: $("#messages").prop("scrollHeight") });
     
     $("#chatheader").text(headerText);
 };
@@ -504,6 +525,16 @@ var fillInstancesDropDown = function(instance_id)
 	.attr("id", "option_instance_id_new")
 	.text("New instance");
     $("#instancedropdown").append(option);
+
+    // Check for the new instance option being selected
+    if ($("#instancedropdown").val() == "new")
+    {
+	$("#instancetext").show();
+    }
+    else
+    {
+	$("#instancetext").hide();
+    }
 
     // If there's a particular default instance, make it selected
     if (typeof(instance_id) != 'undefined')
