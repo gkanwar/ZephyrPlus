@@ -184,7 +184,13 @@ var updateMissedMessages = function()
 
 var updateClassMissedMessages = function(classObj)
 {
-    var numMissed = classObj.missedMessages.length;
+    // Compute the number of missed messages in the class
+    var numMissed = 0;
+    for (var i = 0; i < classObj.instances.length; i++)
+    {
+	numMissed += classObj.instances[i].missedMessages.length;
+    }
+
     if (numMissed != 0)
     {
 	$("#classes_entry_id_"+classObj.id)
@@ -203,7 +209,9 @@ var updateClassMissedMessages = function(classObj)
 
 var updateInstanceMissedMessages = function(instanceObj)
 {
+    // Get the number of missed messages in the instance
     var numMissed = instanceObj.missedMessages.length;
+
     if (numMissed != 0)
     {
 	$("#instances_entry_id_"+instanceObj.id)
@@ -351,7 +359,9 @@ var fillMessagesByClass = function(class_id, instance_id)
 {
     // Set global variables
     curClass = class_id;
+    classObj = api.classes[class_id];
     curInstance = instance_id;
+    instanceObj = api.instances[instance_id];
     curView = 0;
 	
     var allClassesHeader = $("<span/>")
@@ -382,20 +392,30 @@ var fillMessagesByClass = function(class_id, instance_id)
     	// Instance is defined
 	if (typeof(instance_id) != 'undefined')
 	{
-//	    headerText += " > " + instances[instance_id].name;
+	    // Clear missed messages for this instance
+	    instanceObj.missedMessages = [];
+	    updateClassMissedMessages(classObj);
+	    updateInstanceMissedMessages(instanceObj);
+
 	    var headerText_instance = $("<span />")
-		.addClass("instance_id_"+api.instances[instance_id].name)
-		.text(api.instances[instance_id].name)
+		.addClass("instance_id_"+instanceObj.name)
+		.text(instanceObj.name)
 		.click(function()
 		       {
 			   fillMessagesByClass(class_id, instance_id);
 			   fillButtonArea(class_id, instance_id);
 		       });
 	    headerText.append(" > ").append(headerText_instance);
-	    messagesOut = api.instances[instance_id].messages;
+	    messagesOut = instanceObj.messages;
 	}
 	else
 	{
+	    // Clear missed messages for the class
+	    for (var i = 0; i < classObj.instances.length; i++)
+	    {
+		classObj.instances[i].missedMessages = [];
+	    }
+	    updateClassMissedMessages(api.classes[class_id]);
 	    messagesOut = api.classes[class_id].messages;
 	}
     }
