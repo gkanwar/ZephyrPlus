@@ -140,11 +140,12 @@ $(document).ready(function()
     );
 
     // Add class by clicking on "+"
-    $("#add_class").click(
+    $("#add_class")
+	.css("cursor","pointer")
+	.click(
 	function() {
 	    addZephyrClass();
-	}
-    );
+	});
 
     // Changes instances options on class selection change
     $("#classdropdown").change(
