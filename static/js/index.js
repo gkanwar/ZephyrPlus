@@ -24,6 +24,7 @@ $(document).ready(function()
 				    fillButtonArea();
 				});
 
+    //Dropdown 'class' header loads all classes upon clicking.
     $("#classestitleheader")
 	.click(function()
 	       {
@@ -31,8 +32,6 @@ $(document).ready(function()
 		   fillButtonArea();
 	       })
 	.css("cursor", "pointer");
-
-
 
     // Create the API object and define the callbacks
     api = new ZephyrAPI();
@@ -89,12 +88,15 @@ $(document).ready(function()
 	// Scroll to the bottom of the messages div
 	$("#messages").animate({ scrollTop: $("#messages").prop("scrollHeight") }, 1000);
 
+	//Load logged in username
+	$("#logged_user")
+	    .text(api.username);
+
 	// Update the missed messages counters
 	updateMissedMessages();
 
 	needsToBeSetup = false;
     };
-
 
     // Setting the form submission handler
     $("#chatsend").submit(
@@ -164,7 +166,14 @@ $(document).ready(function()
 	    }
 	}
     );
+
+
+
+
 });
+
+
+
 
 var addMissedMessage = function(message)
 {
@@ -346,6 +355,8 @@ var createMessage = function(message)
     var instanceObj = message.parent_instance;
     var sender_text = message.sender;
     var message_text = message.message_body;
+    var signature = message.signature;
+    var timestamp = message.timestamp;
     var message_entry = $("<div class='messages_entry'/>")
 	.click(function()
 	       {
@@ -372,6 +383,8 @@ var createMessage = function(message)
 		   fillMessagesByClass(classObj.id, instanceObj.id);
 		   fillButtonArea(classObj.id, instanceObj.id);
 	       });
+    if(signature)
+        sender_text+=" ("+signature+")";
     header.append(header_class).append(" / ")
 	.append(header_instance).append(" / ")
 	.append(sender_text);
