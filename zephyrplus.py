@@ -13,11 +13,15 @@ from models import Zephyr, Subscription, Account
 #from django.conf import settings
 #settings.configure(DATABASE_ENGINE='sqlite3', DATABASE_NAME='zephyrs.db')
 
+subFile = "/ZephyrPlus/.zephyrs.subs"
+
 class BaseHandler(tornado.web.RequestHandler):
     def get_current_user(self):
         username = self.get_secure_cookie("user", max_age_days=31)
         if username is not None:
-            return Account.objects.get_or_create(username=username)[0]
+            account = Account.objects.get_or_create(username=username)[0]
+            account.subscriptions.add(Subscription.objects.get_or_create(class_name="zephyrplus-lobby", instance="*", recipient="*")[0])
+            return account
         return None
 
 class MainPageHandler(BaseHandler):
@@ -175,6 +179,11 @@ class UserHandler(BaseHandler):
             sub = Subscription.objects.get_or_create(class_name=class_name, instance=instance, recipient=recipient)[0]
             if action == 'subscribe':
                 user.subscriptions.add(sub)
+                subString = sub.class_name + " " + sub.instance + " " + sub.recipient
+                proc = subprocess.Popen(["zctl"], stdin=subprocess.PIPE)
+                proc.stdin.write("file " + subFile + "\n")
+                proc.stdin.write("add " + subString + "\n")
+                proc.stdin.write("quit\n");
             else:
                 user.subscriptions.remove(sub)
             self.set_header('Content-Type', 'text/plain')
@@ -189,7 +198,7 @@ settings = {
     "cookie_secret": "rS24mrw/2iCQUSwtuptW8p1jbidrs5eqV3hdPuJ8894L",
     "login_url": "/login",
     "xsrf_cookies": False,
-    "debug": True,
+    "debug": False,
 }
 
 application = tornado.web.Application([
