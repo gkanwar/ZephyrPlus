@@ -24,6 +24,15 @@ $(document).ready(function()
 				    fillButtonArea();
 				});
 
+    $("#classestitleheader")
+	.click(function()
+	       {
+		   fillMessagesByClass();
+		   fillButtonArea();
+	       })
+	.css("cursor", "pointer");
+
+
 
     // Create the API object and define the callbacks
     api = new ZephyrAPI();
