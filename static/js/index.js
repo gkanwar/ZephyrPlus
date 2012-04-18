@@ -321,6 +321,8 @@ var createMessage = function(message)
     var instanceObj = message.parent_instance;
     var sender_text = message.sender;
     var message_text = message.message_body;
+    var signature = message.signature;
+    var timestamp = message.timestamp;
     var message_entry = $("<div class='messages_entry'/>")
 	.click(function()
 	       {
@@ -347,6 +349,8 @@ var createMessage = function(message)
 		   fillMessagesByClass(classObj.id, instanceObj.id);
 		   fillButtonArea(classObj.id, instanceObj.id);
 	       });
+    if(signature)
+        sender_text+=" ("+signature+")";
     header.append(header_class).append(" / ")
 	.append(header_instance).append(" / ")
 	.append(sender_text);
