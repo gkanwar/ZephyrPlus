@@ -466,6 +466,14 @@ var fillMessagesByClass = function(class_id, instance_id)
 	messagesOut = api.messages;
     }
 
+    // Sort the messages
+    messagesOut.sort(function(m1, m2)
+		     {
+			 if (m1.timestamp > m2.timestamp) { return 1; }
+			 else if (m1.timestamp < m2.timestamp) { return -1; }
+			 else { return 0; }
+		     });
+
     // Actually fill in the messages
     $("#messages").html('');
     for (var messageNum in messagesOut)
