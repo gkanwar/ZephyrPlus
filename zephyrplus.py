@@ -17,7 +17,8 @@ subFile = "/ZephyrPlus/.zephyrs.subs"
 
 class BaseHandler(tornado.web.RequestHandler):
     def get_current_user(self):
-        username = self.get_secure_cookie("user", max_age_days=31)
+        #username = self.get_secure_cookie("user", max_age_days=31)
+        username = self.get_secure_cookie("user")
         if username is not None:
             account = Account.objects.get_or_create(username=username)[0]
             account.subscriptions.add(Subscription.objects.get_or_create(class_name="zephyrplus-lobby", instance="*", recipient="*")[0])
@@ -93,11 +94,6 @@ class ChatUpdateHandler(BaseHandler):
                     sub = Subscription(class_name=class_name, instance=instance, recipient=recipient)
                 else:
                     sub = self.current_user
-		print('\n');
-		print sub
-		print "startdate:" + str(datetime.datetime.fromtimestamp(float(startdate)/1000))
-		print "enddate:" + str(datetime.datetime.fromtimestamp(float(enddate)/1000))
-
 		zephyrs = Zephyr.objects.filter(sub.get_filter(), date__gt=datetime.datetime.fromtimestamp(float(startdate)/1000),
 										  date__lt=datetime.datetime.fromtimestamp(float(enddate)/1000))
 
