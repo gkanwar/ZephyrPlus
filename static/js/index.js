@@ -24,6 +24,7 @@ $(document).ready(function()
 				    fillButtonArea();
 				});
 
+    //Dropdown 'class' header loads all classes upon clicking.
     $("#classestitleheader")
 	.click(function()
 	       {
@@ -31,8 +32,6 @@ $(document).ready(function()
 		   fillButtonArea();
 	       })
 	.css("cursor", "pointer");
-
-
 
     // Create the API object and define the callbacks
     api = new ZephyrAPI();
@@ -89,12 +88,15 @@ $(document).ready(function()
 	// Scroll to the bottom of the messages div
 	$("#messages").animate({ scrollTop: $("#messages").prop("scrollHeight") }, 1000);
 
+	//Load logged in username
+	$("#logged_user")
+	    .text(api.username);
+
 	// Update the missed messages counters
 	updateMissedMessages();
 
 	needsToBeSetup = false;
     };
-
 
     // Setting the form submission handler
     $("#chatsend").submit(
@@ -111,6 +113,11 @@ $(document).ready(function()
 	    if (instanceId == "new")
 	    {
 		instanceText = $(this).find("#instancetext").val();
+		if (instanceText == "")
+		{
+		    alert('Please enter an instance (subject) for your message!');
+		    return false;
+		}
 	    }
 	    else
 	    {
@@ -159,7 +166,14 @@ $(document).ready(function()
 	    }
 	}
     );
+
+
+
+
 });
+
+
+
 
 var addMissedMessage = function(message)
 {
@@ -188,7 +202,13 @@ var updateMissedMessages = function()
 
 var updateClassMissedMessages = function(classObj)
 {
-    var numMissed = classObj.missedMessages.length;
+    // Compute the number of missed messages in the class
+    var numMissed = 0;
+    for (var i = 0; i < classObj.instances.length; i++)
+    {
+	numMissed += classObj.instances[i].missedMessages.length;
+    }
+
     if (numMissed != 0)
     {
 	$("#classes_entry_id_"+classObj.id)
@@ -207,7 +227,9 @@ var updateClassMissedMessages = function(classObj)
 
 var updateInstanceMissedMessages = function(instanceObj)
 {
+    // Get the number of missed messages in the instance
     var numMissed = instanceObj.missedMessages.length;
+
     if (numMissed != 0)
     {
 	$("#instances_entry_id_"+instanceObj.id)
@@ -363,7 +385,9 @@ var fillMessagesByClass = function(class_id, instance_id)
 {
     // Set global variables
     curClass = class_id;
+    classObj = api.classes[class_id];
     curInstance = instance_id;
+    instanceObj = api.instances[instance_id];
     curView = 0;
 	
     var allClassesHeader = $("<span/>")
@@ -396,10 +420,14 @@ var fillMessagesByClass = function(class_id, instance_id)
     	// Instance is defined
 	if (typeof(instance_id) != 'undefined')
 	{
-//	    headerText += " > " + instances[instance_id].name;
+	    // Clear missed messages for this instance
+	    instanceObj.missedMessages = [];
+	    updateClassMissedMessages(classObj);
+	    updateInstanceMissedMessages(instanceObj);
+
 	    var headerText_instance = $("<span />")
-		.addClass("instance_id_"+api.instances[instance_id].name)
-		.text(api.instances[instance_id].name)
+		.addClass("instance_id_"+instanceObj.name)
+		.text(instanceObj.name)
 		.css("cursor", "pointer")
 		.click(function()
 		       {
@@ -407,10 +435,16 @@ var fillMessagesByClass = function(class_id, instance_id)
 			   fillButtonArea(class_id, instance_id);
 		       });
 	    headerText.append(" > ").append(headerText_instance);
-	    messagesOut = api.instances[instance_id].messages;
+	    messagesOut = instanceObj.messages;
 	}
 	else
 	{
+	    // Clear missed messages for the class
+	    for (var i = 0; i < classObj.instances.length; i++)
+	    {
+		classObj.instances[i].missedMessages = [];
+	    }
+	    updateClassMissedMessages(api.classes[class_id]);
 	    messagesOut = api.classes[class_id].messages;
 	}
     }
