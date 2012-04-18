@@ -24,6 +24,7 @@ $(document).ready(function()
 				    fillButtonArea();
 				});
 
+    //Dropdown 'class' header loads all classes upon clicking.
     $("#classestitleheader")
 	.click(function()
 	       {
@@ -31,8 +32,6 @@ $(document).ready(function()
 		   fillButtonArea();
 	       })
 	.css("cursor", "pointer");
-
-
 
     // Create the API object and define the callbacks
     api = new ZephyrAPI();
@@ -89,12 +88,15 @@ $(document).ready(function()
 	// Scroll to the bottom of the messages div
 	$("#messages").animate({ scrollTop: $("#messages").prop("scrollHeight") }, 1000);
 
+	//Load logged in username
+	$("#logged_user")
+	    .text(api.username);
+
 	// Update the missed messages counters
 	updateMissedMessages();
 
 	needsToBeSetup = false;
     };
-
 
     // Setting the form submission handler
     $("#chatsend").submit(
@@ -159,7 +161,14 @@ $(document).ready(function()
 	    }
 	}
     );
+
+
+
+
 });
+
+
+
 
 var addMissedMessage = function(message)
 {
