@@ -189,13 +189,13 @@ var personals = [
                 api.onzephyr(messages);
         }
         
-        function getSubbedMessages(){
+        function getSubbedMessages(longpoll){
             $.get("/chat", {
                 startdate: api.last_messaged-0,
-                longpoll: true
+                longpoll: longpoll
             }, function(messages){
                 procMessages(messages);
-                getSubbedMessages();
+                getSubbedMessages(true);
             }, "json").error(api.onerror);
         }
         
@@ -257,7 +257,7 @@ var personals = [
             api.ready = true;
             if(api.onready)
                 api.onready();
-            getSubbedMessages();
+            getSubbedMessages(false);
         }, "json").error(api.onerror);
         
         function checkReady(){
