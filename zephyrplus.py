@@ -118,7 +118,8 @@ class ChatUpdateHandler(BaseHandler):
                             'date': totalSeconds,
                             'class': zephyr.dst.class_name,
                             'instance': zephyr.dst.instance,
-                            'recipient': zephyr.dst.recipient
+                            'recipient': zephyr.dst.recipient,
+                            'signature': zephyr.signature
                         }
                 response.append(values)
             self.set_header('Content-Type', 'text/plain')
@@ -198,7 +199,7 @@ settings = {
     "cookie_secret": "rS24mrw/2iCQUSwtuptW8p1jbidrs5eqV3hdPuJ8894L",
     "login_url": "/login",
     "xsrf_cookies": False,
-    "debug": False,
+    "debug": True,
 }
 
 application = tornado.web.Application([
