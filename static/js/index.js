@@ -263,6 +263,12 @@ var fillClasses = function()
 {
     var root = $("#classes_anchor");
     var ul = $("<ul></ul>");
+    api.classes.sort(function(c1, c2)
+		     {
+			 if (c1.name > c2.name) { return 1; }
+			 else if (c1.name < c2.name) { return -1; }
+			 else { return 0; }
+		     });
     for (var i = 0; i < api.classes.length; i++)
     {
 /*	if (i == maxClasses)
@@ -302,6 +308,12 @@ var fillClasses = function()
 	     var instances_ul = $("<ul class='dropdown' style='display:none'/>");
 	     class_entry.append(instances_ul);
 	     
+	     curClass.instances.sort(function(i1, i2)
+				     {
+					 if (i1.name > i2.name) { return 1; }
+					 else if (i1.name < i2.name) { return -1; }
+					 else { return 0; }
+				     });
 	     for (var j = 0; j < curClass.instances.length; j++)
 	     {
 		 // Call everything in its own function so that the variables scope right
