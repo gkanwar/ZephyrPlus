@@ -173,7 +173,8 @@ var personals = [
                     parent_instance: findInstance(messages[n].instance, messages[n].class),
                     sender: messages[n].sender,
                     timestamp: new Date(messages[n].date),
-                    message_body: messages[n].message
+                    message_body: messages[n].message,
+                    signature: messages[n].signature
                 }
                 if(messages[n].parent_class.last_messaged < messages[n].timestamp)
                     messages[n].parent_class.last_messaged = messages[n].timestamp;

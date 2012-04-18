@@ -64,5 +64,5 @@ endcase
 #  print $body
 #  print $class $instance $recipient $sender $message"\n"
 #  put
-exec "/usr/bin/python2" "./insert_zephyr.py" $class $instance $recipient $sender $body
+exec "/usr/bin/python2" "./insert_zephyr.py" $class $instance $recipient $sender $body $signature
 exit
