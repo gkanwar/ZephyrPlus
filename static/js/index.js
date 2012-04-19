@@ -598,17 +598,20 @@ var fillInstancesDropDown = function(instance_id)
 var addZephyrClass = function()
 {
     var new_class_name = prompt("Please enter the class you want to add.");
-    api.addSubscription(new_class_name);
-    api.classes.push(
-	{
-	    id:api.classes.length,
-	    name: new_class_name,
-	    last_messaged: null,
-	    color: hashStringToColor(new_class_name),
-	    instances: [],
-	    messages: []
-	});
-    fillClasses();
+    new_class_name = new_class_name.replace(/^\s+|\s+$/g, '');
+    if(new_class_name != "" && api.classDict[new_class_name] == undefined) {
+        api.addSubscription(new_class_name);
+        api.classes.push(
+                {
+                    id:api.classes.length,
+            name: new_class_name,
+            last_messaged: null,
+            color: hashStringToColor(new_class_name),
+            instances: [],
+            messages: []
+                });
+        fillClasses();
+    }
 };
 
 function hashStringToColor(str){
