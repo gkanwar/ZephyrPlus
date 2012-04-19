@@ -130,6 +130,9 @@ var personals = [
  *      api.addSubscription(class, instance, recipient, callback)
  *      api.removeSubscription(class, instance, recipient, callback)
  *      api.sendZephyr(message, class, instance, recipient, callback)
+ *      api.getClassById(id)
+ *      api.getInstanceById(id)
+ *      api.getMessageById(id)
  * 
  * Properties
  *      api.ready
@@ -164,6 +167,9 @@ var personals = [
         api.instances = [];
         api.messages = [];
         api.last_messaged = new Date() - 3*24*60*60*1000;
+        var classIdDict = {};
+        var instanceIdDict = {};
+        var messageIdDict = {};
         
         function procMessages(messages){
             for(var n=0; n<messages.length; n++){
@@ -185,6 +191,7 @@ var personals = [
                 messages[n].parent_class.messages.push(messages[n]);
                 messages[n].parent_instance.messages.push(messages[n]);
                 api.messages.push(messages[n]);
+                messageIdDict[messages[n].id] = messages[n];
             }
             if(api.onzephyr)
                 api.onzephyr(messages);
@@ -227,6 +234,7 @@ var personals = [
 		    missedMessages: []
                 }
                 api.classes.push(api.classDict[name]);
+                classIdDict[api.classDict[name].id] = api.classDict[name];
             }
             return api.classDict[name];
         }
@@ -245,6 +253,7 @@ var personals = [
                 }
                 parent.instances.push(parent.instanceDict[name]);
                 api.instances.push(parent.instanceDict[name]);
+                instanceIdDict[parent.instanceDict[name].id] = parent.instanceDict[name];
             }
             return parent.instanceDict[name];
         }
@@ -264,6 +273,18 @@ var personals = [
         function checkReady(){
             if(!api.ready)
                 throw new Error("ZephyrAPI not ready yet");
+        }
+        
+        api.getClassById = function(id){
+            return classIdDict[id];
+        }
+        
+        api.getInstanceById = function(id){
+            return instanceIdDict[id];
+        }
+        
+        api.getMessageById = function(id){
+            return messageIdDict[id];
         }
         
         api.addSubscription = function(className, instanceName, recipientName, callback){

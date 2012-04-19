@@ -106,7 +106,7 @@ $(document).ready(function()
 	    var messageText = messageTextArea.val();
 	    messageTextArea.val('');
 	    var classDropDown = $(this).find("#classdropdown");
-	    var classText = api.classes[classDropDown.val()].name;
+	    var classText = api.getClassById(classDropDown.val()).name;
 	    var instanceDropDown = $(this).find("#instancedropdown");
 	    var instanceId = instanceDropDown.val();
 	    var instanceText;
@@ -121,7 +121,7 @@ $(document).ready(function()
 	    }
 	    else
 	    {
-		instanceText = api.instances[instanceId].name;
+		instanceText = api.getInstanceById(instanceId).name;
 	    }
 
 	    $.post("/chat",
@@ -398,9 +398,9 @@ var fillMessagesByClass = function(class_id, instance_id)
 {
     // Set global variables
     curClass = class_id;
-    classObj = api.classes[class_id];
+    classObj = api.getClassById(class_id);
     curInstance = instance_id;
-    instanceObj = api.instances[instance_id];
+    instanceObj = api.getInstanceById(instance_id);
     curView = 0;
 	
     var allClassesHeader = $("<span/>")
@@ -421,8 +421,8 @@ var fillMessagesByClass = function(class_id, instance_id)
     {
 	//	headerText += " >  " + classes[class_id].name;
 	var headerText_class = $("<span />")
-	    .addClass("class_id_"+api.classes[class_id].name)
-	    .text(api.classes[class_id].name)
+	    .addClass("class_id_"+classObj.name)
+	    .text(classObj.name)
 	    .css("cursor", "pointer")
 	    .click(function()
 		   {
@@ -457,8 +457,8 @@ var fillMessagesByClass = function(class_id, instance_id)
 	    {
 		classObj.instances[i].missedMessages = [];
 	    }
-	    updateClassMissedMessages(api.classes[class_id]);
-	    messagesOut = api.classes[class_id].messages;
+	    updateClassMissedMessages(classObj);
+	    messagesOut = classObj.messages;
 	}
     }
     // No class selected
@@ -561,9 +561,9 @@ var fillInstancesDropDown = function(instance_id)
     // Clear the dropdown
     $("#instancedropdown").html('');
     // Loop through that class's instances and create an option for each one
-    for(var i = 0; i < api.classes[selectedClass].instances.length; i++)
+    for(var i = 0; i < api.getClassById(selectedClass).instances.length; i++)
     {
-	var curInstance = api.classes[selectedClass].instances[i];
+	var curInstance = api.getClassById(selectedClass).instances[i];
 	var option = $("<option/>")
 	    .val(curInstance.id)
 	    .attr("id", "option_instance_id_"+curInstance.id)
