@@ -218,6 +218,7 @@ var personals = [
                 longpoll: false
             }, function(messages){
                 procMessages(messages);
+                fillClasses();
             }, "json").error(api.onerror);
         }
         
