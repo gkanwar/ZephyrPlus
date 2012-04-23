@@ -49,7 +49,7 @@ body
     border:none;
     font-size:3em;
     font-family:monospace;
-   
+    cursor: pointer;
 }
 #abouthelp
 {
