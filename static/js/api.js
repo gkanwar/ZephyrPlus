@@ -204,7 +204,11 @@ var personals = [
             }, function(messages){
                 procMessages(messages);
                 getSubbedMessages(true);
-            }, "json").error(api.onerror);
+            }, "json").error(function(){
+                window.setTimeout(getSubbedMessages, 5000);
+                if(api.onerror)
+                    api.onerror();
+            });
         }
         
         function getOldMessages(sub, startdate, callback){
