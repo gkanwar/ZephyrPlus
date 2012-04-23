@@ -294,6 +294,10 @@ var fillClasses = function()
 	     var class_entry_div = $("<div/>")
 		 .attr("id", "classes_entry_id_"+curClass.id)
 		 .addClass("classes_entry")
+		 .hover(function()
+			{
+			    $(this).find(".remove_class").toggle();
+			})
 		 .click(function()
 			{
 			    fillMessagesByClass(curClass.id);
@@ -311,9 +315,28 @@ var fillClasses = function()
 		 .addClass("class_text")
 		 .css("cursor", "pointer")
 		 .css("color", curClass.color);
+	     var remove_class = $("<span/>")
+		 .text('x')
+		 .click(function()
+			{
+			    api.removeSubscription(curClass.name, undefined, undefined, 
+						   function()
+						   {
+						       console.log('Removed subscription, killing HTML: ');
+						       console.log($("#classes_entry_id_"+curClass.id));
+						       $("#classes_entry_id_"+curClass.id).remove();
+						   }
+						   );
+			    
+			})
+		 .css("display", "none")
+		 .addClass("remove_class");
 	     ul.append(class_entry);
 	     class_entry.append(class_entry_div);
-	     class_entry_div.append(dropdown_triangle).append(class_name);
+	     class_entry_div
+		 .append(dropdown_triangle)
+		 .append(class_name)
+		 .append(remove_class);
 	     
 	     var instances_ul = $("<ul class='dropdown' style='display:none'/>");
 	     class_entry.append(instances_ul);
@@ -612,7 +635,7 @@ var addZephyrClass = function()
 
     new_class_name = new_class_name.replace(/^\s+|\s+$/g, '');
     if(new_class_name != "" && api.classDict[new_class_name] == undefined) {
-        api.addSubscription(new_class_name, fillClasses);
+        api.addSubscription(new_class_name, undefined, undefined, fillClasses);
         fillClasses();
     }
 };
