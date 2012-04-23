@@ -129,7 +129,8 @@ a.tooltip:hover span
     font-weight: 700;
     font-size: 100%;
     color: #b5b5b5;
-    cursor: default;
+    cursor: pointer;
+    display: none;
 }
 .remove_class:hover
 {
@@ -144,10 +145,15 @@ a.tooltip:hover span
 {
     background-color: #575757;
 }
+.classes_entry:hover .remove_class
+{
+    display: inline;
+}
 .instances_entry
 {
     padding: 0px 7px 0px 60px;
     margin: 0px -7px 0px -60px;
+    cursor: pointer;
 }
 .instances_entry:hover
 {

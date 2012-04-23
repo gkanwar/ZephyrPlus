@@ -294,10 +294,6 @@ var fillClasses = function()
 	     var class_entry_div = $("<div/>")
 		 .attr("id", "classes_entry_id_"+curClass.id)
 		 .addClass("classes_entry")
-		 .hover(function()
-			{
-			    $(this).find(".remove_class").toggle();
-			})
 		 .click(function()
 			{
 			    fillMessagesByClass(curClass.id);
@@ -316,7 +312,7 @@ var fillClasses = function()
 		 .css("cursor", "pointer")
 		 .css("color", curClass.color);
 	     var remove_class = $("<span/>")
-		 .text('x')
+		 .text('X')
 		 .click(function(e)
 			{
 			    api.removeSubscription(curClass.name, undefined, undefined, 
@@ -329,7 +325,6 @@ var fillClasses = function()
 						   );
                             e.stopPropagation(); //Don't switch to the class after removing it
 			})
-		 .css("display", "none")
 		 .addClass("remove_class");
 	     ul.append(class_entry);
 	     class_entry.append(class_entry_div);
@@ -359,7 +354,6 @@ var fillClasses = function()
 			  .addClass("instance_id_"+curInstance.id)
 			  .addClass("instances_entry")
 			  .css("color", curInstance.color)
-			  .css("cursor", "pointer")
 			  .click(function()
 				 {
 				     fillMessagesByClass(curClass.id, curInstance.id);
