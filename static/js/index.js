@@ -389,10 +389,35 @@ var createMessage = function(message)
     header.append(header_class).append(" / ")
 	.append(header_instance).append(" / ")
 	.append(sender_text)
-        .append($("<span class='message_timestamp'/>").text(timestamp.toLocaleString()));
+        .append($("<span class='message_timestamp'/>").text(convertTime(timestamp)));
     var body = $("<pre class='message_body'/>").text(message_text);
     message_entry.append(header, body);
     return message_entry
+}
+
+function convertTime(timestamp)
+{
+    var month = timestamp.getMonth()
+    var day = timestamp.getDate()
+
+    var hours = timestamp.getHours()
+    var minutes = timestamp.getMinutes()
+
+    var suffix = "AM";
+    if (hours >= 12) {
+	suffix = "PM";
+	hours = hours - 12;
+    }
+
+    if (hours == 0) {
+	hours = 12;
+    }
+	
+    if (minutes < 10){
+	minutes = "0" + minutes
+    }
+
+    return month+"/"+day+" "+hours+":"+minutes+" "+suffix;
 }
 
 var fillMessagesByClass = function(class_id, instance_id)
