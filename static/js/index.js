@@ -317,7 +317,7 @@ var fillClasses = function()
 		 .css("color", curClass.color);
 	     var remove_class = $("<span/>")
 		 .text('x')
-		 .click(function()
+		 .click(function(e)
 			{
 			    api.removeSubscription(curClass.name, undefined, undefined, 
 						   function()
@@ -327,7 +327,7 @@ var fillClasses = function()
 						       $("#classes_entry_id_"+curClass.id).remove();
 						   }
 						   );
-			    
+                            e.stopPropagation(); //Don't switch to the class after removing it
 			})
 		 .css("display", "none")
 		 .addClass("remove_class");
