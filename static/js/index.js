@@ -379,6 +379,7 @@ var createMessage = function(message)
 	.click(function()
 	       {
 		   fillButtonArea(classObj.id, instanceObj.id);
+		   $("#messagetextarea").focus();
 	       });
     var header = $("<div class='message_header'/>");
     var header_class = $("<span />")
