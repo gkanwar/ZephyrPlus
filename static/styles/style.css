@@ -208,6 +208,18 @@ a.tooltip:hover span
     font-family: inherit;
     font-size: inherit;
 }
+.message_timestamp
+{
+    display: none;
+    text-align: right;
+    float: right;
+    font-size: small;
+    color: #A1A1A1;
+}
+.messages_entry:hover .message_timestamp
+{
+    display: inline;
+}
 /*
 .message_body:hover
 {

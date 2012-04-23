@@ -198,16 +198,22 @@ var personals = [
         }
         
         function getSubbedMessages(longpoll){
+            if(!longpoll)
+                longpoll=false;
             $.get("/chat", {
                 startdate: api.last_messaged-0,
                 longpoll: longpoll
             }, function(messages){
                 procMessages(messages);
                 getSubbedMessages(true);
-            }, "json").error(api.onerror);
+            }, "json").error(function(){
+                window.setTimeout(getSubbedMessages, 5000);
+                if(api.onerror)
+                    api.onerror();
+            });
         }
         
-        function getOldMessages(sub, startdate){
+        function getOldMessages(sub, startdate, callback){
             if(startdate == undefined)
                 startdate = new Date() - 1000*60*60*24;
             $.get("/chat", {
@@ -218,7 +224,8 @@ var personals = [
                 longpoll: false
             }, function(messages){
                 procMessages(messages);
-                fillClasses();
+                if(callback)
+                    callback();
             }, "json").error(api.onerror);
         }
         
@@ -302,9 +309,7 @@ var personals = [
             }, function(sub){
                 api.subscriptions.push(sub);
                 findClass(sub.class);
-                getOldMessages(sub);
-                if(callback)
-                    callback();
+                getOldMessages(sub, callback);
             }, "json").error(api.onerror);
         }
         

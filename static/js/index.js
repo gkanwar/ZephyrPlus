@@ -388,9 +388,10 @@ var createMessage = function(message)
         sender_text+=" ("+signature+")";
     header.append(header_class).append(" / ")
 	.append(header_instance).append(" / ")
-	.append(sender_text);
+	.append(sender_text)
+        .append($("<span class='message_timestamp'/>").text(timestamp.toLocaleString()));
     var body = $("<pre class='message_body'/>").text(message_text);
-    message_entry.append(header).append(body);
+    message_entry.append(header, body);
     return message_entry
 }
 
@@ -604,7 +605,7 @@ var addZephyrClass = function()
 
     new_class_name = new_class_name.replace(/^\s+|\s+$/g, '');
     if(new_class_name != "" && api.classDict[new_class_name] == undefined) {
-        api.addSubscription(new_class_name);
+        api.addSubscription(new_class_name, fillClasses);
         fillClasses();
     }
 };
