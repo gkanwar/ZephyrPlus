@@ -107,6 +107,7 @@ a.tooltip:hover span
     height:100%; 
     padding: 7px;
 /*    background-color: #2d2d2d;*/
+    text-shadow: #1c1c1c 0px 1px 0px;
 }
 #add_class
 {
@@ -176,6 +177,7 @@ a.tooltip:hover span
     color: #171717;
 /*    background-color: #c5c5c5;*/
     background-image:url(../img/noise_light_gray.png);
+    text-shadow: #f4f4f4 0px 1px 0px;
 }
 #messages
 {
@@ -189,6 +191,8 @@ a.tooltip:hover span
 /*    background-color: #171717;*/
     background-image: url(../img/broken_noise.png);
     color: #c5c5c5;
+/*    text-shadow: #0f0f0f 0px 1px 0px;*/
+    text-shadow: #1c1c1c 0px 1px 0px;
 }
 .messages_entry
 {
@@ -216,6 +220,18 @@ a.tooltip:hover span
     margin: 0px -18px 0px -18px;
     font-family: inherit;
     font-size: inherit;
+}
+.message_timestamp
+{
+    display: none;
+    text-align: right;
+    float: right;
+    font-size: small;
+    color: #A1A1A1;
+}
+.messages_entry:hover .message_timestamp
+{
+    display: inline;
 }
 /*
 .message_body:hover
@@ -250,6 +266,7 @@ a.tooltip:hover span
     height: 25px;
     float: right;
     margin-bottom: 3px;
+    text-shadow: #f4f4f4 0px 1px 0px;
 }
 /*
 #buttonarea input[type=submit]
@@ -321,16 +338,18 @@ li.classes_entry
 #site_links
 {
     float: right;
+    color: #1C1C1C;    
 }
 
 #logged_user
 {
     font-weight: 700;
+    color: #080808;
 }
 
 a:link
 {
-    color: #454545;
+    color: #1C1C1C;
     text-decoration:none;
 }
 

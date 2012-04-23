@@ -198,6 +198,8 @@ var personals = [
         }
         
         function getSubbedMessages(longpoll){
+            if(!longpoll)
+                longpoll=false;
             $.get("/chat", {
                 startdate: api.last_messaged-0,
                 longpoll: longpoll
