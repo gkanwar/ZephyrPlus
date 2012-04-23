@@ -19,6 +19,28 @@ a:visited
     color:#454545;
 }
 
+a:hover 
+{
+/*    background:#ffffff; */
+    text-decoration:none;
+} /*BG color is a must for IE6*/
+
+a.tooltip span 
+{
+    display:none; 
+/*    padding:2px 3px 30px 10px; */
+    margin-left:8px; 
+    width:100px;
+    font-size: medium;
+}
+
+a.tooltip:hover span
+{
+    display:inline; 
+    position:absolute; 
+    margin: -1px 0px 0px -105px;
+    color:#efefef;
+}
 
 /* Header properties */
 #header
@@ -54,7 +76,7 @@ a:visited
 }
 #dropdown p
 {
-    margin-top: 0px;
+    margin-top: -7px;
     margin-bottom: 0px;
 }
 #dropdown ul
@@ -89,7 +111,7 @@ a:visited
 #add_class
 {
     float:right;
-    margin: -4px 4px 5px 0px;
+    margin: -1px 0px 0px 0px;
     font-weight: 700;
     font-size: 150%;
     color: #B5B5B5;
@@ -179,6 +201,8 @@ a:visited
 {
     padding: 0px 2px 0px 34px;
     margin: 0px -18px 0px -18px;
+    font-family: inherit;
+    font-size: inherit;
 }
 /*
 .message_body:hover
