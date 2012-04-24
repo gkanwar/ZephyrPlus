@@ -309,7 +309,7 @@ var personals = [
             }, function(sub){
                 api.subscriptions.push(sub);
                 findClass(sub.class);
-                getOldMessages(sub, callback);
+                getOldMessages(sub, undefined, callback);
             }, "json").error(api.onerror);
         }
         

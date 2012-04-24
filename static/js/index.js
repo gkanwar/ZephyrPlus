@@ -656,7 +656,6 @@ var addZephyrClass = function()
     new_class_name = new_class_name.replace(/^\s+|\s+$/g, '');
     if(new_class_name != "" && api.classDict[new_class_name] == undefined) {
         api.addSubscription(new_class_name, undefined, undefined, fillClasses);
-        fillClasses();
     }
 };
 
