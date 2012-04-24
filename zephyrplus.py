@@ -5,6 +5,7 @@ import time
 import datetime
 import simplejson
 import subprocess
+import math
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 
 #import models
@@ -105,13 +106,12 @@ class ChatUpdateHandler(BaseHandler):
 	def write_zephyrs(self, zephyrs):
             response = []
             for zephyr in zephyrs:
-                td = zephyr.date - datetime.datetime.fromtimestamp(0)
-                totalSeconds = int((td.microseconds + (td.seconds + td.days*24*3600)*10**6) / 10.**6 * 1000)
+                totalMilliSeconds = int(math.ceil((time.mktime(zephyr.date.timetuple()) + zephyr.date.microsecond/1e6)*1000))
                 values = {
                             'id': zephyr.id,
                             'message': zephyr.message,
                             'sender': zephyr.sender,
-                            'date': totalSeconds,
+                            'date': totalMilliSeconds,
                             'class': zephyr.dst.class_name,
                             'instance': zephyr.dst.instance,
                             'recipient': zephyr.dst.recipient,
