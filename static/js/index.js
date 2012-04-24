@@ -415,7 +415,7 @@ var createMessage = function(message)
 
 function convertTime(timestamp)
 {
-    var month = timestamp.getMonth()
+    var month = timestamp.getMonth()+1;
     var day = timestamp.getDate()
 
     var hours = timestamp.getHours()
@@ -657,7 +657,6 @@ var addZephyrClass = function()
     new_class_name = new_class_name.replace(/^\s+|\s+$/g, '');
     if(new_class_name != "" && api.classDict[new_class_name] == undefined) {
         api.addSubscription(new_class_name, undefined, undefined, fillClasses);
-        fillClasses();
     }
 };
 
