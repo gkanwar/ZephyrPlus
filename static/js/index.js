@@ -414,7 +414,7 @@ var createMessage = function(message)
 
 function convertTime(timestamp)
 {
-    var month = timestamp.getMonth()
+    var month = timestamp.getMonth()+1;
     var day = timestamp.getDate()
 
     var hours = timestamp.getHours()
