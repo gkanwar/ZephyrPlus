@@ -327,6 +327,14 @@ var personals = [
                             api.subscriptions[n].instance != sub.instance ||
                             api.subscriptions[n].recipient != sub.recipient)
                         subs.push(api.subscriptions[n]);
+                for(var i=0; i<api.classes.length; i++) {
+                    if(api.classes[i] == api.classDict[className]) {
+                        api.classes.splice(i,1);
+                        break;
+                    }
+                }
+                delete classIdDict[api.classDict[className].id];
+                delete api.classDict[className];
                 api.subscriptions=subs;
                 if(callback)
                     callback();
