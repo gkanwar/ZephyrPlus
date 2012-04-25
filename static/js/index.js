@@ -168,7 +168,11 @@ $(document).ready(function()
 	}
     );
 
-
+    $("#messagetextarea").change(
+	function() {
+	    this.value=wrapStr(this.value, 72);
+	}
+    );
 
 
 });
@@ -716,3 +720,28 @@ function hsvToRgb(h, s, v){
     return [r * 255, g * 255, b * 255];
 }
 
+function wrapStr(str, len){
+    var arr = str.split("\n");
+    for(var n=0; n<arr.length; n++){
+	if(arr[n].length>len){
+	    var words=arr[n].split(" ");
+	    arr[n]="";
+	    var line="", lines=[];
+	    for(var i=0; i<words.length; i++){
+		if(line.length+words[i].length+1>len && line.length>0){
+		    lines.push(line);
+		    line="";
+		}
+		while(words[i].length>len){
+		    lines.push(words[i].substr(0, len));
+		    words[i]=words[i].substr(len);
+		}
+		line+=(line.length>0?" ":"")+words[i];
+	    }
+	    if(line.length>0)
+		lines.push(line);
+	    arr[n]=lines.join("\n");
+	}
+    }
+    return arr.join("\n");
+}
