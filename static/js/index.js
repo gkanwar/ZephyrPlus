@@ -529,7 +529,7 @@ var fillMessagesByClass = function(class_id, instance_id)
     if (messagesOut.length == 0)
     {
 	(function(){
-	    $("#messages").append("no zephyrs");
+	    $("#messages").append("<br /><i>(No Zephyrs from the past three days.)</i>");
 	})();
     }
 
