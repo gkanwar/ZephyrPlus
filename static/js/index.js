@@ -518,8 +518,21 @@ var fillMessagesByClass = function(class_id, instance_id)
 			 else { return 0; }
 		     });
 
+    console.log(messagesOut);
+    console.log(messagesOut.length);
+
+
     // Actually fill in the messages
     $("#messages").html('');
+
+    // Display "no zephyrs" if there are no zephyrs in the class.
+    if (messagesOut.length == 0)
+    {
+	(function(){
+	    $("#messages").append("no zephyrs");
+	})();
+    }
+
     for (var messageNum in messagesOut)
     {
 	(function(){
@@ -554,7 +567,7 @@ var fillMessagesByPersonal = function(personal_id)
     {
 	messagesOut = personal_messages;
     }
-
+    
     // Actually fill in the messages
     $("#messages").html('');
     for (var i in messagesOut)
