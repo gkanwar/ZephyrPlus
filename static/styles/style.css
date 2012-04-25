@@ -145,13 +145,14 @@ a.tooltip:hover span
     color:#efefef;
 }
 .classes_entry
-{
+{    
     padding: 0px 7px 0px 17px;
     margin: 0px -7px 0px -17px;
 }
 .classes_entry:hover
 {
     background-color: #575757;
+    cursor: pointer;
 }
 .classes_entry:hover .remove_class
 {
