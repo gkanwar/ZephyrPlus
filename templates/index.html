@@ -78,13 +78,17 @@
 	<div id="sendarea">
 	  <form id="chatsend" method="post" action="chat">
 	    <div id="buttonarea">
-	      Class:
-	      <select name="class" id="classdropdown">
-	      </select>
-	      Instance:
-	      <select name="instance" id="instancedropdown">
-	      </select>
-	      <input type="text" name="instanceText" id="instancetext" style="display:none" />
+	      <span id="classbuttonarea">
+		Class:
+		<select name="class" id="classdropdown">
+		</select>
+	      </span>
+	      <span id="instancebuttonarea">
+		Instance:
+		<select name="instance" id="instancedropdown">
+		</select>
+		<input type="text" name="instanceText" id="instancetext" style="display:none" />
+	      </span>
 	      <input type="submit" name="submit" id="sendzephyr" value="send" />
 	    </div>
 	    <textarea id="messagetextarea" name="message"></textarea>

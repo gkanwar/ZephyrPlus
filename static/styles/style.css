@@ -321,6 +321,33 @@ a.tooltip:hover span
     float: right;
 }
 */
+#classbuttonarea
+{
+    width: 200px;
+    margin-right: 20px;
+}
+#classdropdown
+{
+    width: 150px;
+}
+#instancebuttonarea
+{
+    width: 300px;
+}
+#instancedropdown
+{
+    width: 150px;
+}
+#instancetext
+{
+    width: 150px;
+}
+#sendzephyr
+{
+    width: 50px;
+    float: right;
+}
+
 
 #personals_anchor
 {
