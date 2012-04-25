@@ -320,7 +320,7 @@ var fillClasses = function()
 						   {
 						       console.log('Removed subscription, killing HTML: ');
 						       console.log($("#classes_entry_id_"+curClass.id));
-						       $("#classes_entry_id_"+curClass.id).remove();
+						       $("#classes_entry_id_"+curClass.id).parent().remove();
 						   }
 						   );
                             e.stopPropagation(); //Don't switch to the class after removing it
