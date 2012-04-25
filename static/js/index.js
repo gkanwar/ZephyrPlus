@@ -320,7 +320,7 @@ var fillClasses = function()
 						   {
 						       console.log('Removed subscription, killing HTML: ');
 						       console.log($("#classes_entry_id_"+curClass.id));
-						       $("#classes_entry_id_"+curClass.id).remove();
+						       $("#classes_entry_id_"+curClass.id).parent().remove();
 						   }
 						   );
                             e.stopPropagation(); //Don't switch to the class after removing it
@@ -402,6 +402,10 @@ var createMessage = function(message)
 		   fillMessagesByClass(classObj.id, instanceObj.id);
 		   fillButtonArea(classObj.id, instanceObj.id);
 	       });
+
+    // Makes sender name brighter.
+    sender_text = "<span id=sender>"+sender_text+"</span>";
+
     if(signature)
         sender_text+=" ("+signature+")";
     header.append(header_class).append(" / ")
@@ -521,6 +525,15 @@ var fillMessagesByClass = function(class_id, instance_id)
 
     // Actually fill in the messages
     $("#messages").html('');
+
+    // Display "no zephyrs" if there are no zephyrs in the class.
+    if (messagesOut.length == 0)
+    {
+	(function(){
+	    $("#messages").append("no zephyrs");
+	})();
+    }
+
     for (var messageNum in messagesOut)
     {
 	(function(){
@@ -555,7 +568,7 @@ var fillMessagesByPersonal = function(personal_id)
     {
 	messagesOut = personal_messages;
     }
-
+    
     // Actually fill in the messages
     $("#messages").html('');
     for (var i in messagesOut)
