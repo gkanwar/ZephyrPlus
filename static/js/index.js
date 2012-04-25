@@ -296,10 +296,6 @@ var fillClasses = function()
 	     var class_entry_div = $("<div/>")
 		 .attr("id", "classes_entry_id_"+curClass.id)
 		 .addClass("classes_entry")
-		 .hover(function()
-			{
-			    $(this).find(".remove_class").toggle();
-			})
 		 .click(function()
 			{
 			    fillMessagesByClass(curClass.id);
@@ -318,20 +314,19 @@ var fillClasses = function()
 		 .css("cursor", "pointer")
 		 .css("color", curClass.color);
 	     var remove_class = $("<span/>")
-		 .text('x')
-		 .click(function()
+		 .text('X')
+		 .click(function(e)
 			{
 			    api.removeSubscription(curClass.name, undefined, undefined, 
 						   function()
 						   {
 						       console.log('Removed subscription, killing HTML: ');
 						       console.log($("#classes_entry_id_"+curClass.id));
-						       $("#classes_entry_id_"+curClass.id).remove();
+						       $("#classes_entry_id_"+curClass.id).parent().remove();
 						   }
 						   );
-			    
+                            e.stopPropagation(); //Don't switch to the class after removing it
 			})
-		 .css("display", "none")
 		 .addClass("remove_class");
 	     ul.append(class_entry);
 	     class_entry.append(class_entry_div);
@@ -361,7 +356,6 @@ var fillClasses = function()
 			  .addClass("instance_id_"+curInstance.id)
 			  .addClass("instances_entry")
 			  .css("color", curInstance.color)
-			  .css("cursor", "pointer")
 			  .click(function()
 				 {
 				     fillMessagesByClass(curClass.id, curInstance.id);
@@ -409,15 +403,44 @@ var createMessage = function(message)
 		   fillMessagesByClass(classObj.id, instanceObj.id);
 		   fillButtonArea(classObj.id, instanceObj.id);
 	       });
+
+    // Makes sender name brighter.
+    sender_text = "<span id=sender>"+sender_text+"</span>";
+
     if(signature)
         sender_text+=" ("+signature+")";
     header.append(header_class).append(" / ")
 	.append(header_instance).append(" / ")
 	.append(sender_text)
-        .append($("<span class='message_timestamp'/>").text(timestamp.toLocaleString()));
+        .append($("<span class='message_timestamp'/>").text(convertTime(timestamp)));
     var body = $("<pre class='message_body'/>").text(message_text);
     message_entry.append(header, body);
     return message_entry
+}
+
+function convertTime(timestamp)
+{
+    var month = timestamp.getMonth()+1;
+    var day = timestamp.getDate()
+
+    var hours = timestamp.getHours()
+    var minutes = timestamp.getMinutes()
+
+    var suffix = "AM";
+    if (hours >= 12) {
+	suffix = "PM";
+	hours = hours - 12;
+    }
+
+    if (hours == 0) {
+	hours = 12;
+    }
+	
+    if (minutes < 10){
+	minutes = "0" + minutes
+    }
+
+    return month+"/"+day+" "+hours+":"+minutes+" "+suffix;
 }
 
 var fillMessagesByClass = function(class_id, instance_id)
@@ -503,6 +526,15 @@ var fillMessagesByClass = function(class_id, instance_id)
 
     // Actually fill in the messages
     $("#messages").html('');
+
+    // Display "no zephyrs" if there are no zephyrs in the class.
+    if (messagesOut.length == 0)
+    {
+	(function(){
+	    $("#messages").append("<br /><i>(No Zephyrs from the past three days.)</i>");
+	})();
+    }
+
     for (var messageNum in messagesOut)
     {
 	(function(){
@@ -537,7 +569,7 @@ var fillMessagesByPersonal = function(personal_id)
     {
 	messagesOut = personal_messages;
     }
-
+    
     // Actually fill in the messages
     $("#messages").html('');
     for (var i in messagesOut)
@@ -639,7 +671,6 @@ var addZephyrClass = function()
     new_class_name = new_class_name.replace(/^\s+|\s+$/g, '');
     if(new_class_name != "" && api.classDict[new_class_name] == undefined) {
         api.addSubscription(new_class_name, undefined, undefined, fillClasses);
-        fillClasses();
     }
 };
 

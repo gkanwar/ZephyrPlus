@@ -125,15 +125,23 @@ a.tooltip:hover span
 #add_class
 {
     float:right;
-    margin: -1px 0px 0px 0px;
-    font-weight: 700;
-    font-size: 150%;
-    color: #B5B5B5;
+    margin: 0px 0px 0px 0px;
+    padding: 0px 6px 2px 6px;
+    font-weight: 400;
+    font-size: 90%;
+    color: #A1A1A1;
+    text-shadow: #1C1C1C 0px 1px 0px;;
     cursor: default;
+}
+#classes_title
+{
+    padding: 0px 0px 2px 0px;
+    cursor: pointer;
 }
 #add_class:hover
 {
     color:#efefef;
+    text-shadow: #1c1c1c 0px 1px 0px;
 }
 .remove_class
 {
@@ -142,25 +150,32 @@ a.tooltip:hover span
     font-weight: 700;
     font-size: 100%;
     color: #b5b5b5;
-    cursor: default;
+    cursor: pointer;
+    display: none;
 }
 .remove_class:hover
 {
     color:#efefef;
 }
 .classes_entry
-{
+{    
     padding: 0px 7px 0px 17px;
     margin: 0px -7px 0px -17px;
 }
 .classes_entry:hover
 {
     background-color: #575757;
+    cursor: pointer;
+}
+.classes_entry:hover .remove_class
+{
+    display: inline;
 }
 .instances_entry
 {
     padding: 0px 7px 0px 60px;
     margin: 0px -7px 0px -60px;
+    cursor: pointer;
 }
 .instances_entry:hover
 {
@@ -370,4 +385,8 @@ a:link
 a:hover
 {
     color:#000000;
+}
+#sender
+{
+    color:#F6F6F6;
 }

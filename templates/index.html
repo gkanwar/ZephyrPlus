@@ -14,17 +14,35 @@
     <script src="/static/js/jquery/jquery-ui-1.8.18.custom.min.js"></script>
     <script src="/static/js/api.js"></script>
     <script src="/static/js/index.js"></script>
+
+    <!--Google Analytics-------------------------------------- -->
+    <script type="text/javascript">
+
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-31150163-1']);
+      _gaq.push(['_trackPageview']);
+
+      (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+
+    </script>
+    <!--Google Analytics End---------------------------------- -->
+
   </head>
   <body>
     <div id="header">
       <img src="/static/img/zephyr_plus_logo_text.png" width="155px" height="21px"/>
 <!--      <div id="header_logo">zephyr+plus</div>-->
       <div id="site_links">
+	logged in as <span id="logged_user">logged_user</span> | 
 	<a href="/">chat</a> | 
 	<a href="../static/pages/about.html">about</a> | 
 	<a href="../static/pages/help.html">help</a> | 
 <!--	<a href="/settings">settings</a> | -->
-	logged in as <span id="logged_user">logged_user</span> | 
+
 	<a href="/logout">logout</a>
       </div>
     </div>
@@ -39,7 +57,7 @@
 	<div id="classes_sidebar">
 	  <div id="classes_title">
 	    <span id="classestitleheader">classes</span>
-	    <a href="#" id="add_class" class="tooltip">+<span>Add a class</span></a>
+	    <a href="#" id="add_class" class="tooltip">add a class</a>
 	  </div>
 	  <div id="classes_anchor">
 	    Loading...
@@ -63,7 +81,7 @@
 	      Class:
 	      <select name="class" id="classdropdown">
 	      </select>
-	      Instance (subject):
+	      Instance:
 	      <select name="instance" id="instancedropdown">
 	      </select>
 	      <input type="text" name="instanceText" id="instancetext" style="display:none" />
