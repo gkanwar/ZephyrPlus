@@ -113,14 +113,19 @@ a.tooltip:hover span
 {
     float:right;
     margin: -1px 0px 0px 0px;
-    font-weight: 700;
-    font-size: 150%;
-    color: #B5B5B5;
+    padding: 0px 6px 3px 6px;
+    font-weight: 400;
+    font-size: 90%;
+    color: #1C1C1C;
+    text-shadow: #f4f4f4 0px 1px 0px;;
     cursor: default;
+    background-image: url(../img/noise_light_gray.png);
 }
 #add_class:hover
 {
-    color:#efefef;
+    color:#000000;
+    text-shadow: #f4f4f4 0px 1px 0px;
+    background-image: url(../img/noise_light_gray.png);
 }
 .remove_class
 {
