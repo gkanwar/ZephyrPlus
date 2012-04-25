@@ -2,6 +2,7 @@
 $(document).ready(function()
 {
     // Dealing with styling the sidebar
+    /*
     $("#personals_sidebar").resizable({handles:'s',minHeight: 20});
     $("#personals_anchor").css({height:$("#personals_sidebar").height()-20});
     $("#classes_anchor").css({height:$("#dropdown").height()-$("#personals_sidebar").height()-20});
@@ -12,6 +13,7 @@ $(document).ready(function()
 				      $("#classes_sidebar").css({height:$("#dropdown").height()-$("#personals_sidebar").height()});
 				      $("#classes_anchor").css({height:$("#dropdown").height()-$("#personals_sidebar").height()-20});
 				  });    
+    */
 
     $("#classes_title").click(function()
 			      {
