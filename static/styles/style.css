@@ -116,10 +116,9 @@ a.tooltip:hover span
     padding: 0px 6px 2px 6px;
     font-weight: 400;
     font-size: 90%;
-    color: #1C1C1C;
-    text-shadow: #f4f4f4 0px 1px 0px;;
+    color: #A1A1A1;
+    text-shadow: #1C1C1C 0px 1px 0px;;
     cursor: default;
-    background-image: url(../img/noise_light_gray.png);
 }
 #classes_title
 {
@@ -128,9 +127,8 @@ a.tooltip:hover span
 }
 #add_class:hover
 {
-    color:#000000;
-    text-shadow: #f4f4f4 0px 1px 0px;
-    background-image: url(../img/noise_light_gray.png);
+    color:#efefef;
+    text-shadow: #1c1c1c 0px 1px 0px;
 }
 .remove_class
 {
