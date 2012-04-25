@@ -401,6 +401,10 @@ var createMessage = function(message)
 		   fillMessagesByClass(classObj.id, instanceObj.id);
 		   fillButtonArea(classObj.id, instanceObj.id);
 	       });
+
+    // Makes sender name brighter.
+    sender_text = "<span id=sender>"+sender_text+"</span>";
+
     if(signature)
         sender_text+=" ("+signature+")";
     header.append(header_class).append(" / ")
@@ -517,10 +521,6 @@ var fillMessagesByClass = function(class_id, instance_id)
 			 else if (m1.timestamp < m2.timestamp) { return -1; }
 			 else { return 0; }
 		     });
-
-    console.log(messagesOut);
-    console.log(messagesOut.length);
-
 
     // Actually fill in the messages
     $("#messages").html('');
