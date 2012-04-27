@@ -133,6 +133,7 @@ var personals = [
  *      api.getClassById(id)
  *      api.getInstanceById(id)
  *      api.getMessageById(id)
+ *      api.saveStorage(callback)
  * 
  * Properties
  *      api.ready
@@ -147,6 +148,8 @@ var personals = [
  *              String containing the user's username.
  *      api.subscriptions
  *              Array of the user's subscriptions.
+ *      api.storage
+ *              Object on which data can be stored on the server
  * 
  * Event handlers
  *      api.onready = function()
@@ -269,6 +272,7 @@ var personals = [
         $.get("/user", function(data){
             api.username = data.username;
             api.subscriptions = data.subscriptions;
+	    api.storage = JSON.parse(data.data);
             for(var n=0; n<api.subscriptions.length; n++){
                 findClass(api.subscriptions[n].class);
             }
@@ -350,6 +354,13 @@ var personals = [
                 message: message
             }, callback, "json").error(api.onerror);
         }
+        
+        api.saveStorage = function(callback){
+	    return $.post("/user", {
+		action: "save_data",
+		data: JSON.stringify(api.storage)
+	    }, callback, "json").error(api.onerror);
+	}
         
     }
     window.ZephyrAPI = ZephyrAPI;
