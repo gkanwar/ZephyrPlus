@@ -164,7 +164,8 @@ class UserHandler(BaseHandler):
                         "class": sub.class_name,
                         "instance": sub.instance,
                         "recipient": sub.recipient
-                    } for sub in user.subscriptions.all()]
+                    } for sub in user.subscriptions.all()],
+                "data": user.js_data
             }))
     
     @tornado.web.authenticated
@@ -191,6 +192,11 @@ class UserHandler(BaseHandler):
                             "instance": sub.instance,
                             "recipient": sub.recipient
                         }))
+	elif action == 'save_data':
+	    user.js_data = self.get_argument('data')
+	    user.save()
+	    self.set_header('Content-Type', 'text/plain')
+	    self.write(user.js_data)
 
 settings = {
     "static_path": os.path.join(os.path.dirname(__file__), "static"),

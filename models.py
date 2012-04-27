@@ -49,6 +49,7 @@ class Subscription(models.Model):
 class Account(models.Model):
 	username = models.CharField(max_length=20,primary_key=True)
 	subscriptions = models.ManyToManyField(Subscription)
+	js_data = models.TextField(default='{}')
 	
 	def get_filter(self):
             q = models.Q()
