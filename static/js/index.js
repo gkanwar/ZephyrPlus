@@ -172,7 +172,13 @@ $(document).ready(function()
 	function() {
 	    this.value=wrapStr(this.value, 72);
 	}
-    );
+    ).keyup(
+	function() {
+	    var lines=this.value.split("\n");
+	    if(lines[lines.length-2]=="." && lines[lines.length-1]=="")
+		$("#chatsend").submit();
+	}
+    )
 
 
 });
