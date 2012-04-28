@@ -29,6 +29,7 @@ body
 #loginandlink{
     position:relative;
     margin-top: 40px;
+    text-shadow: #ffffff 0px 1px 0px;
 }
 #loginbutton
 {
