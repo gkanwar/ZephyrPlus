@@ -1,6 +1,6 @@
 body
 {
-    width: 1000px;
+    width: 800px;
     margin-left: auto;
     margin-right: auto;
     font-family: monospace;
@@ -15,8 +15,7 @@ body
 #biglogo
 {
     float: middle;
-    margin-left:80px;
-    margin-top:50px;
+    margin-top: 40 px;
 }
 #abouthelp
 {
@@ -29,7 +28,7 @@ body
 }
 #loginandlink{
     position:relative;
-    margin-top: 50px;
+    margin-top: 40px;
 }
 #loginbutton
 {
@@ -55,7 +54,6 @@ body
 {
     position: relative;
     top: -64px;
-    right:90px;
     font-size:2em;
     font-familiy:monospace;
 }
