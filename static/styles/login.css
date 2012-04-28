@@ -3,7 +3,7 @@ body
     width: 800px;
     margin-left: auto;
     margin-right: auto;
-    font-family: monospace;
+    font-family: 'Ubuntu Mono', sans-serif;
 /*    background-color: #efefef*/
     background-image: url(../img/bgnoise.gif);
 }
@@ -46,19 +46,35 @@ body
 /*    background-image: url(../img/broken_noise.png);*/
     background-image: url(../img/noise_light_gray.png);
     border:none;
-    font-size:3em;
-    font-family:monospace;
+    font-size:2.7em;
     cursor: pointer;
+    font-family: 'Ubuntu Mono', sans-serif;
+    color: #454545;
+}
+#loginbutton input[type=submit]:hover
+{
+    color: #000000;
 }
 #abouthelp
 {
     position: relative;
-    top: -64px;
+    top: -70px;
     font-size:2em;
-    font-familiy:monospace;
+    color: #454545;
 }
 #abouthelp a
 {
     text-decoration:none;
-    color:000000;
+}
+#about:hover
+{
+    color: #000000;
+}
+#help:hover
+{
+    color: #000000;
+}
+a:visited
+{
+    color: #454545;
 }
