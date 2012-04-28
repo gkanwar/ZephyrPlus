@@ -21,8 +21,10 @@ class BaseHandler(tornado.web.RequestHandler):
         #username = self.get_secure_cookie("user", max_age_days=31)
         username = self.get_secure_cookie("user")
         if username is not None:
-            account = Account.objects.get_or_create(username=username)[0]
-            account.subscriptions.add(Subscription.objects.get_or_create(class_name="zephyrplus-lobby", instance="*", recipient="*")[0])
+            account, created = Account.objects.get_or_create(username=username)
+            if created:
+		account.subscriptions.add(Subscription.objects.get_or_create(class_name="zephyrplus-lobby", instance="*", recipient="*")[0])
+		account.subscriptions.add(Subscription.objects.get_or_create(class_name=username, instance="*", recipient="*")[0])
             return account
         return None
 
@@ -162,7 +164,8 @@ class UserHandler(BaseHandler):
                         "class": sub.class_name,
                         "instance": sub.instance,
                         "recipient": sub.recipient
-                    } for sub in user.subscriptions.all()]
+                    } for sub in user.subscriptions.all()],
+                "data": user.js_data
             }))
     
     @tornado.web.authenticated
@@ -189,6 +192,11 @@ class UserHandler(BaseHandler):
                             "instance": sub.instance,
                             "recipient": sub.recipient
                         }))
+	elif action == 'save_data':
+	    user.js_data = self.get_argument('data')
+	    user.save()
+	    self.set_header('Content-Type', 'text/plain')
+	    self.write(user.js_data)
 
 settings = {
     "static_path": os.path.join(os.path.dirname(__file__), "static"),

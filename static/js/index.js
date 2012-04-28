@@ -2,6 +2,7 @@
 $(document).ready(function()
 {
     // Dealing with styling the sidebar
+    /*
     $("#personals_sidebar").resizable({handles:'s',minHeight: 20});
     $("#personals_anchor").css({height:$("#personals_sidebar").height()-20});
     $("#classes_anchor").css({height:$("#dropdown").height()-$("#personals_sidebar").height()-20});
@@ -12,6 +13,7 @@ $(document).ready(function()
 				      $("#classes_sidebar").css({height:$("#dropdown").height()-$("#personals_sidebar").height()});
 				      $("#classes_anchor").css({height:$("#dropdown").height()-$("#personals_sidebar").height()-20});
 				  });    
+    */
 
     $("#classes_title").click(function()
 			      {
@@ -172,7 +174,17 @@ $(document).ready(function()
 	function() {
 	    this.value=wrapStr(this.value, 72);
 	}
-    );
+    ).keyup(
+	function() {
+	    var lines=this.value.split("\n");
+	    if(lines.length>2 && lines[lines.length-2]=="." && lines[lines.length-1]==""){
+		lines.length-=2;
+		this.value=lines.join("\n");
+		$("#messagetextarea").change();
+		$("#chatsend").submit();
+	    }
+	}
+    )
 
 
 });
