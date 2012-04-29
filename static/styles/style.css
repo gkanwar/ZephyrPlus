@@ -417,3 +417,8 @@ a:hover
 {
     color:#F6F6F6;
 }
+#zp_guide
+{
+    border: 1px solid black;
+    margin: auto;
+}
