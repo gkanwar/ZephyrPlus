@@ -28,73 +28,72 @@
     <div id="header">
       <a href="/"><img src="/static/img/zp_text.png" width="183px" height="18px"/></a>
       <div id="site_links">
-	<a href="/">chat</a> | 
-        <a href="/static/pages/about.html">about</a> |
-        <a href="/static/pages/help.html">help</a> |
-<!--        <a href="/settings">settings</a> |-->
-<!--        logged in as <span id="logged_user">logged_user</span> |-->
-        <a href="/logout">logout</a>
+	<a class="headerlink" href="/">chat</a> | 
+        <a class="headerlink" href="/static/pages/about.html">about</a> |
+        <a class="headerlink" href="/static/pages/help.html">help</a> |
+	<!--        <a href="/settings">settings</a> |-->
+	<!--        logged in as <span id="logged_user">logged_user</span> |-->
+        <a class="headerlink" href="/logout">logout</a>
       </div>
     </div>
     <div id="main">
-
+      <div id="helptext">
 	<p><font size="5em">ZephyrPlus: Help</font> <br />
-
 	<p><font size="3em"><a href="#quickstart">Quickstart</a><br />
-	  <a href="#faq">FAQ</a></font></p>
+	    <a href="#faq">FAQ</a></font></p>
+	<hr NOSHADE>
+	<div id="quickstart">
+	    <p><font size="5em">Quickstart</font><br />
+	      Here&#39;s a quick runthrough of ZephyrPlus.</p>
+	    <img id="zp_guide" src="/static/img/zp_guide.png" width="646px" height="480px" />
+	    <p><font size="4em">ZephyrPlus and Zephyr:</font><br />
+	      ZephyrPlus is a web client for Zephyr, a messaging system. Zephyr has a unique culture, which you can read about here __link___. For one, please type in complete sentences.</p>
 
-      <hr NOSHADE>
-      <div id="quickstart">
-	<p><font size="5em">Quickstart</font><br />
-	  Here&#39;s a quick runthrough of ZephyrPlus.</p>
-	<img id="zp_guide" src="/static/img/zp_guide.png" width="646px" height="480px" />
-	<p><font size="4em">ZephyrPlus and Zephyr:</font><br />
-	  ZephyrPlus is a web client for Zephyr, a messaging system. Zephyr has a unique culture, which you can read about here __link___. For one, please type in complete sentences.</p>
+	    <p><font size="4em">Classes and Instances:</font><br />
+	      In Zephyr, Classes are like rooms and instances are like subjects. You subscribe to a class in order to receive and send messages to that class. classes have instances, which describe the subject of discussion. Instances change regularly as users make new instances.</p>
 
-	<p><font size="4em" color="#000000" weight="700">Classes and Instances:</font><br />
-	  In Zephyr, Classes are like rooms and instances are like subjects. You subscribe to a class in order to receive and send messages to that class. classes have instances, which describe the subject of discussion. Instances change regularly as users make new instances.</p>
+	    <p><font size="4em" color="#c42d2d">Link Bar:</font><br />
+	      The Link Bar displays your username and has links to pages on the site.<br />
 
-	<p><font size="4em" color="#c42d2d">Link Bar:</font><br />
-	  The Link Bar displays your username and has links to pages on the site.<br />
+	    <p><font size="4em" color="#c47b2d">Classes Header:</font><br />
+	      You can subscribe to a class by clicking &#34;add a class,&#34; to the right. Clicking &#34;classes&#34; will change your view to display messages from all classes.<br />
 
-	<p><font size="4em" color="#c47b2d">Classes Header:</font><br />
-	  You can subscribe to a class by clicking &#34;add a class,&#34; to the right. Clicking &#34;classes&#34; will change your view to display messages from all classes.<br />
+	    <p><font size="4em" color="#bab52c">Classes List:</font><br />
+	      The Classes List is the list of classes that you are subscribed to. You can view all messages from a class by clicking on a class name. If there are unread messages in a class, the name will be bolded and have a number in parenthesis. You are automatically subscribed to the &#34;lobby&#34; class and your own class. You can click the triangle to toggle the Instances List (see below).<br />
 
-	<p><font size="4em" color="#bab52c">Classes List:</font><br />
-	  The Classes List is the list of classes that you are subscribed to. You can view all messages from a class by clicking on a class name. If there are unread messages in a class, the name will be bolded and have a number in parenthesis. You are automatically subscribed to the &#34;lobby&#34; class and your own class. You can click the triangle to toggle the Instances List (see below).<br />
+	    <p><font size="4em" color="#27cd2b">Instances List:</font><br />
+	      The Instances List is the list of current instances for the parent class. You can view all messages from an instances by clicking on the instance name. Again, the list of instances will change regularly as discussions change.<br />
+	      <br />
+	      <font size="4em" color="#419523">Chat Header:</font><br />
+	      The Chat Header displays what messages are currently displayed below. Here, messages from &#34;all classes&#34; are displayed. If you clicked on &#34;lobby&#34; class, the Chat Header would change to &#34;all classes > lobby&#34; and only messages from the lobby class would be displayed. Clicking on &#34;all classes&#34; will bring you back to displaying all messages.&#34;<br />
+	      <br />
+	      <font size="4em" color="#65bce4">Message Header</font><br />
+	      Each message has a Message Header. The format is &#34;[Class] / [Instance] / [Sender].&#34; The message text is immediately below.<br />
+	      <br />
+	      <font size="4em" color="#2157d1">Message Timestamp:</font><br />
+	      When you hover on a message, the time the message was sent is shown on the right.<br />
+	      <br />
+	      <font size="4em" color="a121d1">Chat Bar:</font><br />
+	      The Chat Bar displays what class and instance you are sending your message to. You can set the class and instance by using the dropdown menus. Clicking a message will set your Chat Bar to the same class and instance as the message, allowing easy replies. </p>
 
-	<p><font size="4em" color="#27cd2b">Instances List:</font><br />
-	  The Instances List is the list of current instances for the parent class. You can view all messages from an instances by clicking on the instance name. Again, the list of instances will change regularly as discussions change.<br />
-	  <br />
-	<font size="4em" color="#419523">Chat Header:</font><br />
-	  The Chat Header displays what messages are currently displayed below. Here, messages from &#34;all classes&#34; are displayed. If you clicked on &#34;lobby&#34; class, the Chat Header would change to &#34;all classes > lobby&#34; and only messages from the lobby class would be displayed. Clicking on &#34;all classes&#34; will bring you back to displaying all messages.&#34;<br />
-	  <br />
-	<font size="4em" color="#65bce4">Message Header</font><br />
-	  Each message has a Message Header. The format is &#34;[Class] / [Instance] / [Sender].&#34; The message text is immediately below.<br />
-	  <br />
-	<font size="4em" color="#2157d1">Message Timestamp:</font><br />
-	  When you hover on a message, the time the message was sent is shown on the right.<br />
-	  <br />
-	<font size="4em" color="a121d1">Chat Bar:</font><br />
-	  The Chat Bar displays what class and instance you are sending your message to. You can set the class and instance by using the dropdown menus. Clicking a message will set your Chat Bar to the same class and instance as the message, allowing easy replies. </p>
-
-	<p><font size="4em" color="#643b0e">Message Box:</font><br />
-	  You can enter your message text into the Message Box. You can send a message by pressing send in the Chat Bar. You can also use &#34;dot sending,&#34; which sends the message when you type a dot by itself on a line and press enter.</p>
-      </div>
-      <hr NOSHADE>
-      <div id="faq">
-	<p><font size="5em">FAQ</font></p>
-	<font size="4em">How do I send a personal?</font><br />
-	We currently do not support personal messages.<br />
-	<br />
-	<font size="4em">Can I see who is in a class?</font><br />
-	No, Zephyr does not support viewing the members of a class. It's one of the unique aspects of Zephyr!<br />
-	<br />
-	<font size="4em">I have a great bug and/or feature request! Now what?</font><br />
-	That's great, we love suggestions! You can contact us at zephyrplus@mit.edu or on the zephyrplus class.<br />
-	<br />	
-	For any other questions, please contact us at zephyrplus@mit.edu or on the zephyrplus class.<br />
-	<br />
+	    <p><font size="4em" color="#643b0e">Message Box:</font><br />
+	      You can enter your message text into the Message Box. You can send a message by pressing send in the Chat Bar. You can also use &#34;dot sending,&#34; which sends the message when you type a dot by itself on a line and press enter.</p>
+	  </div>
+	  <hr NOSHADE>
+	  <div id="faq">
+	    <p><font size="5em">FAQ</font></p>
+	    <font size="4em">How do I send a personal?</font><br />
+	    We currently do not support personal messages.<br />
+	    <br />
+	    <font size="4em">Can I see who is in a class?</font><br />
+	    No, Zephyr does not support viewing the members of a class. It's one of the unique aspects of Zephyr!<br />
+	    <br />
+	    <font size="4em">I have a great bug and/or feature request! Now what?</font><br />
+	    That's great, we love suggestions! You can contact us at zephyrplus@mit.edu or on the zephyrplus class.<br />
+	    <br />	
+	    For any other questions, please contact us at zephyrplus@mit.edu or on the zephyrplus class.<br />
+	    <br />
+	  </div>
       </div>
     </div>
   </body>
