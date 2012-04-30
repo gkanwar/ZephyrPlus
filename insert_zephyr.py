@@ -3,7 +3,6 @@
 import os
 import sys
 import httplib
-import time
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 
 import datetime
@@ -11,35 +10,43 @@ import datetime
 from django.db import models
 from models import Zephyr, Subscription, Account
 
-debug = False
+
+debug = True
 
 ### to append a zephyr to the incomingZephyrs pipe a user must:
 #	add the zephyrs class_name, instance, recipient, sender, message
 #	and signature to new lines and then add one extra empty line
 #
 def main(argv):
+	if debug:
+		print "Starting insert_zephyr"
 	pipePath = "./incomingZephyrs.pipe"
-	print("insert_zephyr.py is listening to " + pipePath)
-	pipein = open(pipePath, 'r');
-	zArray = []
+	#open fifo pipe
+	file = open(pipePath)	
+	if debug:
+		print "listening to pipe"
+	zArray = []	
 	while 1:
-		line = ''
-		line = pipein.readline()
-		if not line:
-			time.sleep(0.1)
-			continue
-		if line == '\n':
-			print(zArray)
+		line = file.readline()
+		if line == None:
+			assert false
+			#we shouldnt get here!
+		if line == '':
+			pass
+		elif  line == "\n":
 			processLine(zArray)
 			zArray = []
 		else:
-			zArray.append(line.strip())
+			line = line.strip()
+			zArray.append(line)
+
+
 
 def processLine(zArray):
 	if debug:
 		print "processing",zArray
 	if len(zArray) != 6:
-		print('Error: Tried to insert ' + str(zArray))
+		print('Error: Tried to insert ' + str(words))
 		sys.exit(2)
 	# expect zephyrs in format:
 	# class_name, instance, recipient, sender, message, signature
