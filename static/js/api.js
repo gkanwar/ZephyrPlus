@@ -254,7 +254,7 @@ var personals = [
             var parent = findClass(className);
             if(parent.instanceDict[name] == undefined){
                 parent.instanceDict[name] = {
-		    id: parent.id+"\n"+name,
+		    id: parent.id+"-_-"+name,
                     name: name,
                     last_messaged: new Date(0),
                     color: hashStringToColor(name),
