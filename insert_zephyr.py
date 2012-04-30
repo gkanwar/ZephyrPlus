@@ -1,5 +1,6 @@
 #! /usr/bin/env python2
 
+import time
 import os
 import sys
 import httplib
@@ -32,7 +33,8 @@ def main(argv):
 			assert false
 			#we shouldnt get here!
 		if line == '':
-			pass
+			time.sleep(0.1)
+			continue
 		elif  line == "\n":
 			processLine(zArray)
 			zArray = []
