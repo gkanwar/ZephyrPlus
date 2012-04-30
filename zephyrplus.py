@@ -6,6 +6,7 @@ import datetime
 import simplejson
 import subprocess
 import math
+import zephyr
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 
 #import models
@@ -15,6 +16,8 @@ from models import Zephyr, Subscription, Account
 #settings.configure(DATABASE_ENGINE='sqlite3', DATABASE_NAME='zephyrs.db')
 
 subFile = "/ZephyrPlus/.zephyrs.subs"
+
+zephyr.init()
 
 class BaseHandler(tornado.web.RequestHandler):
     def get_current_user(self):
@@ -142,9 +145,11 @@ class ChatUpdateHandler(BaseHandler):
 		else:
 			signature = username
                 signature += " via ZephyrPlus"
-		proc = subprocess.Popen(["zwrite", "-n", "-c", class_name, "-i", instance, "-s", signature, recipient], stdin=subprocess.PIPE)
-		proc.stdin.write(message)
-		proc.stdin.close()
+		zephyr.ZNotice(cls=class_name,
+			       instance=instance,
+			       recipient=recipient,
+			       message=signature+'\x00'+message+'\n',
+			       sender=username if '@' in username else username + '@ATHENA.MIT.EDU').send()
 
 class NewZephyrHandler(tornado.web.RequestHandler):
 	def get(self, *args, **kwargs):
