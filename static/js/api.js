@@ -235,7 +235,7 @@ var personals = [
         function findClass(name){
             if(api.classDict[name] == undefined){
                 api.classDict[name] = {
-		    id: api.classes.length,
+		    id: name,
                     name: name,
                     last_messaged: new Date(0),
                     color: hashStringToColor(name),
@@ -254,7 +254,7 @@ var personals = [
             var parent = findClass(className);
             if(parent.instanceDict[name] == undefined){
                 parent.instanceDict[name] = {
-		    id: api.instances.length,
+		    id: parent.id+"\n"+name,
                     name: name,
                     last_messaged: new Date(0),
                     color: hashStringToColor(name),
