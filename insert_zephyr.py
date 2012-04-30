@@ -40,12 +40,12 @@ def main(argv):
 			#print(zArray)
 			zBuffer = ""
 			if len(zArray) == 6:
-				#print(str(zArray))
-				processLine(zArray)
+				print(str(zArray))
+				#processLine(zArray)
 				zArray = []
 				zBuffer = ""
 		else:
-			zBuffer = zBuffer + line.strip()
+			zBuffer = zBuffer + line[:-1]
 			#print(zBuffer)
 
 def processLine(zArray):
