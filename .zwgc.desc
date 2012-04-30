@@ -51,18 +51,19 @@ match "WG_CTL_CLASS"
   exit
 endcase
 
-  if ($number_of_fields == "1") then
-    fields body
-    set signature = ""
-  else
-    fields signature body
-  endif
+#  if ($number_of_fields == "1") then
+#    fields body
+#    set signature = ""
+#  else
+#    fields signature body
+#  endif
+
+fields signature body
 
 #print "@center(@bold("+$aval+") "+$type+" message at "+$time+
-#    " on "+$date+"\n"+$ftext+" on "+$fromhost+"\nTo: "+
-#    $recipient+")\n\n"
-#  print $body
-#  print $class $instance $recipient $sender $message"\n"
-#  put
-exec "/usr/bin/python2" "./insert_zephyr.py" $class $instance $recipient $sender $body $signature
+#   " on "+$date+"\n"+$ftext+" on "+$fromhost+"\nTo: "+
+#   $recipient+")\n\n"
+#print "/usr/bin/python" "./insert_zephyr.py" $class $instance $recipient $sender $body $signature
+exec "./insert_zephyr.sh" $class $instance $recipient $sender $body $signature
+#put
 exit
