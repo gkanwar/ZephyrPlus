@@ -141,10 +141,10 @@ class ChatUpdateHandler(BaseHandler):
 		message = self.get_argument('message')
 		username = self.current_user.username
 		if signature is not None:
-			signature = username + " (" + signature + ")"
+			signature += ") ("
 		else:
-			signature = username
-                signature += " via ZephyrPlus"
+			signature = ""
+		signature += "via ZephyrPlus"
 		zephyr.ZNotice(cls=class_name,
 			       instance=instance,
 			       recipient=recipient,
