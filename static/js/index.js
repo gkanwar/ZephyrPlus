@@ -434,7 +434,7 @@ var createMessage = function(message)
     var body = $("<pre class='message_body'/>").text(message_text);
     if(links)
         for(var n=0; n<links.length; n++)
-            body.html(body.html().replace(links[n], "<a href=\""+links[n]+"\">"+links[n]+"</a>"));
+            body.html(body.html().replace(links[n], "<a href=\""+links[n]+"\" target=\"_blank\">"+links[n]+"</a>"));
     message_entry.append(header, body);
     return message_entry
 }
