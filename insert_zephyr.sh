@@ -20,17 +20,27 @@ then
 	mkfifo $PIPE
 fi
 
+#echo "arguments $#"
+#echo "message<$5>"
+
+DELIMITOR="\x00"
+
 #lock the file or wait (up to forever) until aquisition of lock
 #echo "trying to acquire lock"
 flock -x $LOCK -c "(
 	set -f;
-	echo $1 > $PIPE;
-	echo $2 > $PIPE;
-	echo $3 > $PIPE;
-	echo $4 > $PIPE;
-	echo $5 > $PIPE;
-	echo $6 > $PIPE;
-	echo -e \"\0\" > $PIPE;
+	echo \"$1\" > $PIPE;
+	echo -e \"$DELIMITOR\" > $PIPE;
+	echo \"$2\" > $PIPE;
+	echo -e \"$DELIMITOR\" > $PIPE;
+	echo \"$3\" > $PIPE;
+	echo -e \"$DELIMITOR\" > $PIPE;
+	echo \"$4\" > $PIPE;
+	echo -e \"$DELIMITOR\" > $PIPE;
+	echo \"$5\" > $PIPE;
+	echo -e \"$DELIMITOR\" > $PIPE;
+	echo \"$6\" > $PIPE;
+	echo -e \"$DELIMITOR\" > $PIPE;
 	)"
-echo "$*"
+echo "insert_zephyr.sh:""$*"
 #echo "successfully sent message down the pipe"

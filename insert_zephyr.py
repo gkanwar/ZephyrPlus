@@ -19,6 +19,7 @@ debug = True
 #	and signature to new lines and then add one extra empty line
 #
 def main(argv):
+	delimitor="\x00\n"
 	if debug:
 		print "Starting insert_zephyr"
 	pipePath = "./incomingZephyrs.pipe"
@@ -27,21 +28,25 @@ def main(argv):
 	if debug:
 		print "listening to pipe"
 	zArray = []	
+	zBuffer = ""
 	while 1:
 		line = file.readline()
-		if line == None:
-			assert False
-			#we shouldnt get here!
 		if line == '':
 			time.sleep(0.1)
 			continue
-		print(line.strip())
-		if  line == "\x00\n" and len(zArray) == 6:
-			processLine(zArray)
-			zArray = []
+		if  line == delimitor:
+			#print("D")
+			zArray.append(zBuffer)
+			#print(zArray)
+			zBuffer = ""
+			if len(zArray) == 6:
+				#print(str(zArray))
+				processLine(zArray)
+				zArray = []
+				zBuffer = ""
 		else:
-			line = line.strip()
-			zArray.append(line)
+			zBuffer = zBuffer + line.strip()
+			#print(zBuffer)
 
 def processLine(zArray):
 	if debug:
