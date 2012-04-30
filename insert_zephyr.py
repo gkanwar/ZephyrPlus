@@ -46,7 +46,7 @@ def processLine(zArray):
 	if debug:
 		print "processing",zArray
 	if len(zArray) != 6:
-		print('Error: Tried to insert ' + str(words))
+		print('Error: Tried to insert ' + str(zArray))
 		sys.exit(2)
 	# expect zephyrs in format:
 	# class_name, instance, recipient, sender, message, signature
