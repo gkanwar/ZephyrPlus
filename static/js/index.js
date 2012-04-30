@@ -1,3 +1,6 @@
+// Set global variables
+focused = false;
+
 // When the document loads, populate the personals
 $(document).ready(function()
 {
@@ -38,21 +41,90 @@ $(document).ready(function()
     // Create the API object and define the callbacks
     api = new ZephyrAPI();
     api.onready = function()
-
     {
+	// Set a flag so that onzephyr can perform setup functions
 	needsToBeSetup = true;
+
+	// If the user is first logging in, initialize their data
+	if (api.storage.last_logged_in == undefined)
+	{
+	    // Create a storage object with some structure
+	    api.storage =
+		{
+		    // When did the user last log in
+		    last_logged_in: new Date(),
+		    // Which instance and class was the user last viewing
+		    last_viewed:
+		    {
+			instance: undefined,
+			cls: undefined,
+			type: 0,
+		    },
+		    // A dictionary of instances and when we last viewed their messages
+		    instances_last_seen: {}
+		}
+	}
+	// If the user already has a storage, set some values, and check consistency
+	else
+	{
+	    // Set last_logged_in
+	    api.storage.last_logged_in = new Date();
+
+	    // Check last_viewed
+	    if (!api.storage.last_viewed)
+	    {
+		api.storage.last_viewed =
+		    {
+			instance: undefined,
+			cls: undefined,
+			type: 0,
+		    };
+	    }
+	    else
+	    {
+		if (!api.storage.last_viewed.instance)
+		{
+		    api.storage.last_viewed.instance = undefined;
+		}
+		if (!api.storage.last_viewed.cls)
+		{
+		    api.storage.last_viewed.cls = undefined;
+		}
+		if (!api.storage.last_viewed.type)
+		{
+		    api.storage.last_viewed.type = 0;
+		}
+	    }
+	}
     };
     api.onzephyr = function(zephyrs)
     {
 	// Only perform this setup on the very first onzephyr call
-	if (needsToBeSetup) 
+	if (needsToBeSetup)
 	{
-	    // Set some global variables
-	    curView = 0; // 0 = Class view, 1 = Personal view
-	    curClass = null;
-	    curInstance = null;
-	    curPersonal = null;
-	    
+	    // Check for first login
+	    if (api.storage.last_logged_in == undefined)
+	    {		
+		// Initialize the instances_last_seen dictionary
+		for (var i = 0; i < api.instances.length; i++)
+		{
+		    var curInstance = api.instances[i];
+		    api.storage.instances_last_seen[curInstance.id] = (new Date()).getTime();
+		}
+	    }
+	    else
+	    {
+		// Check instances_last_seen
+		for (var i = 0; i < api.instances.length; i++)
+		{
+		    if (!(typeof api.storage.instances_last_seen[api.instances[i].id] == 'number'))
+		    {
+			api.storage.instances_last_seen[api.instances[i].id] = 0;
+		    }
+		}
+	    }
+		
+
             // Fill in the messages and button area
     	    fillMessagesByClass();
             fillButtonArea();
@@ -74,14 +146,19 @@ $(document).ready(function()
 	{
 	    curZephyr = zephyrs[i];
 	    // If we're in the class view, compare class id and instance id
-	    if (!needsToBeSetup && curView == 0 && (curZephyr.parent_class.id == curClass || typeof(curClass) == 'undefined') && (curZephyr.parent_instance.id == curInstance || typeof(curInstance) == 'undefined'))
+	    if (!needsToBeSetup && api.storage.last_viewed.type == 0 && (curZephyr.parent_class.id == api.storage.last_viewed.cls || api.storage.last_viewed.cls == undefined) && (curZephyr.parent_instance.id == api.storage.last_viewed.instance || api.storage.last_viewed.instance == undefined))
 	    {
 		// Add the zephyr to our view
 		var messageEntry = createMessage(curZephyr);
 		$("#messages").append(messageEntry);
+		// If the tab isn't focused add it to a missed messages
+		if (!focused)
+		{
+		    addMissedMessage(curZephyr);
+		}
 	    }
 	    // If we're in the personal view, we don't do this!
-	    else if (!needsToBeSetup && curView == 1)
+	    else if (!needsToBeSetup && api.storage.last_viewed.type == 1)
 	    {
 		// ERROR: We don't do this
 		console.log("Error: trying to add a personal");
@@ -146,9 +223,9 @@ $(document).ready(function()
     $("#add_class")
 	.css("cursor","pointer")
 	.click(
-	function() {
-	    addZephyrClass();
-	});
+	    function() {
+		addZephyrClass();
+	    });
 
     // Changes instances options on class selection change
     $("#classdropdown").change(
@@ -185,13 +262,54 @@ $(document).ready(function()
 		$("#chatsend").submit();
 	    }
 	}
-    )
+    );
 
 
 });
 
 
+// Set the focus and blur handlers to modify a global flag
+$(window).focus(function()
+{
+    focused = true;
+    // Also set the current instance/class to read
+    if (api && api.ready)
+    {
+	setCurrentRead(api.storage.last_viewed.cls, api.storage.last_viewed.instance);
+    }
+});
+$(window).blur(function() { focused = false; });
 
+
+
+var setCurrentRead = function(class_id, instance_id)
+{
+    // Get the objects
+    var instanceObj = api.getInstanceById(instance_id);
+    var classObj = api.getClassById(class_id);
+
+    // Class id defined
+    if (class_id != undefined)
+    {
+	// Instance is defined
+	if (instance_id != undefined)
+	{
+	    // Clear missed messages for this instance
+	    instanceObj.missedMessages = [];
+	    updateClassMissedMessages(classObj);
+	    updateInstanceMissedMessages(instanceObj);
+	}
+	else
+	{
+	    // Clear missed messages for the class
+	    for (var i = 0; i < classObj.instances.length; i++)
+	    {
+		classObj.instances[i].missedMessages = [];
+	    }
+	    updateClassMissedMessages(classObj);
+	}
+    }
+}
 
 var addMissedMessage = function(message)
 {
@@ -200,9 +318,13 @@ var addMissedMessage = function(message)
 	// We need to have both (since we don't deal with personals)
 	return -1;
     }
-    
-    message.parent_class.missedMessages.push(message);
-    message.parent_instance.missedMessages.push(message);
+
+    // Check that the message is actually after the last seen time for the instance
+    if (api.storage.instances_last_seen[message.parent_instance.id] < message.timestamp.getTime())
+    {
+	message.parent_class.missedMessages.push(message);
+	message.parent_instance.missedMessages.push(message);
+    }
 };
 
 var updateMissedMessages = function()
@@ -261,25 +383,25 @@ var updateInstanceMissedMessages = function(instanceObj)
 	    .removeClass("missed_messages");
     }
 };
-	
+
 
 // Constant defining max number of personals to display in the sidebar
 var maxPersonals = 5;
 
 // Fill the personals in the sidebar
 /* PERSONALS DON'T EXIST ANYMORE
-var fillPersonals = function()
-{
-    root = $("#personals_anchor");
-    ul = $("<ul></ul>");
+   var fillPersonals = function()
+   {
+   root = $("#personals_anchor");
+   ul = $("<ul></ul>");
 
-    for (var i = 0; i < personals.length; i++)
-    {
-	ul.append("<li>" + personals[i] + "</li>");
-    }
+   for (var i = 0; i < personals.length; i++)
+   {
+   ul.append("<li>" + personals[i] + "</li>");
+   }
 
-    root.html(ul);
-};
+   root.html(ul);
+   };
 */
 
 // Constant defining max number of classes to display in the sidebar
@@ -298,10 +420,10 @@ var fillClasses = function()
 		     });
     for (var i = 0; i < api.classes.length; i++)
     {
-/*	if (i == maxClasses)
-	{
-	    break;
-	}*/
+	/*	if (i == maxClasses)
+		{
+		break;
+		}*/
 
 	// Call everything in its own function to make it scope right
 	(function()
@@ -339,7 +461,7 @@ var fillClasses = function()
 						       console.log($("#classes_entry_id_"+curClass.id));
 						       $("#classes_entry_id_"+curClass.id).parent().remove();
 						   }
-						   );
+						  );
                             e.stopPropagation(); //Don't switch to the class after removing it
 			})
 		 .addClass("remove_class");
@@ -461,13 +583,30 @@ function convertTime(timestamp)
 
 var fillMessagesByClass = function(class_id, instance_id)
 {
-    // Set global variables
-    curClass = class_id;
-    classObj = api.getClassById(class_id);
-    curInstance = instance_id;
-    instanceObj = api.getInstanceById(instance_id);
-    curView = 0;
+    var classObj = api.getClassById(class_id);
+    var instanceObj = api.getInstanceById(instance_id);
 	
+    // Set storage variables and save storage
+    api.storage.last_viewed.cls = class_id;
+    api.storage.last_viewed.instance = instance_id;
+    api.storage.last_viewed.last_logged_in = (new Date()).getTime();
+    api.storage.last_viewed.type = 0;
+    if (class_id != undefined)
+    {
+	if (instance_id != undefined)
+	{
+	    api.storage.instances_last_seen[instance_id] = (new Date()).getTime();
+	}
+	else
+	{
+	    for (var i = 0; i < classObj.instances.length; i++)
+	    {
+		api.storage.instances_last_seen[classObj.instances[i].id] = (new Date()).getTime();
+	    }
+	}
+    }
+    api.saveStorage();
+
     var allClassesHeader = $("<span/>")
 	.text("all classes")
 	.css("cursor", "pointer")
@@ -484,7 +623,6 @@ var fillMessagesByClass = function(class_id, instance_id)
     // Class is defined
     if (typeof(class_id) != 'undefined')
     {
-	//	headerText += " >  " + classes[class_id].name;
 	var headerText_class = $("<span />")
 	    .addClass("class_id_"+classObj.name)
 	    .text(classObj.name)
@@ -495,14 +633,10 @@ var fillMessagesByClass = function(class_id, instance_id)
 		       fillButtonArea(class_id);
 		   });
 	headerText.append(" > ").append(headerText_class);
-    	// Instance is defined
-	if (typeof(instance_id) != 'undefined')
-	{
-	    // Clear missed messages for this instance
-	    instanceObj.missedMessages = [];
-	    updateClassMissedMessages(classObj);
-	    updateInstanceMissedMessages(instanceObj);
 
+	// Instance is defined
+	if (instance_id != undefined)
+	{
 	    var headerText_instance = $("<span />")
 		.addClass("instance_id_"+instanceObj.name)
 		.text(instanceObj.name)
@@ -517,14 +651,11 @@ var fillMessagesByClass = function(class_id, instance_id)
 	}
 	else
 	{
-	    // Clear missed messages for the class
-	    for (var i = 0; i < classObj.instances.length; i++)
-	    {
-		classObj.instances[i].missedMessages = [];
-	    }
-	    updateClassMissedMessages(classObj);
 	    messagesOut = classObj.messages;
-	}
+	}	    
+
+	// Set the messages to read
+	setCurrentRead(class_id, instance_id);
     }
     // No class selected
     else
