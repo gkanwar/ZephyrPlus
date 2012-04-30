@@ -3,15 +3,19 @@ html
 {
 /*    background-color: #efefef;*/
     background-image: url(../img/bgnoise.gif);
+    height: 100%;
 }
 body
 {
     width: 1000px;
+    height: 100%;
+    margin-top: 0; margin-bottom: 0;
     margin-left: auto;
     margin-right: auto;
-/*    font-family: monospace;*/
+    /*font-family: monospace;*/
     font-family: 'Ubuntu Mono', sans-serif;
     cursor: default;
+    position: relative;
 }
 
 a:visited
@@ -45,9 +49,12 @@ a.tooltip:hover span
 /* Header properties */
 #header
 {
+    position: absolute;
+    top: 7px;
+    height:25px;
+    width: 100%;
     margin-top: 0px;
     margin-bottom: 0px;
-    height:10px;
     line-height: 1em;
     text-shadow: #ffffff 0px 1px 0px;
 }
@@ -56,9 +63,9 @@ a.tooltip:hover span
 #main
 {
     width: 1000px;
-    margin-top:15px;
-    height: 95%;
-    margin-bottom: 0px;
+    position: absolute;    
+    top: 39px;
+    bottom: 7px;
 }
 
 /* Dropdown properties */
@@ -73,6 +80,7 @@ a.tooltip:hover span
     float: left;
     line-height: 1.5em;
     color: #efefef;
+    position: relative;
 }
 #dropdown p
 {
@@ -104,10 +112,15 @@ a.tooltip:hover span
 }
 #classes_sidebar
 {
-    height:100%; 
+    position: absolute;
+    top: 0; bottom: 0; left: 0; right: 0;
     padding: 7px;
 /*    background-color: #2d2d2d;*/
     text-shadow: #1c1c1c 0px 1px 0px;
+}
+#classes_title
+{
+    height: 25px;
 }
 #add_class
 {
@@ -308,6 +321,33 @@ a.tooltip:hover span
     float: right;
 }
 */
+#classbuttonarea
+{
+    width: 200px;
+    margin-right: 20px;
+}
+#classdropdown
+{
+    width: 150px;
+}
+#instancebuttonarea
+{
+    width: 300px;
+}
+#instancedropdown
+{
+    width: 150px;
+}
+#instancetext
+{
+    width: 150px;
+}
+#sendzephyr
+{
+    width: 50px;
+    float: right;
+}
+
 
 #personals_anchor
 {
@@ -320,8 +360,9 @@ a.tooltip:hover span
 {
     overflow-y:auto;
     overflow-x:hidden !important;
-    height: 100% !important;
-
+    position: absolute;
+    /* 7px padding and accounting for 25px header */
+    top: 32px; bottom: 7px; right: 7px; left: 7px;
 }
 
 li.classes_entry
@@ -375,4 +416,9 @@ a:hover
 #sender
 {
     color:#F6F6F6;
+}
+#zp_guide
+{
+    border: 1px solid black;
+    margin: auto;
 }

@@ -1,3 +1,5 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
   <head>
     <title>ZephyrPlus!</title>
@@ -5,7 +7,7 @@
 
     <link href="http://fonts.googleapis.com/css?family=Ubuntu+Mono" rel="stylesheet" type="text/css">
 
-    <link rel="icon" type="image/png" href="../static/img/favicon.png" />
+    <link rel="icon" type="image/png" href="../static/img/zp_fav.png" />
 
     <link href="/static/js/jquery/jquery-ui-1.8.18.custom.css" type="text/css" rel="stylesheet" />
     <script src="/static/js/jquery/jquery-1.7.1.min.js"></script>
@@ -32,7 +34,7 @@
   </head>
   <body>
     <div id="header">
-      <img src="/static/img/zephyr_plus_logo_text.png" width="155px" height="21px"/>
+      <a href="/"><img src="/static/img/zp_text.png" width="183px" height="18px"/></a>
 <!--      <div id="header_logo">zephyr+plus</div>-->
       <div id="site_links">
 	logged in as <span id="logged_user">logged_user</span> | 
@@ -53,9 +55,10 @@
 	  </div>
 	</div>-->
 	<div id="classes_sidebar">
-	  <p id="classes_title">
+	  <div id="classes_title">
 	    <span id="classestitleheader">classes</span>
-	    <a href="#" id="add_class" class="tooltip">add a class</a></p>
+	    <a href="#" id="add_class" class="tooltip">add a class</a>
+	  </div>
 	  <div id="classes_anchor">
 	    Loading...
 	  </div>
@@ -75,13 +78,17 @@
 	<div id="sendarea">
 	  <form id="chatsend" method="post" action="chat">
 	    <div id="buttonarea">
-	      Class:
-	      <select name="class" id="classdropdown">
-	      </select>
-	      Instance:
-	      <select name="instance" id="instancedropdown">
-	      </select>
-	      <input type="text" name="instanceText" id="instancetext" style="display:none" />
+	      <span id="classbuttonarea">
+		Class:
+		<select name="class" id="classdropdown">
+		</select>
+	      </span>
+	      <span id="instancebuttonarea">
+		Instance:
+		<select name="instance" id="instancedropdown">
+		</select>
+		<input type="text" name="instanceText" id="instancetext" style="display:none" />
+	      </span>
 	      <input type="submit" name="submit" id="sendzephyr" value="send" />
 	    </div>
 	    <textarea id="messagetextarea" name="message"></textarea>

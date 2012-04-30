@@ -2,6 +2,7 @@
 $(document).ready(function()
 {
     // Dealing with styling the sidebar
+    /*
     $("#personals_sidebar").resizable({handles:'s',minHeight: 20});
     $("#personals_anchor").css({height:$("#personals_sidebar").height()-20});
     $("#classes_anchor").css({height:$("#dropdown").height()-$("#personals_sidebar").height()-20});
@@ -12,6 +13,7 @@ $(document).ready(function()
 				      $("#classes_sidebar").css({height:$("#dropdown").height()-$("#personals_sidebar").height()});
 				      $("#classes_anchor").css({height:$("#dropdown").height()-$("#personals_sidebar").height()-20});
 				  });    
+    */
 
     $("#classes_title").click(function()
 			      {
@@ -36,6 +38,7 @@ $(document).ready(function()
     // Create the API object and define the callbacks
     api = new ZephyrAPI();
     api.onready = function()
+
     {
 	needsToBeSetup = true;
     };
@@ -58,6 +61,10 @@ $(document).ready(function()
             fillClasses();
 	    // Scroll to the bottom of the messages div
 	    $("#messages").prop({ scrollTop: $("#messages").prop("scrollHeight") });
+
+	    //Load logged in username
+	    $("#logged_user")
+		.text(api.username);
         }
 
 	// Determine whether the message would be displayed in the current view
@@ -87,10 +94,6 @@ $(document).ready(function()
 
 	// Scroll to the bottom of the messages div
 	$("#messages").animate({ scrollTop: $("#messages").prop("scrollHeight") }, 1000);
-
-	//Load logged in username
-	$("#logged_user")
-	    .text(api.username);
 
 	// Update the missed messages counters
 	updateMissedMessages();

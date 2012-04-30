@@ -23,7 +23,7 @@ class BaseHandler(tornado.web.RequestHandler):
         if username is not None:
             account, created = Account.objects.get_or_create(username=username)
             if created:
-		account.subscriptions.add(Subscription.objects.get_or_create(class_name="zephyrplus-lobby", instance="*", recipient="*")[0])
+		account.subscriptions.add(Subscription.objects.get_or_create(class_name="lobby", instance="*", recipient="*")[0])
 		account.subscriptions.add(Subscription.objects.get_or_create(class_name=username, instance="*", recipient="*")[0])
             return account
         return None
