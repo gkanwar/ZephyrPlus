@@ -64,6 +64,6 @@ fields signature body
 #   " on "+$date+"\n"+$ftext+" on "+$fromhost+"\nTo: "+
 #   $recipient+")\n\n"
 #print "/usr/bin/python" "./insert_zephyr.py" $class $instance $recipient $sender $body $signature
-exec "/usr/bin/python" "./insert_zephyr.py" $class $instance $recipient $sender $body $signature
+exec "./insert_zephyr.sh" $class $instance $recipient $sender $body $signature
 #put
 exit
