@@ -9,10 +9,15 @@
 PIPE="incomingZephyrs.pipe"
 LOCK="$PIPE.lock"
 
-if [[ ! -f $PIPE ]]
+if [[ ! -p $PIPE ]]
 then
-echo "Adding pipe: $PIPE"
-mkfifo $PIPE
+	if [[ -e $PIPE ]]
+   	then
+		echo "Removing file: $PIPE"
+		rm $PIPE
+	fi
+	echo "Creating pipe: $PIPE"
+	mkfifo $PIPE
 fi
 
 #lock the file or wait (up to forever) until aquisition of lock
