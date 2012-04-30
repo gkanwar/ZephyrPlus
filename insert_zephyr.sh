@@ -4,8 +4,17 @@
 # Script Arugments:
 # (1) class, (2) instance, (3) recipient, (4) sender, (5) body, (6) signature
 
+
+
 PIPE="incomingZephyrs.pipe"
 LOCK="$PIPE.lock"
+
+if [[ ! -f $PIPE ]]
+then
+echo "Adding pipe: $PIPE"
+mkfifo $PIPE
+fi
+
 #lock the file or wait (up to forever) until aquisition of lock
 #echo "trying to acquire lock"
 flock -x $LOCK -c "(
