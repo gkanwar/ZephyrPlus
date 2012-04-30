@@ -30,19 +30,18 @@ def main(argv):
 	while 1:
 		line = file.readline()
 		if line == None:
-			assert false
+			assert False
 			#we shouldnt get here!
 		if line == '':
 			time.sleep(0.1)
 			continue
-		elif  line == "\n":
+		print(line.strip())
+		if  line == "\x00\n" and len(zArray) == 6:
 			processLine(zArray)
 			zArray = []
 		else:
 			line = line.strip()
 			zArray.append(line)
-
-
 
 def processLine(zArray):
 	if debug:

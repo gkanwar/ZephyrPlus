@@ -30,7 +30,7 @@ flock -x $LOCK -c "(
 	echo $4 > $PIPE;
 	echo $5 > $PIPE;
 	echo $6 > $PIPE;
-	echo  "" > $PIPE;
+	echo -e \"\0\" > $PIPE;
 	)"
 echo "$*"
 #echo "successfully sent message down the pipe"
