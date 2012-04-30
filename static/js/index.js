@@ -419,6 +419,8 @@ var createMessage = function(message)
 
     // Makes sender name brighter.
     sender_text = "<span id=sender>"+sender_text+"</span>";
+    
+    var links = message_text.match(/https?:\/\/[^ '"]+/g);
 
     if(signature)
         sender_text+=" ("+signature+")";
@@ -427,6 +429,9 @@ var createMessage = function(message)
 	.append(sender_text)
         .append($("<span class='message_timestamp'/>").text(convertTime(timestamp)));
     var body = $("<pre class='message_body'/>").text(message_text);
+    if(links)
+        for(var n=0; n<links.length; n++)
+            body.html(body.html().replace(links[n], "<a href=\""+links[n]+"\">"+links[n]+"</a>"));
     message_entry.append(header, body);
     return message_entry
 }
