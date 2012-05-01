@@ -23,24 +23,24 @@ fi
 #echo "arguments $#"
 #echo "message<$5>"
 
-DELIMITOR="\x00"
+DELIMITOR=`echo -e "\0037"`
 
 #lock the file or wait (up to forever) until aquisition of lock
 #echo "trying to acquire lock"
 flock -x $LOCK -c "(
 	set -f;
-	echo \"$1\" > $PIPE;
-	echo -e \"$DELIMITOR\" > $PIPE;
-	echo \"$2\" > $PIPE;
-	echo -e \"$DELIMITOR\" > $PIPE;
-	echo \"$3\" > $PIPE;
-	echo -e \"$DELIMITOR\" > $PIPE;
-	echo \"$4\" > $PIPE;
-	echo -e \"$DELIMITOR\" > $PIPE;
-	echo \"$5\" > $PIPE;
-	echo -e \"$DELIMITOR\" > $PIPE;
-	echo \"$6\" > $PIPE;
-	echo -e \"$DELIMITOR\" > $PIPE;
+	echo -n \"$1\" > $PIPE;
+	echo -n \"$DELIMITOR\" > $PIPE;
+	echo -n \"$2\" > $PIPE;
+	echo -n \"$DELIMITOR\" > $PIPE;
+	echo -n \"$3\" > $PIPE;
+	echo -n \"$DELIMITOR\" > $PIPE;
+	echo -n \"$4\" > $PIPE;
+	echo -n \"$DELIMITOR\" > $PIPE;
+	echo -n \"$5\" > $PIPE;
+	echo -n \"$DELIMITOR\" > $PIPE;
+	echo -n \"$6\" > $PIPE;
+	echo -n \"$DELIMITOR\" > $PIPE;
 	)"
 echo "insert_zephyr.sh:""$*"
 #echo "successfully sent message down the pipe"
