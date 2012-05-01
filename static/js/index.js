@@ -251,7 +251,7 @@ $(document).ready(function()
 
     $("#messagetextarea").change(
 	function() {
-	    this.value=wrapStr(this.value, 72);
+	    this.value=wrapStr(this.value);
 	}
     ).keyup(
 	function() {
@@ -874,6 +874,8 @@ function hsvToRgb(h, s, v){
 }
 
 function wrapStr(str, len){
+    if(!len)
+	len=65;
     var arr = str.split("\n");
     for(var n=0; n<arr.length; n++){
 	if(arr[n].length>len){
