@@ -209,6 +209,7 @@ $(document).ready(function()
 		       'class': classText,
 		       'instance': instanceText,
 		       'message': messageText,
+		       'signature': api.storage.signature,
 		   },
 		   function()
 		   {
