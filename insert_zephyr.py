@@ -69,6 +69,7 @@ def processLine(zArray):
                 signature = signature[signature.find("(")+1:signature.rfind(")")]
             else:
                 signature = ""
+	signature = signature.replace(" (via ZephyrPlus", "").replace("via ZephyrPlus", "")
 	z = Zephyr(message=zArray[4], sender=sender, date=datetime.datetime.now(), dst=s, signature=signature)
 	z.save()
 
