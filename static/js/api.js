@@ -203,7 +203,7 @@ var personals = [
         function getSubbedMessages(longpoll){
             if(!longpoll)
                 longpoll=false;
-            $.get("/chat", {
+            var request = $.get("/chat", {
                 startdate: api.last_messaged-0,
                 longpoll: longpoll
             }, function(messages){
@@ -214,6 +214,10 @@ var personals = [
                 if(api.onerror)
                     api.onerror();
             });
+	    window.setTimeout(function(){
+		if(request.readyState!=4)
+		    request.abort();
+	    }, 60000);
         }
         
         function getOldMessages(sub, startdate, callback){
