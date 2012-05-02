@@ -24,6 +24,7 @@ class Subscription(models.Model):
 
 	def get_filter(self):
             q = models.Q(dst__class_name=self.class_name)
+            q |= models.Q(dst__class_name='un'+self.class_name)
             if self.instance != '*':
                 q &= models.Q(dst__instance=self.instance)
             if self.recipient != '*':
