@@ -201,7 +201,7 @@ var personals = [
         }
         
         function getSubbedMessages(longpoll){
-            if(!longpoll)
+            if(longpoll!==true)
                 longpoll=false;
             var request = $.get("/chat", {
                 startdate: api.last_messaged-0,
@@ -210,9 +210,13 @@ var personals = [
                 procMessages(messages);
                 getSubbedMessages(true);
             }, "json").error(function(){
-                window.setTimeout(getSubbedMessages, 5000);
-                if(api.onerror)
-                    api.onerror();
+		if(longpoll)
+		    getSubbedMessages(false);
+		else {
+		    window.setTimeout(function(){getSubbedMessages(false)}, 10000);
+		    if(api.onerror)
+			api.onerror();
+		}
             });
 	    window.setTimeout(function(){
 		if(request.readyState!=4)
