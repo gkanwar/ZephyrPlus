@@ -546,7 +546,7 @@ var createMessage = function(message)
     // Makes sender name brighter.
     sender_text = "<span id=sender>"+sender_text+"</span>";
     
-    var links = message_text.match(/https?:\/\/[^ '"\n]+/g);
+    var links = message_text.match(/https?:\/\/[^ '"\n]+|[^ '"\n]+\.(com|edu|org|net|us)(\/[^ '"\n]*)?/g);
 
     if(signature)
         sender_text+=" ("+signature+")";
