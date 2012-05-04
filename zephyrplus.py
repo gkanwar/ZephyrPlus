@@ -210,8 +210,10 @@ class UserHandler(BaseHandler):
             sub = Subscription.objects.get_or_create(class_name=class_name, instance=instance, recipient=recipient)[0]
             if action == 'subscribe':
                 user.subscriptions.add(sub)
+                log("Subscribe " + str(sub))
                 subList = [str(sub.class_name), str(sub.instance), str(sub.recipient)]
                 readZephyrProc.stdin.write("\0".join(subList))
+                readZephyrProc.stdin.flush()
                 #subString = sub.class_name + " " + sub.instance + " " + sub.recipient
                 #proc = subprocess.Popen(["zctl"], stdin=subprocess.PIPE)
                 #proc.stdin.write("file " + subFile + "\n")
@@ -265,6 +267,7 @@ class WebServer(threading.Thread):
         tornado.ioloop.IOLoop.instance().start()
 
 def main():
+    log("Starting tornado server...")
 	# Start our listener process
     global readZephyrProc
     #readZephyrProc = subprocess.Popen(["./loadZephyrs.py"], shell=False, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
