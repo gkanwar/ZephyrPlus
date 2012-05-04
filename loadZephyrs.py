@@ -62,7 +62,12 @@ class ZephyrLoader(threading.Thread):
         s = Subscription.objects.get_or_create(class_name=zMsg.cls.lower(), instance=zMsg.instance.lower(), recipient=zMsg.recipient.lower())[0]
 
         # Sender + Signature Processing
-        sender = zMsg.sender
+        athena = '@ATHENA.MIT.EDU'
+        if (len(zMsg.sender) >= len(athena)) and (zMsg.sender[-len(athena):] == athena):
+            sender = zMsg.sender[:-len(athena)]
+        else:
+            sender = zMsg.sender
+
         signature = zMsg.fields[0]
         if sender == "daemon/zephyrplus.xvm.mit.edu":
             sender = signature.split(" ")[0]
