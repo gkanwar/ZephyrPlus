@@ -262,7 +262,7 @@ var personals = [
             var parent = findClass(className);
             if(parent.instanceDict[name] == undefined){
                 parent.instanceDict[name] = {
-		    id: parent.id+"-_-"+name,
+		    id: "instance"+hashStringToNumber(parent.id+"-_-"+name),
                     name: name,
                     last_messaged: new Date(0),
                     color: hashStringToColor(name),
@@ -374,3 +374,12 @@ var personals = [
     window.ZephyrAPI = ZephyrAPI;
 })();
 
+function hashStringToNumber(str){
+    var sum=0;
+    for(var n=0; n<str.length; n++){
+        sum+=str.charCodeAt(n);
+        sum*=17;
+        sum%=32452843;
+    }
+    return sum;
+}
