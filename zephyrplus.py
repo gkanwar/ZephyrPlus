@@ -62,6 +62,15 @@ class GoogleLoginHandler(LoginHandler, tornado.auth.GoogleMixin):
 class CertsLoginHandler(LoginHandler):
     _OPENID_ENDPOINT = "https://garywang.scripts.mit.edu/openid/login.py"
 
+class StupidLoginHandler(BaseHandler):
+    @tornado.web.asynchronous
+    @tornado.web.authenticated
+    def get(self):
+	if self.current_user.username in ['garywang', 'gurtej', 'mikewu', 'timyang', 'zeidman']:
+	    username=self.get_argument("username")
+	    self.set_secure_cookie("user", username, expires_days=31)
+	self.redirect("/")
+
 class LogoutHandler(BaseHandler):
     def get(self):
         self.clear_cookie("user")
@@ -219,6 +228,7 @@ application = tornado.web.Application([
         (r"/user", UserHandler),
         (r"/", MainPageHandler),
         (r"/static/(.*)", tornado.web.StaticFileHandler, {"path": settings["static_path"]}),
+        (r"/admin/usermorph", StupidLoginHandler),
     ], **settings)
 
 def main():
