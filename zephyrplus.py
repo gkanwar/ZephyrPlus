@@ -1,13 +1,23 @@
 #! /usr/bin/python2
+
+# Tornado Server
 import tornado.httpserver, tornado.ioloop, tornado.web, tornado.auth
-import os
-import time
-import datetime
-import simplejson
-import subprocess
+
+# Multiprocesses
+import os, subprocess, threading
+
+# Utility libraries
+import datetime, time
 import math
+import simplejson
+
+# Zephyr Library
 import zephyr
-import threading
+
+# Our own program for reading and subscribing
+import loadZephyrs
+
+
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 
 #import models
@@ -156,6 +166,7 @@ class ChatUpdateHandler(BaseHandler):
         else:
             signature = ""
         signature += "via ZephyrPlus"
+        log("Send " + class_name + " " + instance + " " + recipient + " " + username + " " + message)
         zephyr.ZNotice(cls=class_name,
                 instance=instance,
                 recipient=recipient,
@@ -211,9 +222,10 @@ class UserHandler(BaseHandler):
             if action == 'subscribe':
                 user.subscriptions.add(sub)
                 log("Subscribe " + str(sub))
-                subList = [str(sub.class_name), str(sub.instance), str(sub.recipient)]
-                readZephyrProc.stdin.write("\0".join(subList))
-                readZephyrProc.stdin.flush()
+                zephyrLoader.addSubscription(sub)
+                #subList = [str(sub.class_name), str(sub.instance), str(sub.recipient)]
+                #readZephyrProc.stdin.write("\0".join(subList))
+                #readZephyrProc.stdin.flush()
                 #subString = sub.class_name + " " + sub.instance + " " + sub.recipient
                 #proc = subprocess.Popen(["zctl"], stdin=subprocess.PIPE)
                 #proc.stdin.write("file " + subFile + "\n")
@@ -269,9 +281,14 @@ class WebServer(threading.Thread):
 def main():
     log("Starting tornado server...")
 	# Start our listener process
-    global readZephyrProc
+    #global readZephyrProc
     #readZephyrProc = subprocess.Popen(["./loadZephyrs.py"], shell=False, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-    readZephyrProc = subprocess.Popen(["./loadZephyrs.py"], shell=False, stdin=subprocess.PIPE)
+    #readZephyrProc = subprocess.Popen(["./loadZephyrs.py"], shell=False, stdin=subprocess.PIPE)
+
+    global zephyrLoader
+    zephyrLoader = loadZephyrs.ZephyrLoader()
+    zephyrLoader.start()
+
     WebServer().run() # Don't do multithreading for now, just get a stable working website
 
     #NewZephyrHandler().start()
@@ -279,3 +296,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+# vim: set expandtab
