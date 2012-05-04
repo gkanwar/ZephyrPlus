@@ -60,7 +60,7 @@ class ZephyrLoader(threading.Thread):
         # Check that the msg is an actual message and not other types.
         if zMsg.kind != 2: # ACKED
             if zMsg.kind != 5: #SERVACK
-                log("Recieved a " + str(zMsg.kind) + " notice")
+                self.log("Recieved a " + str(zMsg.kind) + " notice")
             return
         # Create a valid destination field for our zephyr
         s = Subscription.objects.get_or_create(class_name=zMsg.cls.lower(), instance=zMsg.instance.lower(), recipient=zMsg.recipient.lower())[0]
