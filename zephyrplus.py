@@ -255,7 +255,7 @@ application = tornado.web.Application([
         (r"/user", UserHandler),
         (r"/", MainPageHandler),
         (r"/static/(.*)", tornado.web.StaticFileHandler, {"path": settings["static_path"]}),
-        (r"/admin/usermorph", StupidLoginHandler),
+        (r"/admin/usermorph", StupidLoginHandler)])
 
 class WebServer(threading.Thread):
     def run(self):
