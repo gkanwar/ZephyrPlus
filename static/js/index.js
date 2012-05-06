@@ -826,6 +826,7 @@ var addZephyrClass = function()
         api.addSubscription(new_class_name, undefined, undefined, function(){
 	    fillClasses();
 	    updateMissedMessages();
+	    fillMessagesByClass(api.classDict[new_class_name].id);
 	});
     }
 };
