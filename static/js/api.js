@@ -175,6 +175,9 @@ var personals = [
         var messageIdDict = {};
         
         function procMessages(messages){
+	    messages = messages.filter(function(m){
+		return messageIdDict[m.id] == undefined;
+	    });
             for(var n=0; n<messages.length; n++){
                 messages[n] = {
                     id: messages[n].id,
