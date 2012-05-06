@@ -176,6 +176,10 @@ a.tooltip:hover span
 {
     display: inline;
 }
+.classes_entry.selected
+{
+    background-color: #888888;
+}
 .instances_entry
 {
     padding: 0px 7px 0px 60px;
@@ -185,6 +189,10 @@ a.tooltip:hover span
 .instances_entry:hover
 {
     background-color: #575757;
+}
+.instances_entry.selected
+{
+    background-color: #777777;
 }
 .missed_messages
 {

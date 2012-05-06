@@ -628,6 +628,9 @@ var fillMessagesByClass = function(class_id, instance_id)
 	.off("click");
     var messagesOut;
 
+    $(".classes_entry.selected").removeClass("selected");
+    $(".instances_entry.selected").removeClass("selected");
+
     // Class is defined
     if (typeof(class_id) != 'undefined')
     {
@@ -641,6 +644,15 @@ var fillMessagesByClass = function(class_id, instance_id)
 		       fillButtonArea(class_id);
 		   });
 	headerText.append(" > ").append(headerText_class);
+	
+	var selected = $("#classes_entry_id_"+class_id);
+	selected.addClass("selected");
+	if(selected.position().top < 0 || selected.position().top > selected.offsetParent().height()-50){
+	    if(selected.position().top < 0)
+		selected.offsetParent().scrollTop(selected.offsetParent().scrollTop()+selected.position().top-selected.offsetParent().height()/10);
+	    else
+		selected.offsetParent().scrollTop(selected.offsetParent().scrollTop()+selected.position().top-selected.offsetParent().height()/2);
+	}
 
 	// Instance is defined
 	if (instance_id != undefined)
@@ -656,6 +668,16 @@ var fillMessagesByClass = function(class_id, instance_id)
 		       });
 	    headerText.append(" > ").append(headerText_instance);
 	    messagesOut = instanceObj.messages;
+	    
+	    var selected = $("#instances_entry_id_"+instance_id);
+	    selected.addClass("selected");
+	    if(selected.position().top < 0 || selected.position().top > selected.offsetParent().height()-50){
+		if(selected.position().top < 0)
+		    selected.offsetParent().scrollTop(selected.offsetParent().scrollTop()+selected.position().top-selected.offsetParent().height()/10);
+		else
+		    selected.offsetParent().scrollTop(selected.offsetParent().scrollTop()+selected.position().top-selected.offsetParent().height()/2);
+	    }
+	    
 	}
 	else
 	{
