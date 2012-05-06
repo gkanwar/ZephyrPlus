@@ -339,13 +339,21 @@ var personals = [
                             api.subscriptions[n].instance != sub.instance ||
                             api.subscriptions[n].recipient != sub.recipient)
                         subs.push(api.subscriptions[n]);
-                for(var i=0; i<api.classes.length; i++) {
-                    if(api.classes[i] == api.classDict[className]) {
-                        api.classes.splice(i,1);
-                        break;
-                    }
-                }
-                delete classIdDict[api.classDict[className].id];
+		var cls = api.classDict[className];
+		api.messages = api.messages.filter(function(m){
+		    return m.parent_class != cls;
+		});
+		for(var n=0; n<cls.messages.length; n++)
+		    delete messageIdDict[cls.messages[n].id];
+		api.instances = api.instances.filter(function(i){
+		    return i.parent_class != cls;
+		});
+		for(var n=0; n<cls.instances.length; n++)
+		    delete instanceIdDict[cls.instances[n].id];
+                api.classes = api.classes.filter(function(c){
+		    return c != cls;
+		});
+                delete classIdDict[cls.id];
                 delete api.classDict[className];
                 api.subscriptions=subs;
                 if(callback)
