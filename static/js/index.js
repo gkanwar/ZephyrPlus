@@ -224,8 +224,9 @@ $(document).ready(function()
     $("#add_class")
 	.css("cursor","pointer")
 	.click(
-	    function() {
+	    function(e) {
 		addZephyrClass();
+		e.stopPropagation();	//Don't switch back to the default view
 	    });
 
     // Changes instances options on class selection change
