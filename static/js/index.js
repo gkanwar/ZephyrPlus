@@ -461,6 +461,8 @@ var fillClasses = function()
 						       console.log('Removed subscription, killing HTML: ');
 						       console.log($("#classes_entry_id_"+curClass.id));
 						       $("#classes_entry_id_"+curClass.id).parent().remove();
+						       if(api.storage.last_viewed.cls == curClass.id)
+							   fillMessagesByClass();
 						   }
 						  );
                             e.stopPropagation(); //Don't switch to the class after removing it
