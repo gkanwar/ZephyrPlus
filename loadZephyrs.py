@@ -90,7 +90,8 @@ class ZephyrLoader(threading.Thread):
         msg = zMsg.fields[1].rstrip()
         z = Zephyr(message=msg, sender=sender, date=datetime.datetime.now(), dst=s, signature=signature)
         z.save()
-        self.log("Zephyr(" + str(z.id) + "): " + str(s) + " " + sender + " " + msg + " " + signature)
+        logMsg = "Zephyr(" + str(z.id) + "): " + str(s) + " " + sender + " " + msg + " " + signature
+        self.log(logMsg.encode("utf-8"))
 
         # Tell server to update
         z_id = z.id
@@ -117,7 +118,8 @@ class ZephyrLoader(threading.Thread):
             #(cls,inst,recip) = tornadoInput.split("\0")
         while not self.newSubQueue.empty():
             sub = self.newSubQueue.get()
-            self.log("Sub: " + sub.class_name + "," + sub.instance + "," + sub.recipient)
+            logMsg = "Sub: " + sub.class_name + "," + sub.instance + "," + sub.recipient
+            self.log(logMsg.encode("utf-8"))
             self.subscribe(sub, subs)
             #tornadoInput = sys.stdin.readline()
 
