@@ -638,6 +638,10 @@ var fillMessagesByClass = function(class_id, instance_id)
 	headerText.append(" > ").append(headerText_class);
 	
 	var selected = $("#classes_entry_id_"+class_id);
+	if(selected.length==0){
+	    fillClasses();
+	    selected = $("#classes_entry_id_"+class_id);
+	}
 	selected.addClass("selected");
 	if(selected.position().top < 0 || selected.position().top > selected.offsetParent().height()-50){
 	    if(selected.position().top < 0)
@@ -662,6 +666,10 @@ var fillMessagesByClass = function(class_id, instance_id)
 	    messagesOut = instanceObj.messages;
 	    
 	    var selected = $("#instances_entry_id_"+instance_id);
+	    if(selected.length==0){
+		fillClasses();
+		selected = $("#instances_entry_id_"+class_id);
+	    }
 	    selected.addClass("selected");
 	    if(selected.position().top < 0 || selected.position().top > selected.offsetParent().height()-50){
 		if(selected.position().top < 0)
