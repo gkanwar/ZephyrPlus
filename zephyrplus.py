@@ -232,6 +232,7 @@ class UserHandler(BaseHandler):
 
 # Writes debuging messages to logfile
 def log(msg):
+	msg = msg.encode("utf-8")
     logfile = open(LOGFILE_NAME, "a")
     datestr = datetime.datetime.now().strftime("[%m/%d %H:%M]")
     logfile.write(datestr + " " + msg + "\n")
