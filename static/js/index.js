@@ -118,8 +118,8 @@ $(document).ready(function()
 		
 
             // Fill in the messages and button area
-    	    fillMessagesByClass();
-            fillButtonArea();
+    	    fillMessagesByClass(api.storage.last_viewed.cls, api.storage.last_viewed.instance);
+            fillButtonArea(api.storage.last_viewed.cls, api.storage.last_viewed.instance);
             // Fill in the personals and classes sidebar
             //fillPersonals(); // Personals don't exist anymore
             fillClasses();
