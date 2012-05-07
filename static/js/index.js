@@ -34,6 +34,11 @@ $(document).ready(function()
     $("#messages").scroll(function()
     {
         atBottom = (($("#messages").height() + $("#messages").scrollTop()) == $("#messages").prop("scrollHeight"));
+        // Mark all messages in current class as read if we're at the bottom
+        if (atBottom && api.storage && api.storage.last_viewed)
+        {
+            setCurrentRead(api.storage.last_viewed.cls, api.storage.last_viewed.instance);
+        }
     });
 
 
@@ -277,15 +282,7 @@ $(document).ready(function()
 
 
 // Set the focus and blur handlers to modify a global flag
-$(window).focus(function()
-{
-    focused = true;
-    // Also set the current instance/class to read
-    if (api && api.ready)
-    {
-	setCurrentRead(api.storage.last_viewed.cls, api.storage.last_viewed.instance);
-    }
-});
+$(window).focus(function() { focused = true; });
 $(window).blur(function() { focused = false; });
 
 
