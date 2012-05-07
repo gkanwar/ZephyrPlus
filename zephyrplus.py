@@ -157,7 +157,7 @@ class ChatUpdateHandler(BaseHandler):
             signature = ""
         signature += "via ZephyrPlus"
         signature = signature.encode("utf-8")
-        log("Send " + class_name + " " + instance + " " + recipient + " " + username + " " + message)
+        log("Send " + class_name + " " + instance + " " + recipient + " " + username.encode("utf-8") + " " + message)
         zephyr.ZNotice(cls=class_name,
                 instance=instance,
                 recipient=recipient,
@@ -209,14 +209,12 @@ class UserHandler(BaseHandler):
             class_name = self.get_argument('class', 'message').lower()
             instance = self.get_argument('instance', '*').lower()
             recipient = self.get_argument('recipient', '*').lower()
-            sub = Subscription.objects.get_or_create(class_name=class_name, instance=instance, recipient=recipient)[0]
+            sub, created = Subscription.objects.get_or_create(class_name=class_name, instance=instance, recipient=recipient)
             if action == 'subscribe':
                 user.subscriptions.add(sub)
-                # Check if <class,*,*> is in database, if not, add
-                if not Subscription.objects.filter(class_name=class_name).exists():
-                    classSub = Subscription.objects.get_or_create(class_name=class_name, instance='*', recipient='*')
-                    log("Subscribe " + str(classSub))
-                    zephyrLoader.addSubscription(classSub)
+                if created:
+                    log("Subscribe " + str(sub))
+                    zephyrLoader.addSubscription(sub)
             else:
                 user.subscriptions.remove(sub)
             self.set_header('Content-Type', 'text/plain')
@@ -233,7 +231,7 @@ class UserHandler(BaseHandler):
 
 # Writes debuging messages to logfile
 def log(msg):
-    msg = msg.encode("utf-8")
+    #msg = msg.encode("utf-8")
     logfile = open(LOGFILE_NAME, "a")
     datestr = datetime.datetime.now().strftime("[%m/%d %H:%M]")
     logfile.write(datestr + " " + msg + "\n")

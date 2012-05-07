@@ -90,8 +90,8 @@ class ZephyrLoader(threading.Thread):
         msg = zMsg.fields[1].rstrip()
         z = Zephyr(message=msg, sender=sender, date=datetime.datetime.now(), dst=s, signature=signature)
         z.save()
-        logMsg = "Zephyr(" + str(z.id) + "): " + str(s) + " " + sender + " " + msg + " " + signature
-        self.log(logMsg.encode("utf-8"))
+        #logMsg = "Zephyr(" + unicode(z.id) + "): " + unicode(s) + " " + sender + " " + msg + " " + signature
+        #self.log(logMsg)
 
         # Tell server to update
         z_id = z.id
