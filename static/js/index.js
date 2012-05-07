@@ -83,20 +83,9 @@ $(document).ready(function()
 			type: 0,
 		    };
 	    }
-	    else
-	    {
-		if (!api.storage.last_viewed.instance)
-		{
-		    api.storage.last_viewed.instance = undefined;
-		}
-		if (!api.storage.last_viewed.cls)
-		{
-		    api.storage.last_viewed.cls = undefined;
-		}
-		if (!api.storage.last_viewed.type)
+	    else if (api.storage.last_viewed.type == undefined)
 		{
 		    api.storage.last_viewed.type = 0;
-		}
 	    }
 	}
     };
