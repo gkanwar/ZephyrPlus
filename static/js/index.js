@@ -131,9 +131,13 @@ $(document).ready(function()
 		.text(api.username);
         }
 
+
+        // Check for scrolled to bottom
+        var atBottom = (($("#messages").height() + $("#messages").scrollTop()) == $("#messages").prop("scrollHeight"));
+        var curViewModified = false;
+
 	// Determine whether the message would be displayed in the current view
-	// Dynamically update if it would;
-	// TODO: otherwise do something (bold + nums in parens)
+	// Dynamically update if it would; otherwise add it to missed messages
 	for (var i = 0; i < zephyrs.length; i++)
 	{
 	    curZephyr = zephyrs[i];
@@ -143,6 +147,7 @@ $(document).ready(function()
 		// Add the zephyr to our view
 		var messageEntry = createMessage(curZephyr);
 		$("#messages").append(messageEntry);
+		curViewModified = true;
 		// If the tab isn't focused add it to a missed messages
 		if (!focused)
 		{
@@ -162,7 +167,10 @@ $(document).ready(function()
 	}
 
 	// Scroll to the bottom of the messages div
-	$("#messages").animate({ scrollTop: $("#messages").prop("scrollHeight") }, 1000);
+	if (atBottom && curViewModified && focused)
+	{
+	    $("#messages").animate({ scrollTop: $("#messages").prop("scrollHeight") }, 1000);
+	}
 
 	// Update the missed messages counters
 	updateMissedMessages();
