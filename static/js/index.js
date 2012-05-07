@@ -63,6 +63,9 @@ $(document).ready(function()
 		    // A dictionary of instances and when we last viewed their messages
 		    instances_last_seen: {}
 		}
+        
+        // Give the user a popup telling them to see help
+        setTimeout("alert('New to Zephyr? See the help section for more information on how Zephyr works and how to use ZephyrPlus');", 0);
 	}
 	// If the user already has a storage, set some values, and check consistency
 	else
