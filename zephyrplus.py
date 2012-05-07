@@ -145,17 +145,18 @@ class ChatUpdateHandler(BaseHandler):
 
     @tornado.web.authenticated
     def post(self, *args, **kwargs):
-        class_name = self.get_argument('class', 'message')
-        instance = self.get_argument('instance', 'personal')
-        recipient = self.get_argument('recipient', '')
+        class_name = self.get_argument('class', 'message').encode("utf-8")
+        instance = self.get_argument('instance', 'personal').encode("utf-8")
+        recipient = self.get_argument('recipient', '').encode("utf-8")
         signature = self.get_argument('signature', None)
-        message = self.get_argument('message')
+        message = self.get_argument('message').encode("utf-8")
         username = self.current_user.username
         if signature is not None:
             signature += ") ("
         else:
             signature = ""
         signature += "via ZephyrPlus"
+        signature = signature.encode("utf-8")
         log("Send " + class_name + " " + instance + " " + recipient + " " + username + " " + message)
         zephyr.ZNotice(cls=class_name,
                 instance=instance,
