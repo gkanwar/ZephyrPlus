@@ -38,7 +38,7 @@ class ZephyrLoader(threading.Thread):
 
     def subscribe(self, sub, subs):
         try:
-            subs.add((str(sub.class_name), str(sub.instance), str(sub.recipient)))
+            subs.add((sub.class_name.encode("utf-8"), str(sub.instance), str(sub.recipient)))
             time.sleep(0.01) # Loading too quickly 
         except IOError as (errno, strerror):
             # SERVNAK: Usually is a temp. issue, loading too quickly. Try to sub once
@@ -46,7 +46,7 @@ class ZephyrLoader(threading.Thread):
             if strerror == "SERVNAK received":
                 try:
                     time.sleep(self.retrySubTimeout)
-                    subs.add((str(sub.class_name), str(sub.instance), str(sub.recipient)))
+                    subs.add((sub.class_name.encode("utf-8"), str(sub.instance), str(sub.recipient)))
                 except IOError:
                     return
             else:
