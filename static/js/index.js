@@ -600,7 +600,7 @@ var fillMessagesByClass = function(class_id, instance_id)
     // Set storage variables and save storage
     api.storage.last_viewed.cls = class_id;
     api.storage.last_viewed.instance = instance_id;
-    api.storage.last_viewed.last_logged_in = (new Date()).getTime();
+    api.storage.last_logged_in = (new Date()).getTime();
     api.storage.last_viewed.type = 0;
     if (class_id != undefined)
     {
