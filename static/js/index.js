@@ -63,6 +63,9 @@ $(document).ready(function()
 		    // A dictionary of instances and when we last viewed their messages
 		    instances_last_seen: {}
 		}
+        
+        // Give the user a popup telling them to see help
+        setTimeout("alert('New to Zephyr? See the help section for more information on how Zephyr works and how to use ZephyrPlus');", 0);
 	}
 	// If the user already has a storage, set some values, and check consistency
 	else
@@ -80,20 +83,9 @@ $(document).ready(function()
 			type: 0,
 		    };
 	    }
-	    else
-	    {
-		if (!api.storage.last_viewed.instance)
-		{
-		    api.storage.last_viewed.instance = undefined;
-		}
-		if (!api.storage.last_viewed.cls)
-		{
-		    api.storage.last_viewed.cls = undefined;
-		}
-		if (!api.storage.last_viewed.type)
+	    else if (api.storage.last_viewed.type == undefined)
 		{
 		    api.storage.last_viewed.type = 0;
-		}
 	    }
 	}
     };
@@ -597,7 +589,7 @@ var fillMessagesByClass = function(class_id, instance_id)
     // Set storage variables and save storage
     api.storage.last_viewed.cls = class_id;
     api.storage.last_viewed.instance = instance_id;
-    api.storage.last_viewed.last_logged_in = (new Date()).getTime();
+    api.storage.last_logged_in = (new Date()).getTime();
     api.storage.last_viewed.type = 0;
     if (class_id != undefined)
     {
