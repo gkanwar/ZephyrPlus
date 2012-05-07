@@ -1,5 +1,6 @@
 // Set global variables
 focused = false;
+atBottom = false;
 
 // When the document loads, populate the personals
 $(document).ready(function()
@@ -28,6 +29,13 @@ $(document).ready(function()
 				    fillMessagesByPersonal();
 				    fillButtonArea();
 				});
+				
+    // Check for scrolled to bottom
+    $("#messages").scroll(function()
+    {
+        atBottom = (($("#messages").height() + $("#messages").scrollTop()) == $("#messages").prop("scrollHeight"));
+    });
+
 
     //Dropdown 'class' header loads all classes upon clicking.
     $("#classestitleheader")
@@ -132,8 +140,6 @@ $(document).ready(function()
         }
 
 
-        // Check for scrolled to bottom
-        var atBottom = (($("#messages").height() + $("#messages").scrollTop()) == $("#messages").prop("scrollHeight"));
         var curViewModified = false;
 
 	// Determine whether the message would be displayed in the current view
