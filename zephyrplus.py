@@ -11,23 +11,13 @@ import datetime, time
 import math
 import simplejson
 
-# Zephyr Library
+# Zephyr Libraries
 import zephyr
-
-# Our own program for reading and subscribing
 import loadZephyrs
-
+zephyr.init()
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
-
-#import models
 from models import Zephyr, Subscription, Account
-
-#from django.conf import settings
-#settings.configure(DATABASE_ENGINE='sqlite3', DATABASE_NAME='zephyrs.db')
-
-subFile = "/ZephyrPlus/.zephyrs.subs"
-zephyr.init()
 
 LOGFILE_NAME = "/var/log/tornado.log"
 
@@ -221,16 +211,11 @@ class UserHandler(BaseHandler):
             sub = Subscription.objects.get_or_create(class_name=class_name, instance=instance, recipient=recipient)[0]
             if action == 'subscribe':
                 user.subscriptions.add(sub)
-                log("Subscribe " + str(sub))
-                zephyrLoader.addSubscription(sub)
-                #subList = [str(sub.class_name), str(sub.instance), str(sub.recipient)]
-                #readZephyrProc.stdin.write("\0".join(subList))
-                #readZephyrProc.stdin.flush()
-                #subString = sub.class_name + " " + sub.instance + " " + sub.recipient
-                #proc = subprocess.Popen(["zctl"], stdin=subprocess.PIPE)
-                #proc.stdin.write("file " + subFile + "\n")
-                #proc.stdin.write("add " + subString + "\n")
-                #proc.stdin.write("quit\n");
+                # Check if <class,*,*> is in database, if not, add
+                if not Subscription.objects.filter(class_name=class_name).exists():
+                    classSub = Subscription.objects.get_or_create(class_name=class_name, instance='*', recipient='*')
+                    log("Subscribe " + str(classSub))
+                    zephyrLoader.addSubscription(classSub)
             else:
                 user.subscriptions.remove(sub)
             self.set_header('Content-Type', 'text/plain')

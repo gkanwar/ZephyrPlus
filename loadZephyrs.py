@@ -61,9 +61,14 @@ class ZephyrLoader(threading.Thread):
         if zMsg.kind != 2: # ACKED
             if zMsg.kind != 5: #SERVACK
                 self.log("Recieved a " + str(zMsg.kind) + " notice")
+                self.log("NOTICE: " + zMsg.cls + " " + zMsg.instance + " " + zMsg.recipient + 
+                        " " + zMsg.sender + " " + zMsg.fields[1] + " " + zMsg.fields[0])
             return
         # Create a valid destination field for our zephyr
-        s = Subscription.objects.get_or_create(class_name=zMsg.cls.lower(), instance=zMsg.instance.lower(), recipient=zMsg.recipient.lower())[0]
+        recipient = zMsg.recipient.lower()
+        if recipient == '':
+            recipient = '*'
+        s = Subscription.objects.get_or_create(class_name=zMsg.cls.lower(), instance=zMsg.instance.lower(), recipient=recipient)[0]
 
         # Sender + Signature Processing
         athena = '@ATHENA.MIT.EDU'
