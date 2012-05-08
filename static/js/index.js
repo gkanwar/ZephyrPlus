@@ -149,7 +149,7 @@ $(document).ready(function()
 		if (!focused)
 		{
 		    addMissedMessage(curZephyr);
-		    setTitle(1);
+		    //setTitle(1);
 		}
 	    }
 	    // If we're in the personal view, we don't do this!
@@ -163,7 +163,7 @@ $(document).ready(function()
 		addMissedMessage(curZephyr);
 		if (!focused) // If the tab isn't focused set the title
 		{
-		    setTitle(1);
+		    //setTitle(1);
 		}
 	    }
 	}
@@ -277,12 +277,14 @@ $(window).focus(function() { focused = true; });
 $(window).blur(function() { focused = false; });
 
 
-var setTitle = function(newState)
+var updateTitle = function()
 {
-    if (newState != undefined)
+    var numMissed = 0;
+    for (var i = 0; i < api.instances.length; i++)
     {
-       $(document).attr("title", (newState==0) ? "ZephyrPlus!" : "ZephyrPlus! (*)");
+	numMissed += api.instances[i].missedMessages.length;
     }
+    $(document).attr("title", (numMissed==0) ? "ZephyrPlus!" : "ZephyrPlus! ("+numMissed+")");
 };
 
 var setCurrentRead = function(class_id, instance_id)
@@ -312,6 +314,7 @@ var setCurrentRead = function(class_id, instance_id)
 	    updateClassMissedMessages(classObj);
 	}
     }
+    updateTitle();
 }
 
 var addMissedMessage = function(message)
@@ -341,6 +344,7 @@ var updateMissedMessages = function()
 	    updateInstanceMissedMessages(curClass.instances[j]);
 	}
     }
+    updateTitle();
 };
 
 var updateClassMissedMessages = function(classObj)
