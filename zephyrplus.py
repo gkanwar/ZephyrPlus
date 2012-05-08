@@ -264,20 +264,21 @@ class WebServer(threading.Thread):
         tornado.ioloop.IOLoop.instance().start()
 
 def main():
+    # Log our pid so another process can watch mem
+    try:
+        pidfile = open("/var/run/zephyrplus.pid", "w")
+        pidfile.write(str(os.getpid()))
+        pidfile.close()
+    except:
+        print("Could not write pid to file.")
+        raise
     log("Starting tornado server...")
 	# Start our listener process
-    #global readZephyrProc
-    #readZephyrProc = subprocess.Popen(["./loadZephyrs.py"], shell=False, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-    #readZephyrProc = subprocess.Popen(["./loadZephyrs.py"], shell=False, stdin=subprocess.PIPE)
-
     global zephyrLoader
     zephyrLoader = loadZephyrs.ZephyrLoader()
     zephyrLoader.start()
 
     WebServer().run() # Don't do multithreading for now, just get a stable working website
-
-    #NewZephyrHandler().start()
-    #WebServer().start()
 
 if __name__ == "__main__":
     main()
