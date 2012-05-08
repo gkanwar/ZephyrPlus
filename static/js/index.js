@@ -941,8 +941,8 @@ function formatText(str){
 	var fText = str;
 	fText = replaceZephyrTag("b", "b", fText);
 	fText = replaceZephyrTag("i", "i", fText);
-	fText = replaceZephyrTag("big", "big", fText);
-	fText = replaceZephyrTag("small", "small", fText);
+	//fText = replaceZephyrTag("big", "big", fText);
+	//fText = replaceZephyrTag("small", "small", fText);
 
 	return fText;
 }
