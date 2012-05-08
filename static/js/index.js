@@ -561,6 +561,7 @@ var createMessage = function(message)
     if(links)
         for(var n=0; n<links.length; n++)
             body.html(body.html().replace(links[n], "<a href=\""+links[n]+"\" target=\"_blank\">"+links[n]+"</a>"));
+	body.html(formatText(body.html()));
     message_entry.append(header, body);
     return message_entry
 }
@@ -933,4 +934,36 @@ function wrapStr(str, len){
 	}
     }
     return arr.join("\n");
+}
+
+/* Formats text according to formatting in Zephyr */
+function formatText(str){
+	var fText = str;
+	fText = replaceZephyrTag("b", "b", fText);
+	fText = replaceZephyrTag("i", "i", fText);
+	fText = replaceZephyrTag("big", "big", fText);
+	fText = replaceZephyrTag("small", "small", fText);
+
+	return fText;
+}
+
+/* Replace zephyr tags with html tags */
+function replaceZephyrTag(zephyrTag, htmlTag, str) {
+	var regex1 = RegExp("@" + zephyrTag + "\\{([^\\}]*)\\}", "g");
+	var regex2 = RegExp("@" + zephyrTag + "\\[([^\\]]*)\\]", "g");
+	var regex3 = RegExp("@" + zephyrTag + "\\(([^\\)]*)\\)", "g");
+
+	openTag = "<" + htmlTag + ">";
+	closeTag = "</" + htmlTag + ">";
+
+	var rText = str;
+	if(rText.match(regex1)){
+		rText = rText.replace(regex1, openTag + "$1" + closeTag);
+	} else if(rText.match(regex2)){
+		rText = rText.replace(regex2, openTag + "$1" + closeTag);
+	} else if(rText.match(regex3)){
+		rText = rText.replace(regex3, openTag + "$1" + closeTag);
+	}
+
+	return rText;
 }
