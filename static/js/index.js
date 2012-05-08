@@ -1,24 +1,10 @@
 // Set global variables
-focused = false;
+focused = true;
 atBottom = false;
 
 // When the document loads, populate the personals
 $(document).ready(function()
 {
-    // Dealing with styling the sidebar
-    /*
-    $("#personals_sidebar").resizable({handles:'s',minHeight: 20});
-    $("#personals_anchor").css({height:$("#personals_sidebar").height()-20});
-    $("#classes_anchor").css({height:$("#dropdown").height()-$("#personals_sidebar").height()-20});
-				 
-    $("#personals_sidebar").resize(function()
-				  {
-				      $("#personals_anchor").css({height:$("#personals_sidebar").height()-20});
-				      $("#classes_sidebar").css({height:$("#dropdown").height()-$("#personals_sidebar").height()});
-				      $("#classes_anchor").css({height:$("#dropdown").height()-$("#personals_sidebar").height()-20});
-				  });    
-    */
-
     $("#classes_title").click(function()
 			      {
 				  fillMessagesByClass();
@@ -163,6 +149,7 @@ $(document).ready(function()
 		if (!focused)
 		{
 		    addMissedMessage(curZephyr);
+		    setTitle(1);
 		}
 	    }
 	    // If we're in the personal view, we don't do this!
@@ -174,6 +161,10 @@ $(document).ready(function()
 	    else
 	    {
 		addMissedMessage(curZephyr);
+		if (!focused) // If the tab isn't focused set the title
+		{
+		    setTitle(1);
+		}
 	    }
 	}
 
@@ -286,6 +277,13 @@ $(window).focus(function() { focused = true; });
 $(window).blur(function() { focused = false; });
 
 
+var setTitle = function(newState)
+{
+    if (newState != undefined)
+    {
+       $(document).attr("title", (newState==0) ? "ZephyrPlus!" : "ZephyrPlus! (*)");
+    }
+};
 
 var setCurrentRead = function(class_id, instance_id)
 {
