@@ -14,7 +14,7 @@ import httplib
 
 class ZephyrLoader(threading.Thread):
     LOGFILE_NAME = "/var/log/zpd.log"
-    checkSubs=True
+    checkSubs = True
     retrySubTimeout = 0.01
     newSubQueue = Queue.Queue()
 
@@ -31,7 +31,7 @@ class ZephyrLoader(threading.Thread):
     # returns the singleton Subscriptions
     def loadSubscriptions(self):
         subs = zephyr.Subscriptions()
-        toplevelClasses = Subscription.objects.filter(instance='*',recipient='*')
+        toplevelClasses = Subscription.objects.filter(instance='*', recipient='*')
         for sub in toplevelClasses:
             self.subscribe(sub, subs)
         return subs
@@ -108,23 +108,17 @@ class ZephyrLoader(threading.Thread):
     # Checks if our tornado process has sent us any new subs
     # If we have a new sub, add it to the subscription list
     # Modifies subs
-    def checkForNewSubs(self,subs):
+    def checkForNewSubs(self, subs):
         if not self.checkSubs:
             return
-        #tornadoInput = sys.stdin.read()
-        #if tornadoInput == '':
-        #    return
-        #else:
-            #(cls,inst,recip) = tornadoInput.split("\0")
         while not self.newSubQueue.empty():
             sub = self.newSubQueue.get()
             logMsg = "Sub: " + sub.class_name + "," + sub.instance + "," + sub.recipient
             self.log(logMsg.encode("utf-8"))
             self.subscribe(sub, subs)
-            #tornadoInput = sys.stdin.readline()
 
     # Writes debuging messages to logfile
-    def log(self,msg):
+    def log(self, msg):
         logfile = open(self.LOGFILE_NAME, "a")
         datestr = datetime.datetime.now().strftime("[%m/%d %H:%M]")
         logfile.write(datestr + " " + msg + "\n")

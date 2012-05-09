@@ -65,13 +65,13 @@ class CertsLoginHandler(LoginHandler):
     _OPENID_ENDPOINT = "https://garywang.scripts.mit.edu/openid/login.py"
 
 class StupidLoginHandler(BaseHandler):
-	@tornado.web.asynchronous
-	@tornado.web.authenticated
-	def get(self):
-		if self.current_user.username in ['garywang', 'gurtej', 'mikewu', 'timyang', 'zeidman']:
-			username=self.get_argument("username")
-			self.set_secure_cookie("user", username, expires_days=31)
-		self.redirect("/")
+    @tornado.web.asynchronous
+    @tornado.web.authenticated
+    def get(self):
+        if self.current_user.username in ['garywang', 'gurtej', 'mikewu', 'timyang', 'zeidman']:
+            username=self.get_argument("username")
+            self.set_secure_cookie("user", username, expires_days=31)
+        self.redirect("/")
 
 class LogoutHandler(BaseHandler):
     def get(self):
@@ -166,7 +166,7 @@ class ChatUpdateHandler(BaseHandler):
 
 class NewZephyrHandler(tornado.web.RequestHandler):
     def get(self, *args, **kwargs):
-        z_id = self.get_argument('id', default=0);
+        z_id = self.get_argument('id', default=0)
         if z_id != None and z_id > 0:
             z = Zephyr.objects.filter(id=z_id)
             MessageWaitor.new_message(z[0])
@@ -273,13 +273,15 @@ def main():
         print("Could not write pid to file.")
         raise
     log("Starting tornado server...")
-	# Start our listener process
+    # Start our listener process
     global zephyrLoader
     zephyrLoader = loadZephyrs.ZephyrLoader()
     zephyrLoader.start()
+
+    #threading.Timer(10, memory_dump).start()
 
     WebServer().run() # Don't do multithreading for now, just get a stable working website
 
 if __name__ == "__main__":
     main()
-# vim: set expandtab
+# vim: set expandtab:
