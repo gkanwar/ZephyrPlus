@@ -3,6 +3,7 @@ import os, sys
 import datetime, time
 import threading
 import Queue
+import socket
 
 # PyZephyr Library for subscribing and receiving
 import zephyr, _zephyr
@@ -22,6 +23,13 @@ class ZephyrLoader(threading.Thread):
     checkSubs = True
     retrySubTimeout = 0.01
     newSubQueue = Queue.Queue()
+
+    def __init__(self, *args, **kwargs):
+	threading.Thread.__init__(self, *args, **kwargs)
+	s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+	s.connect(("mit.edu",80))
+	self.ip = s.getsockname()[0]
+	s.close()
 
     def addSubscription(self, sub):
         self.newSubQueue.put(sub)
@@ -83,13 +91,24 @@ class ZephyrLoader(threading.Thread):
             sender = zMsg.sender
 
         signature = zMsg.fields[0]
-        if sender == "daemon/zephyrplus.xvm.mit.edu":
-            sender = signature.split(" ")[0]
-            if signature.find("(") != -1:
-                signature = signature[signature.find("(")+1:signature.rfind(")")]
-            else:
-                signature = ""
+        #if sender == "daemon/zephyrplus.xvm.mit.edu":
+            #sender = signature.split(" ")[0]
+            #if signature.find("(") != -1:
+                #signature = signature[signature.find("(")+1:signature.rfind(")")]
+            #else:
+                #signature = ""
         signature = signature.replace(") (via ZephyrPlus", "").replace("via ZephyrPlus", "")
+
+        # Authentication check
+        if not zMsg.auth and zMsg.uid.address != self.ip:
+	    sender += " (UNAUTH)"
+	    if 'via zephyrplus' in zMsg.fields[0].lower():
+		zephyr.ZNotice(cls=m.cls,
+			       instance=m.instance,
+			       recipient=m.recipient,
+			       opcode='AUTO',
+			       message="ZephyrPlus Server\x00" +
+			       "The previous zephyr,\n\n" + m.fields[1].strip() + "\n\nwas FORGED (not sent from ZephyrPlus).\n").send()
 
         # Database insert
         msg = zMsg.fields[1].rstrip()
