@@ -9,8 +9,13 @@ import zephyr, _zephyr
 # Django Module for interacting with our database
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 from models import Zephyr, Subscription
+from django import db
 # httplib to signal tornado to update
 import httplib
+# Unicode support
+import codecs
+#Debugger
+#import pdb
 
 class ZephyrLoader(threading.Thread):
     LOGFILE_NAME = "/var/log/zpd.log"
@@ -32,6 +37,7 @@ class ZephyrLoader(threading.Thread):
     def loadSubscriptions(self):
         subs = zephyr.Subscriptions()
         toplevelClasses = Subscription.objects.filter(instance='*', recipient='*')
+        db.reset_queries()
         for sub in toplevelClasses:
             self.subscribe(sub, subs)
         return subs
@@ -58,17 +64,16 @@ class ZephyrLoader(threading.Thread):
     # Inserts a received ZNotice into our database
     def insertZephyr(self, zMsg):
         # Check that the msg is an actual message and not other types.
-        if zMsg.kind != 2: # ACKED
-            if zMsg.kind != 5: #SERVACK
-                self.log("Recieved a " + str(zMsg.kind) + " notice")
-                self.log("NOTICE: " + zMsg.cls + " " + zMsg.instance + " " + zMsg.recipient + 
-                        " " + zMsg.sender + " " + zMsg.fields[1] + " " + zMsg.fields[0])
+        if zMsg.kind > 2: # Only allow UNSAFE, UNACKED, ACKED messages
             return
+
         # Create a valid destination field for our zephyr
-        recipient = zMsg.recipient.lower()
+        class_name = unicode(zMsg.cls.lower(), 'utf-8')
+        instance = unicode(zMsg.instance.lower(), 'utf-8')
+        recipient = unicode(zMsg.recipient.lower(), 'utf-8')
         if recipient == '':
             recipient = '*'
-        s = Subscription.objects.get_or_create(class_name=zMsg.cls.lower(), instance=zMsg.instance.lower(), recipient=recipient)[0]
+        s = Subscription.objects.get_or_create(class_name=class_name, instance=instance, recipient=recipient)[0]
 
         # Sender + Signature Processing
         athena = '@ATHENA.MIT.EDU'
@@ -90,8 +95,10 @@ class ZephyrLoader(threading.Thread):
         msg = zMsg.fields[1].rstrip()
         z = Zephyr(message=msg, sender=sender, date=datetime.datetime.now(), dst=s, signature=signature)
         z.save()
-        #logMsg = "Zephyr(" + unicode(z.id) + "): " + unicode(s) + " " + sender + " " + msg + " " + signature
-        #self.log(logMsg)
+
+        #pdb.set_trace()
+        logMsg = u"Zephyr(%d): %s %s %s %s" % (z.id, unicode(s), unicode(sender, 'utf-8'), unicode(msg, 'utf-8'), unicode(signature, 'utf-8'))
+        self.log(logMsg)
 
         # Tell server to update
         z_id = z.id
@@ -105,6 +112,9 @@ class ZephyrLoader(threading.Thread):
         except:
             print("Could not notify tornado server of new zephyr.")
 
+        # Clean up our database queries
+        db.reset_queries()
+
     # Checks if our tornado process has sent us any new subs
     # If we have a new sub, add it to the subscription list
     # Modifies subs
@@ -113,13 +123,13 @@ class ZephyrLoader(threading.Thread):
             return
         while not self.newSubQueue.empty():
             sub = self.newSubQueue.get()
-            logMsg = "Sub: " + sub.class_name + "," + sub.instance + "," + sub.recipient
-            self.log(logMsg.encode("utf-8"))
+            logMsg = u"Sub: %s %s %s" % (sub.class_name, sub.instance, sub.recipient)
+            self.log(logMsg)
             self.subscribe(sub, subs)
 
     # Writes debuging messages to logfile
     def log(self, msg):
-        logfile = open(self.LOGFILE_NAME, "a")
+        logfile = codecs.open(self.LOGFILE_NAME, "a", encoding="utf-8")
         datestr = datetime.datetime.now().strftime("[%m/%d %H:%M]")
         logfile.write(datestr + " " + msg + "\n")
         logfile.close()

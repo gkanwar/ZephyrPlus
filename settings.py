@@ -1,11 +1,10 @@
 # Django settings for zephyrplus project.
 
-DEBUG = False
+DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
     # ('Your Name', 'your_email@example.com'),
-	('Michael Wu', 'mikewu@mit.edu'),
 )
 
 MANAGERS = ADMINS
