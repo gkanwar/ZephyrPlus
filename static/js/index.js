@@ -682,7 +682,7 @@ var fillMessagesByClass = function(class_id, instance_id)
 	    var selected = $("#instances_entry_id_"+instance_id);
 	    if(selected.length==0){
 		fillClasses();
-		selected = $("#instances_entry_id_"+class_id);
+		selected = $("#instances_entry_id_"+instance_id);
 	    }
 	    selected.addClass("selected");
 	    if(selected.position().top < 0 || selected.position().top > selected.offsetParent().height()-50){
