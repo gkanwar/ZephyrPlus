@@ -944,7 +944,9 @@ function wrapStr(str, len){
 function formatText(str){
 	var fText = str;
 	fText = replaceZephyrTag("b", "b", fText);
+	fText = replaceZephyrTag("bold", "b", fText);
 	fText = replaceZephyrTag("i", "i", fText);
+	fText = replaceZephyrTag("italic", "i", fText);
 	//fText = replaceZephyrTag("big", "big", fText);
 	//fText = replaceZephyrTag("small", "small", fText);
 
