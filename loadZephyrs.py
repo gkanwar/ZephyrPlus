@@ -103,9 +103,9 @@ class ZephyrLoader(threading.Thread):
         if not zMsg.auth and zMsg.uid.address != self.ip:
 	    sender += " (UNAUTH)"
 	    if 'via zephyrplus' in zMsg.fields[0].lower():
-		zephyr.ZNotice(cls=m.cls,
-			       instance=m.instance,
-			       recipient=m.recipient,
+		zephyr.ZNotice(cls=zMsg.cls,
+			       instance=zMsg.instance,
+			       recipient=zMsg.recipient,
 			       opcode='AUTO',
 			       message="ZephyrPlus Server\x00" +
 			       "The previous zephyr,\n\n" + zMsg.fields[1].strip() + "\n\nwas FORGED (not sent from ZephyrPlus).\n").send()
