@@ -516,6 +516,8 @@ var fillClasses = function()
 
 var createMessage = function(message)
 {
+    if(typeof(message.element) != "undefined")
+	return message.element;
     var classObj = message.parent_class;
     var instanceObj = message.parent_instance;
     var sender_text = message.sender;
@@ -571,6 +573,7 @@ var createMessage = function(message)
             body.html(body.html().replace(links[n], "<a href=\""+links[n]+"\" target=\"_blank\">"+links[n]+"</a>"));
 	body.html(formatText(body.html()));
     message_entry.append(header, body);
+    message.element = message_entry;
     return message_entry
 }
 
@@ -720,6 +723,7 @@ var fillMessagesByClass = function(class_id, instance_id)
 		     });
 
     // Actually fill in the messages
+    $(".messages_entry").detach();
     $("#messages").html('');
 
     // Display "no zephyrs" if there are no zephyrs in the class.
