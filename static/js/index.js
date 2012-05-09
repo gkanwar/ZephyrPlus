@@ -522,6 +522,7 @@ var createMessage = function(message)
     var message_text = message.message_body;
     var signature = message.signature;
     var timestamp = message.timestamp;
+    var auth = message.auth;
     var message_entry = $("<div class='messages_entry'/>")
 	.click(function()
 	       {
@@ -551,10 +552,13 @@ var createMessage = function(message)
 	       });
 
     // Makes sender name brighter.
-    sender_text = "<span id=sender>"+sender_text+"</span>";
+    sender_text = "<span class='sender'>"+sender_text+"</span>";
     
     var links = message_text.match(/https?:\/\/[^ '"\n]+/g);
 
+    if(!auth)
+	sender_text += " <span class='unauth'>(UNAUTH)</span>";
+    
     if(signature)
         sender_text+=" ("+signature+")";
     header.append(header_class).append(" / ")

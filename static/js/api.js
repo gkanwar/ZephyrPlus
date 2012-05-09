@@ -188,6 +188,12 @@ var personals = [
                     message_body: messages[n].message,
                     signature: messages[n].signature
                 }
+                if(messages[n].sender.match(/ \(UNAUTH\)$/)){
+		    messages[n].sender = messages[n].sender.replace(/ \(UNAUTH\)$/, "");
+		    messages[n].auth = false;
+		}
+		else
+		    messages[n].auth = true;
                 if(messages[n].parent_class.last_messaged < messages[n].timestamp)
                     messages[n].parent_class.last_messaged = messages[n].timestamp;
                 if(messages[n].parent_instance.last_messaged < messages[n].timestamp)

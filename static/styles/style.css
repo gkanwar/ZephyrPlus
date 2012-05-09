@@ -425,9 +425,14 @@ a.headerlink:hover
 }
 
 
-#sender
+.sender
 {
     color:#F6F6F6;
+}
+.unauth
+{
+    color: #FF2222;
+    font-weight: bold;
 }
 #zp_guide
 {
