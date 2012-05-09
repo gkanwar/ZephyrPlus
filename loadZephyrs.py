@@ -108,7 +108,7 @@ class ZephyrLoader(threading.Thread):
 			       recipient=m.recipient,
 			       opcode='AUTO',
 			       message="ZephyrPlus Server\x00" +
-			       "The previous zephyr,\n\n" + m.fields[1].strip() + "\n\nwas FORGED (not sent from ZephyrPlus).\n").send()
+			       "The previous zephyr,\n\n" + zMsg.fields[1].strip() + "\n\nwas FORGED (not sent from ZephyrPlus).\n").send()
 
         # Database insert
         msg = zMsg.fields[1].rstrip()
