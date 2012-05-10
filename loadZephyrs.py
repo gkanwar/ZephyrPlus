@@ -53,7 +53,7 @@ class ZephyrLoader(threading.Thread):
     def subscribe(self, sub, subs):
         try:
             subs.add((sub.class_name.encode("utf-8"), str(sub.instance), str(sub.recipient)))
-            time.sleep(0.01) # Loading too quickly 
+            # time.sleep(0.01) # Loading too quickly 
         except IOError as (errno, strerror):
             # SERVNAK: Usually is a temp. issue, loading too quickly. Try to sub once
             # more, but give up after a second try
@@ -145,6 +145,18 @@ class ZephyrLoader(threading.Thread):
             logMsg = u"Sub: %s %s %s" % (sub.class_name, sub.instance, sub.recipient)
             self.log(logMsg)
             self.subscribe(sub, subs)
+    
+    # Send an empty subscription request to reload our tickets
+    # so zephyrs won't show up as unauthenticated to us
+    # whenever we renew tickets
+    def renewAuth(self, lastCheck=datetime.datetime.fromtimestamp(0)):
+        now = datetime.datetime.now()
+        if now.date() != lastCheck.date() or now.hour != lastCheck.hour or now.minute == 0:
+            if (now-lastCheck).seconds > 5:
+                zephyr._z.sub('', '', '')
+                self.log("Sent subscription request")
+                return now
+        return lastCheck
 
     # Writes debuging messages to logfile
     def log(self, msg):
@@ -157,6 +169,7 @@ class ZephyrLoader(threading.Thread):
         self.log("loadZephyr.py starting...")
         subs = self.loadSubscriptions()
         self.log("Loaded " + str(len(subs)) + " subscriptions.")
+        lastTime = self.renewAuth()
 
         while True:
             zMsg = _zephyr.receive()
@@ -165,6 +178,7 @@ class ZephyrLoader(threading.Thread):
             else:
                 time.sleep(0.05)
             self.checkForNewSubs(subs)
+            lastTime = self.renewAuth(lastTime)
 
 
 # If we call from main, don't spawn a thread, just execute run()
