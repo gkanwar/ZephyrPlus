@@ -110,13 +110,17 @@ class ZephyrLoader(threading.Thread):
 			       message="ZephyrPlus Server\x00" +
 			       "The previous zephyr,\n\n" + zMsg.fields[1].strip() + "\n\nwas FORGED (not sent from ZephyrPlus).\n").send()
 
+        # Convert to unicode
+        msg = unicode(zMsg.fields[1].rstrip(), 'utf-8')
+        sender = unicode(sender, 'utf-8')
+        signature = unicode(signature, 'utf-8')
+
         # Database insert
-        msg = zMsg.fields[1].rstrip()
         z = Zephyr(message=msg, sender=sender, date=datetime.datetime.now(), dst=s, signature=signature)
         z.save()
 
         #pdb.set_trace()
-        logMsg = u"Zephyr(%d): %s %s %s %s" % (z.id, unicode(s), unicode(sender, 'utf-8'), unicode(msg, 'utf-8'), unicode(signature, 'utf-8'))
+        logMsg = u"Zephyr(%d): %s %s %s %s" % (z.id, unicode(s), sender, msg, signature)
         self.log(logMsg)
 
         # Tell server to update
