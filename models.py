@@ -54,8 +54,11 @@ class Account(models.Model):
 	
 	def get_filter(self):
             q = models.Q()
-            for sub in self.subscriptions.all():
+            subs = self.subscriptions.all()
+            for sub in subs:
                 q |= sub.get_filter()
+	    if len(subs) == 0:
+		return models.Q(id__isnull=True)
             return q
 	
 	def match(self, zephyr):
