@@ -20,9 +20,11 @@ import codecs
 
 class ZephyrLoader(threading.Thread):
     LOGFILE_NAME = "/var/log/zpd.log"
+    KRB_TICKET_CACHE = "/tmp/krb5cc_33"
     checkSubs = True
     retrySubTimeout = 0.01
     newSubQueue = Queue.Queue()
+    lastTicketTime = 0
 
     def __init__(self, *args, **kwargs):
 	threading.Thread.__init__(self, *args, **kwargs)
@@ -153,14 +155,12 @@ class ZephyrLoader(threading.Thread):
     # Send an empty subscription request to reload our tickets
     # so zephyrs won't show up as unauthenticated to us
     # whenever we renew tickets
-    def renewAuth(self, lastCheck=datetime.datetime.fromtimestamp(0)):
-        now = datetime.datetime.now()
-        if now.date() != lastCheck.date() or now.hour != lastCheck.hour or now.minute == 0:
-            if (now-lastCheck).seconds > 5:
-                zephyr._z.sub('', '', '')
-                self.log("Sent subscription request")
-                return now
-        return lastCheck
+    def renewAuth(self):
+        ticketTime = os.stat(self.KRB_TICKET_CACHE).st_mtime
+        if ticketTime != self.lastTicketTime:
+            zephyr._z.sub('', '', '')
+            self.lastTicketTime = ticketTime
+            self.log("Sent subscription request")
 
     # Writes debuging messages to logfile
     def log(self, msg):
@@ -173,7 +173,6 @@ class ZephyrLoader(threading.Thread):
         self.log("loadZephyr.py starting...")
         subs = self.loadSubscriptions()
         self.log("Loaded " + str(len(subs)) + " subscriptions.")
-        lastTime = self.renewAuth()
 
         while True:
             zMsg = _zephyr.receive()
@@ -182,7 +181,7 @@ class ZephyrLoader(threading.Thread):
             else:
                 time.sleep(0.05)
             self.checkForNewSubs(subs)
-            lastTime = self.renewAuth(lastTime)
+            self.renewAuth()
 
 
 # If we call from main, don't spawn a thread, just execute run()
