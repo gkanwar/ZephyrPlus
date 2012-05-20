@@ -53,8 +53,7 @@ class Account(models.Model):
 	js_data = models.TextField(default='{}')
 	
 	def get_filter(self):
-			# init with a false value
-            q = models.Q(pk__isnull=True)
+            q = models.Q()
             for sub in self.subscriptions.all():
                 q |= sub.get_filter()
             return q
