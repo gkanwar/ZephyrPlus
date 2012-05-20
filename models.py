@@ -49,11 +49,11 @@ class Subscription(models.Model):
 
 class Account(models.Model):
 	username = models.CharField(max_length=20,primary_key=True)
-	subscriptions = models.ManyToManyField(Subscription)
+	subscriptions = models.ManyToManyField(Subscription,blank=True)
 	js_data = models.TextField(default='{}')
 	
 	def get_filter(self):
-            q = models.Q()
+            q = models.Q(pk__isnull=True)
             for sub in self.subscriptions.all():
                 q |= sub.get_filter()
             return q
