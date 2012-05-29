@@ -10,6 +10,11 @@ import os, subprocess, threading
 import datetime, time
 import math
 import simplejson
+import sys
+
+# Logging and debugging
+import traceback
+import email, smtplib
 
 # Zephyr Libraries
 import zephyr
@@ -237,6 +242,20 @@ def log(msg):
     logfile.write(datestr + " " + msg + "\n")
     logfile.close()
 
+def sendmail(recipient, subject, message):
+    msg = email.mime.text.MIMEText(message)
+    msg['Subject'] = subject
+    msg['From'] = 'zephyrplus@mit.edu'
+    msg['To'] = recipient
+    s = smtplib.SMTP('outgoing.mit.edu')
+    s.sendmail(msg['From'], msg['To'], msg.as_string())
+    s.quit()
+
+def excepthook(type, value, tb):
+    msg = "".join(traceback.format_exception(type, value, tb))
+    log(msg)
+    sendmail("zephyrplus-errors@mit.edu", "ZephyrPlus exception", msg)
+sys.excepthook=excepthook
 
 settings = {
         "static_path": os.path.join(os.path.dirname(__file__), "static"),
