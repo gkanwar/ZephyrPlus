@@ -28,7 +28,7 @@ class Subscription(models.Model):
 
 class Account(models.Model):
 	username = models.CharField(max_length=20,primary_key=True)
-	subscriptions = models.ManyToManyField(Subscription)
+	subscriptions = models.ManyToManyField(Subscription,blank=True)
 
 	def __unicode__(self):
 		return self.username

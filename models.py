@@ -49,7 +49,7 @@ class Subscription(models.Model):
 
 class Account(models.Model):
 	username = models.CharField(max_length=20,primary_key=True)
-	subscriptions = models.ManyToManyField(Subscription)
+	subscriptions = models.ManyToManyField(Subscription,blank=True)
 	js_data = models.TextField(default='{}')
 	
 	def get_filter(self):
@@ -57,8 +57,8 @@ class Account(models.Model):
             subs = self.subscriptions.all()
             for sub in subs:
                 q |= sub.get_filter()
-	    if len(subs) == 0:
-		return models.Q(id__isnull=True)
+            if len(subs) == 0:
+                return models.Q(id__isnull=True)
             return q
 	
 	def match(self, zephyr):

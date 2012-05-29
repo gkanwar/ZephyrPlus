@@ -21,8 +21,10 @@ import zephyr
 import loadZephyrs
 zephyr.init()
 
+# Django Library
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 from models import Zephyr, Subscription, Account
+import django.conf
 
 LOGFILE_NAME = "/var/log/tornado.log"
 
@@ -283,21 +285,16 @@ class WebServer(threading.Thread):
         tornado.ioloop.IOLoop.instance().start()
 
 def main():
+    if django.conf.settings.DEBUG:
+        log("WARNING: DEBUG is enabled. Django is storing all SQL queries. You will run out of memory...")
+        sys.stderr.write("WARNING: DEBUG is enabled. Django is storing all SQL queries. You will run out of memory...\n")
+    
     # Log our pid so another process can watch mem
-    try:
-        pidfile = open("/var/run/zephyrplus.pid", "w")
-        pidfile.write(str(os.getpid()))
-        pidfile.close()
-    except:
-        print("Could not write pid to file.")
-        raise
     log("Starting tornado server...")
     # Start our listener process
     global zephyrLoader
     zephyrLoader = loadZephyrs.ZephyrLoader()
     zephyrLoader.start()
-
-    #threading.Timer(10, memory_dump).start()
 
     WebServer().run() # Don't do multithreading for now, just get a stable working website
 
