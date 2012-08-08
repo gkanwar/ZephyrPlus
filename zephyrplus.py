@@ -37,6 +37,7 @@ class BaseHandler(tornado.web.RequestHandler):
             if created:
                 account.subscriptions.add(Subscription.objects.get_or_create(class_name="lobby", instance="*", recipient="*")[0])
                 account.subscriptions.add(Subscription.objects.get_or_create(class_name=username, instance="*", recipient="*")[0])
+                zephyrLoader.addSubscription(Subscription.objects.get_or_create(class_name=username, instance="*", recipient="*")[0])
             return account
         return None
 
@@ -257,7 +258,27 @@ def excepthook(type, value, tb):
     msg = "".join(traceback.format_exception(type, value, tb))
     log(msg)
     sendmail("zephyrplus-errors@mit.edu", "ZephyrPlus exception", msg)
-sys.excepthook=excepthook
+
+def installThreadExcepthook():
+    """
+    Workaround for sys.excepthook thread bug
+    http://spyced.blogspot.com/2007/06/workaround-for-sysexcepthook-bug.html
+    Call once from __main__ before creating any threads.
+    """
+    init_old = threading.Thread.__init__
+    def init(self, *args, **kwargs):
+        init_old(self, *args, **kwargs)
+        run_old = self.run
+        def run_with_except_hook(*args, **kw):
+            try:
+                run_old(*args, **kw)
+            except (KeyboardInterrupt, SystemExit):
+                raise
+            except:
+                sys.excepthook(*sys.exc_info())
+        self.run = run_with_except_hook
+    threading.Thread.__init__ = init
+
 
 settings = {
         "static_path": os.path.join(os.path.dirname(__file__), "static"),
@@ -289,6 +310,10 @@ def main():
         log("WARNING: DEBUG is enabled. Django is storing all SQL queries. You will run out of memory...")
         sys.stderr.write("WARNING: DEBUG is enabled. Django is storing all SQL queries. You will run out of memory...\n")
     
+    # Install custom excepthook to email us on exceptions
+    sys.excepthook=excepthook
+    installThreadExcepthook()
+
     # Log our pid so another process can watch mem
     log("Starting tornado server...")
     # Start our listener process

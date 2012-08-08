@@ -134,6 +134,7 @@ var personals = [
  *      api.getInstanceById(id)
  *      api.getMessageById(id)
  *      api.saveStorage(callback)
+ *      api.getOldMessages(class, instance, recipient, startdate, callback)
  * 
  * Properties
  *      api.ready
@@ -241,7 +242,7 @@ var personals = [
         
         function getOldMessages(sub, startdate, callback){
             if(startdate == undefined)
-                startdate = new Date() - 1000*60*60*24;
+                startdate = new Date() - 1000*60*60*24*3;
             $.get("/chat", {
                 class: sub.class,
                 instance: sub.instance,
@@ -374,6 +375,19 @@ var personals = [
                 if(callback)
                     callback();
             }, "json").error(api.onerror);
+        }
+        
+        api.getOldMessages = function(className, instanceName, recipientName, startdate, callback){
+            checkReady();
+            if(!instanceName)
+                instanceName = "*";
+            if(!recipientName)
+                recipientName = "*";
+            getOldMessages({
+                class: className,
+                instance: instanceName,
+                recipient: recipientName
+            }, startdate, callback);
         }
         
         api.sendZephyr = function(message, className, instanceName, recipientName, callback){

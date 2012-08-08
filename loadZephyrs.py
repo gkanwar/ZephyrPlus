@@ -4,6 +4,7 @@ import datetime, time
 import threading
 import Queue
 import socket
+import traceback
 
 # PyZephyr Library for subscribing and receiving
 import zephyr, _zephyr
@@ -92,6 +93,8 @@ class ZephyrLoader(threading.Thread):
         else:
             sender = zMsg.sender
 
+        while len(zMsg.fields) < 2:
+            zMsg.fields = [''] + zMsg.fields
         signature = zMsg.fields[0]
         #if sender == "daemon/zephyrplus.xvm.mit.edu":
             #sender = signature.split(" ")[0]
@@ -156,11 +159,14 @@ class ZephyrLoader(threading.Thread):
     # so zephyrs won't show up as unauthenticated to us
     # whenever we renew tickets
     def renewAuth(self):
-        ticketTime = os.stat(self.KRB_TICKET_CACHE).st_mtime
-        if ticketTime != self.lastTicketTime:
-            zephyr._z.sub('', '', '')
-            self.lastTicketTime = ticketTime
-            self.log("Sent subscription request")
+        try:
+            ticketTime = os.stat(self.KRB_TICKET_CACHE).st_mtime
+            if ticketTime != self.lastTicketTime:
+                zephyr._z.sub('', '', '')
+                self.lastTicketTime = ticketTime
+                self.log("Tickets renewed")
+        except:
+            self.log("Tickets not found")
 
     # Writes debuging messages to logfile
     def log(self, msg):
@@ -177,7 +183,10 @@ class ZephyrLoader(threading.Thread):
         while True:
             zMsg = _zephyr.receive()
             if zMsg != None:
-                self.insertZephyr(zMsg)
+                try:
+                    self.insertZephyr(zMsg)
+                except:
+                    self.log(traceback.format_exc())
             else:
                 time.sleep(0.05)
             self.checkForNewSubs(subs)
