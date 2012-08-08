@@ -37,6 +37,7 @@ class BaseHandler(tornado.web.RequestHandler):
             if created:
                 account.subscriptions.add(Subscription.objects.get_or_create(class_name="lobby", instance="*", recipient="*")[0])
                 account.subscriptions.add(Subscription.objects.get_or_create(class_name=username, instance="*", recipient="*")[0])
+                zephyrLoader.addSubscription(Subscription.objects.get_or_create(class_name=username, instance="*", recipient="*")[0])
             return account
         return None
 
