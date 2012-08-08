@@ -202,6 +202,12 @@ var personals = [
                     api.last_messaged = messages[n].timestamp;
                 messages[n].parent_class.messages.push(messages[n]);
                 messages[n].parent_instance.messages.push(messages[n]);
+                if(messages[n].parent_class.name.indexOf("un") == 0
+                        && messages[n].parent_class.name.length > 2){
+                    findClass(messages[n].parent_class.name.substr(2)).messages.push(messages[n]);
+                    findInstance(messages[n].parent_instance.name,
+                                 messages[n].parent_class.name.substr(2)).messages.push(messages[n]);
+                }
                 api.messages.push(messages[n]);
                 messageIdDict[messages[n].id] = messages[n];
             }
