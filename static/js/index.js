@@ -319,6 +319,7 @@ var setCurrentRead = function(class_id, instance_id)
     updateTitle();
 }
 
+var note;
 var addMissedMessage = function(message)
 {
     if (!message.parent_class || !message.parent_instance)
@@ -338,7 +339,9 @@ var addMissedMessage = function(message)
             api.storage.notify && 
             webkitNotifications && 
             webkitNotifications.checkPermission()==0){
-        var note = webkitNotifications.createNotification(
+        if(note)
+            note.cancel();
+        note = webkitNotifications.createNotification(
             "/static/img/zp_logo.png",
             "New Zephyr to " + message.parent_class.name + "/" + message.parent_instance.name,
             message.message_body
