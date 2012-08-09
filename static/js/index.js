@@ -267,6 +267,8 @@ $(document).ready(function()
 	    }
 	}
     );
+    
+    $("#settings_link").click(showSettings);
 
 
 });
@@ -330,6 +332,14 @@ var addMissedMessage = function(message)
     {
 	message.parent_class.missedMessages.push(message);
 	message.parent_instance.missedMessages.push(message);
+    }
+    
+    if(api.storage.notify && webkitNotifications && webkitNotifications.checkPermission()==0){
+        webkitNotifications.createNotification(
+            "/static/img/zp_logo.png",
+            "New Zephyr to " + message.parent_class.name + "/" + message.parent_instance.name,
+            message.message_body
+        );
     }
 };
 
@@ -986,4 +996,82 @@ function replaceZephyrTag(zephyrTag, htmlTag, str) {
 	}
 
 	return rText;
+}
+
+var settingsDialog;
+function showSettings(){
+    if(settingsDialog){
+        settingsDialog.dialog("open");
+        return;
+    }
+    
+    var form = $("<form/>");
+    
+    if(webkitNotifications){
+        var notifyOn = $("<input type='radio' name='notify' id='notifyOn' value='on'/>");
+        var notifyOff = $("<input type='radio' name='notify' id='notifyOff' value='off'/>");
+        var notifySettings = $("<div>");
+        notifySettings.append(
+            "Desktop notifications:<br/>",
+            notifyOn,
+            "<label for='notifyOn'>On</label><br/>",
+            notifyOff,
+            "<label for='notifyOff'>Off</label><br/>"
+        );
+        if(api.storage.notify)
+            notifyOn[0].checked=true;
+        else
+            notifyOff[0].checked=true;
+        form.append(notifySettings);
+        if(webkitNotifications.checkPermission() != 0){
+            notifySettings.hide();
+            var enableNotify = $("<input type='button' value='Enable desktop notifications'/>");
+            enableNotify.click(function(){
+                webkitNotifications.requestPermission(function(){
+                    if(webkitNotifications.checkPermission() == 0){
+                        enableNotify.hide();
+                        notifySettings.show();
+                        notifyOn[0].checked=true;
+                    }
+                });
+            });
+            form.append(enableNotify, "<br/>");
+        }
+        form.append("<br/>");
+    }
+    
+    var signatureInput = $("<input type='text'>").val(api.storage.signature || "");
+    form.append(
+        "Signature<br/>",
+        signatureInput,
+        "<br/><br/>"
+    );
+    
+    function save(){
+        if(notifyOn)
+            api.storage.notify=notifyOn[0].checked;
+        if(signatureInput.val())
+            api.storage.signature=signatureInput.val();
+        else
+            delete api.storage.signature;
+        api.saveStorage();
+        form.dialog("close");
+    }
+    
+    function cancel(){
+        form.dialog("close");
+    }
+    
+    form.append(
+        $("<input type='button' value='Save' />")
+            .click(save),
+        $("<input type='button' value='Cancel' />")
+            .click(cancel)
+    ).submit(function(e){
+        e.preventDefault();
+        save();
+    });
+    
+    form.dialog({title: "Settings"});
+    settingsDialog=form;
 }
