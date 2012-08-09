@@ -334,7 +334,10 @@ var addMissedMessage = function(message)
 	message.parent_instance.missedMessages.push(message);
     }
     
-    if(api.storage.notify && webkitNotifications && webkitNotifications.checkPermission()==0){
+    if(!needsToBeSetup && 
+            api.storage.notify && 
+            webkitNotifications && 
+            webkitNotifications.checkPermission()==0){
         var note = webkitNotifications.createNotification(
             "/static/img/zp_logo.png",
             "New Zephyr to " + message.parent_class.name + "/" + message.parent_instance.name,
