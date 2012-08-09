@@ -319,7 +319,7 @@ var setCurrentRead = function(class_id, instance_id)
     updateTitle();
 }
 
-var note;
+var oldNote = false;
 var addMissedMessage = function(message)
 {
     if (!message.parent_class || !message.parent_instance)
@@ -339,11 +339,15 @@ var addMissedMessage = function(message)
             api.storage.notify && 
             webkitNotifications && 
             webkitNotifications.checkPermission()==0){
-        if(note)
-            note.cancel();
-        note = webkitNotifications.createNotification(
+        if(oldNote){
+            oldNote.note.cancel();
+            window.clearTimeout(oldNote.timeout);
+            oldNote = false;
+        }
+        var note = webkitNotifications.createNotification(
             "/static/img/zp_logo.png",
-            "New Zephyr to " + message.parent_class.name + "/" + message.parent_instance.name,
+            "New Zephyr to " + message.parent_class.name + "/" + message.parent_instance.name
+                + " from " + message.sender,
             message.message_body
         );
         note.onclick = function(){
@@ -351,6 +355,12 @@ var addMissedMessage = function(message)
             window.focus();
         }
         note.show();
+        oldNote = {
+            note: note,
+            timeout: window.setTimeout(function(){
+                note.cancel();
+            }, 5000)
+        };
     }
 };
 
