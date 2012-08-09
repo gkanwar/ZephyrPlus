@@ -335,11 +335,16 @@ var addMissedMessage = function(message)
     }
     
     if(api.storage.notify && webkitNotifications && webkitNotifications.checkPermission()==0){
-        webkitNotifications.createNotification(
+        var note = webkitNotifications.createNotification(
             "/static/img/zp_logo.png",
             "New Zephyr to " + message.parent_class.name + "/" + message.parent_instance.name,
             message.message_body
         );
+        note.onclick = function(){
+            note.cancel();
+            window.focus();
+        }
+        note.show();
     }
 };
 
