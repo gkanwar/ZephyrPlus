@@ -15,19 +15,8 @@ $(document).ready(function()
 				    fillMessagesByPersonal();
 				    fillButtonArea();
 				});
-				
-    // Check for scrolled to bottom
-    $("#messages").scroll(function()
-    {
-        atBottom = (($("#messages").height() + $("#messages").scrollTop()) == $("#messages").prop("scrollHeight"));
-        // Mark all messages in current class as read if we're at the bottom
-        if (atBottom && api.storage && api.storage.last_viewed)
-        {
-            setCurrentRead(api.storage.last_viewed.cls, api.storage.last_viewed.instance);
-        }
-    });
-
-
+	
+    
     //Dropdown 'class' header loads all classes upon clicking.
     $("#classestitleheader")
 	.click(function()
@@ -180,6 +169,50 @@ $(document).ready(function()
 	needsToBeSetup = false;
     };
 
+    
+    var scrolled = false;
+    // Check for scrolled to bottom
+    $("#messages").scroll(function()
+    {
+        atBottom = (($("#messages").height() + $("#messages").scrollTop()) == $("#messages").prop("scrollHeight"));
+        // Mark all messages in current class as read if we're at the bottom
+        if (atBottom && api.storage && api.storage.last_viewed)
+        {
+            setCurrentRead(api.storage.last_viewed.cls, api.storage.last_viewed.instance);
+        }
+        scrolled = true;
+    });
+    
+    function processScroll(){
+        if(scrolled){
+            scrolled = false;
+            var classId = api.storage.last_viewed.cls;
+            var instanceId = api.storage.last_viewed.instance;
+            if(!api.storage.first_visible)
+                api.storage.first_visible = {};
+            var name = "";
+            if(instanceId)
+                name = "instance"+instanceId;
+            else if(classId)
+                name = "class"+classId;
+            var messages = $("#messages .messages_entry");
+            var a=0, b=messages.length;
+            while(b>a){
+                var c = Math.floor((a+b)/2);
+                var position = $(messages[c]).position().top;
+                if(position<0)
+                    a=c+1;
+                else
+                    b=c;
+            }
+            api.storage.first_visible[name] = messages[a].id.substr(7); //"message"
+        }
+        window.setTimeout(processScroll, 500);
+    }
+    processScroll();
+    
+    window.setInterval(api.saveStorage, 5*60*1000);
+    
     // Setting the form submission handler
     $("#chatsend").submit(
 	function(event)
@@ -567,7 +600,8 @@ var createMessage = function(message)
 	       {
 		   fillButtonArea(classObj.id, instanceObj.id);
 		   $("#messagetextarea").focus();
-	       });
+	       })
+        .prop("id", "message"+message.id);
     var header = $("<div class='message_header'/>");
     var header_class = $("<span />")
 	//.addClass("class_id_"+classObj.id)
@@ -781,7 +815,21 @@ var fillMessagesByClass = function(class_id, instance_id)
     }
 
     // Scroll to the bottom of the messages div
-    $("#messages").prop({ scrollTop: $("#messages").prop("scrollHeight") });
+    // $("#messages").prop({ scrollTop: $("#messages").prop("scrollHeight") });
+    
+    if(api.storage.first_visible){
+        var first;
+        if(instance_id)
+            first = api.storage.first_visible['instance'+instance_id];
+        else if(class_id)
+            first = api.storage.first_visible['class'+class_id];
+        else
+            first = api.storage.first_visible[''];
+        if(first && $("#message"+first))
+            $("#messages").scrollTop($("#messages").scrollTop()+$("#message"+first).position().top);
+        else
+            $("#messages").scrollTop(0);
+    }
     
     $("#chatheader").text(headerText);
 };
