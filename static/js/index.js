@@ -121,7 +121,8 @@ $(document).ready(function()
 
 
         var curViewModified = false;
-
+       
+        var missed = [];
 	// Determine whether the message would be displayed in the current view
 	// Dynamically update if it would; otherwise add it to missed messages
 	for (var i = 0; i < zephyrs.length; i++)
@@ -138,6 +139,7 @@ $(document).ready(function()
 		if (!focused)
 		{
 		    addMissedMessage(curZephyr);
+                    missed.push(curZephyr);
 		    //setTitle(1);
 		}
 	    }
@@ -150,12 +152,15 @@ $(document).ready(function()
 	    else
 	    {
 		addMissedMessage(curZephyr);
+                missed.push(curZephyr);
 		if (!focused) // If the tab isn't focused set the title
 		{
 		    //setTitle(1);
 		}
 	    }
 	}
+	if(missed.length>0)
+            showNotifications(missed);
 
 	// Scroll to the bottom of the messages div
 	if (atBottom && curViewModified && focused)
@@ -352,7 +357,6 @@ var setCurrentRead = function(class_id, instance_id)
     updateTitle();
 }
 
-var oldNote = false;
 var addMissedMessage = function(message)
 {
     if (!message.parent_class || !message.parent_instance)
@@ -367,7 +371,10 @@ var addMissedMessage = function(message)
 	message.parent_class.missedMessages.push(message);
 	message.parent_instance.missedMessages.push(message);
     }
-    
+}
+
+var oldNote = false;
+function showNotifications(messages){
     if(!needsToBeSetup && 
             api.storage.notify && 
             webkitNotifications && 
@@ -377,11 +384,35 @@ var addMissedMessage = function(message)
             window.clearTimeout(oldNote.timeout);
             oldNote = false;
         }
+        
+        var title, body;
+        if(messages.length == 1){
+            var message = messages[0];
+            title = "New Zephyr to " + message.parent_class.name + "/" + message.parent_instance.name
+                + " from " + message.sender;
+            body = message.message_body;
+        }
+        else{
+            var classesDict = {};
+            for(var n=0; n<messages.length; n++)
+                classesDict[messages[n].parent_class.name] = true;
+            var classes = [];
+            for(name in classesDict)
+                classes.push(name);
+            title = messages.length + " new Zephyrs to class ";
+            if(classes.length == 1)
+                title += classes[0];
+            else if(classes.length == 2)
+                title += classes[0] + " and " + classes[1];
+            else
+                title += classes.slice(0, -1).join(", ") + ", and " + classes[classes.length-1];
+            body = "";
+        }
+        
         var note = webkitNotifications.createNotification(
             "/static/img/zp_logo.png",
-            "New Zephyr to " + message.parent_class.name + "/" + message.parent_instance.name
-                + " from " + message.sender,
-            message.message_body
+            title,
+            body
         );
         note.onclick = function(){
             note.cancel();
