@@ -1,11 +1,11 @@
 from django.db import models
 import datetime
 
-APPLICATION_NAME = "zephyrplus"
+APPLICATION_NAME = "chat"
 
 class Zephyr(models.Model):
 	message = models.TextField()
-	sender = models.CharField(max_length=20)
+	sender = models.CharField(max_length=200)
 	date = models.DateTimeField()
 	dst = models.ForeignKey('Subscription')
 	signature = models.TextField(blank=True, null=True)
@@ -18,9 +18,9 @@ class Zephyr(models.Model):
 		return self.sender + " to " + unicode(self.dst) + " on " + unicode(self.date)
 
 class Subscription(models.Model):
-	class_name = models.CharField(max_length=20)
-	instance = models.CharField(max_length=20)
-	recipient = models.CharField(max_length=20)
+	class_name = models.CharField(max_length=200)
+	instance = models.CharField(max_length=200)
+	recipient = models.CharField(max_length=200)
 
 	def get_filter(self):
             q = models.Q(dst__class_name=self.class_name)
@@ -48,7 +48,7 @@ class Subscription(models.Model):
 			return self.class_name + ", " + self.instance + ", " + self.recipient
 
 class Account(models.Model):
-	username = models.CharField(max_length=20,primary_key=True)
+	username = models.CharField(max_length=200, primary_key=True)
 	subscriptions = models.ManyToManyField(Subscription,blank=True)
 	js_data = models.TextField(default='{}')
 	
