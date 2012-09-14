@@ -210,7 +210,8 @@ $(document).ready(function()
                 else
                     b=c;
             }
-            api.storage.first_visible[name] = messages[a].id.substr(7); //"message"
+            if(messages[a])
+                api.storage.first_visible[name] = messages[a].id.substr(7); //"message"
         }
         window.setTimeout(processScroll, 500);
     }
@@ -856,7 +857,7 @@ var fillMessagesByClass = function(class_id, instance_id)
             first = api.storage.first_visible['class'+class_id];
         else
             first = api.storage.first_visible[''];
-        if(first && $("#message"+first))
+        if(first && $("#message"+first).length>0)
             $("#messages").scrollTop($("#messages").scrollTop()+$("#message"+first).position().top);
         else
             $("#messages").scrollTop(0);
