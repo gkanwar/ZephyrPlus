@@ -259,7 +259,7 @@ var personals = [
         function findClass(name){
             if(api.classDict[name] == undefined){
                 api.classDict[name] = {
-		    id: name,
+		    id: hashStringToNumber(name)+"",
                     name: name,
                     last_messaged: new Date(0),
                     color: hashStringToColor(name),
