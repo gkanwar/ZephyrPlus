@@ -318,7 +318,6 @@ var personals = [
         
         function checkVersion(){
             $.get("/static/version", {"d": new Date()-0}, function(ver){
-                console.log(ver);
                 ver = ver.split("\n")[0].split(".");
                 if(version && ver[0] != version[0]){
                     setStatus(api.UPDATEREQUIRED);
@@ -327,7 +326,7 @@ var personals = [
                     setStatus(api.UPDATESUGGESTED);
                 }
                 version = ver;
-                window.setTimeout(checkVersion, /*30*60**/1000);
+                window.setTimeout(checkVersion, 10*60*1000);
             }, "text");
         }
         
