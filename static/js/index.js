@@ -187,6 +187,24 @@ $(document).ready(function()
         }
         scrolled = true;
     });
+    api.onstatuschange=function(status){
+        if(status == api.UPDATESUGGESTED){
+            $("<div>").html("ZephyrPlus has been updated!  Refresh the page to update to the latest version!")
+                      .dialog({
+                          buttons: {
+                              "Refresh now": function(){
+                                  location.reload();
+                              },
+                              "Refresh later": function(){
+                                  $(this).dialog("close");
+                              }
+                          }
+                      });
+        }
+        else if(status == api.UPDATEREQUIRED){
+            location.reload();
+        }
+    }
     
     function processScroll(){
         if(scrolled){

@@ -151,6 +151,9 @@ var personals = [
  *              Array of the user's subscriptions.
  *      api.storage
  *              Object on which data can be stored on the server
+ *      api.status
+ *              Integer indicating the status of the connection
+ *              CONNECTED, CONNECTING, DISCONNECTED, UPDATESUGGESTED, UPDATEREQUIRED
  * 
  * Event handlers
  *      api.onready = function()
@@ -161,6 +164,8 @@ var personals = [
  *      api.onerror = function(jqXHR, errorType)
  *              Called when an error occured while sending or retrieving information
  *              from the server.
+ *      api.onstatuschange = function(newStatus)
+ *              Called when the status of the connection changes
  */
 (function(){
     function ZephyrAPI(){
@@ -174,6 +179,14 @@ var personals = [
         var classIdDict = {};
         var instanceIdDict = {};
         var messageIdDict = {};
+        
+        api.CONNECTED = 0;
+        api.CONNECTING = 1;
+        api.DISCONNECTED = 2;
+        api.UPDATESUGGESTED = 3;
+        api.UPDATEREQUIRED = 4;
+        api.status = api.CONNECTING;
+        var version;
         
         function procMessages(messages){
 	    messages = messages.filter(function(m){
@@ -223,6 +236,7 @@ var personals = [
                 startdate: api.last_messaged-0,
                 longpoll: longpoll
             }, function(messages){
+                setStatus(api.CONNECTED);
                 procMessages(messages);
                 getSubbedMessages(true);
             }, "json").error(function(){
@@ -230,6 +244,7 @@ var personals = [
 		    getSubbedMessages(false);
 		else {
 		    window.setTimeout(function(){getSubbedMessages(false)}, 10000);
+                    setStatus(api.CONNECTING);
 		    if(api.onerror)
 			api.onerror();
 		}
@@ -293,6 +308,29 @@ var personals = [
             return parent.instanceDict[name];
         }
         
+        function setStatus(newStatus){
+            if(newStatus != api.status){
+                api.status = newStatus;
+                if(api.onstatuschange)
+                    api.onstatuschange(newStatus);
+            }
+        }
+        
+        function checkVersion(){
+            $.get("/static/version", {"d": new Date()-0}, function(ver){
+                console.log(ver);
+                ver = ver.split("\n")[0].split(".");
+                if(version && ver[0] != version[0]){
+                    setStatus(api.UPDATEREQUIRED);
+                }
+                else if(version && ver[1] != version[1]){
+                    setStatus(api.UPDATESUGGESTED);
+                }
+                version = ver;
+                window.setTimeout(checkVersion, /*30*60**/1000);
+            }, "text");
+        }
+        
         $.get("/user", function(data){
             api.username = data.username;
             api.subscriptions = data.subscriptions;
@@ -304,6 +342,7 @@ var personals = [
             if(api.onready)
                 api.onready();
             getSubbedMessages(false);
+            checkVersion();
         }, "json").error(api.onerror);
         
         function checkReady(){
