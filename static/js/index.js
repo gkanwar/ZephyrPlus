@@ -727,6 +727,11 @@ var fillMessagesByClass = function(class_id, instance_id)
 {
     var classObj = api.getClassById(class_id);
     var instanceObj = api.getInstanceById(instance_id);
+    
+    if (class_id && !classObj)
+        return fillMessagesByClass();
+    else if (instance_id && !instanceObj)
+        return fillMessagesByClass(class_id);
 	
     // Set storage variables and save storage
     api.storage.last_viewed.cls = class_id;
