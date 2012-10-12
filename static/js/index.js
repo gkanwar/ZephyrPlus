@@ -179,7 +179,7 @@ $(document).ready(function()
     // Check for scrolled to bottom
     $("#messages").scroll(function()
     {
-        atBottom = (($("#messages").height() + $("#messages").scrollTop()) == $("#messages").prop("scrollHeight"));
+        atBottom = ($("#messages").prop("scrollHeight") - ($("#messages").height() + $("#messages").scrollTop())<20);
         // Mark all messages in current class as read if we're at the bottom
         if (atBottom && api.storage && api.storage.last_viewed)
         {
