@@ -1,5 +1,5 @@
 #! /bin/bash
-PYTHON=/usr/bin/env python2
+PYTHON=/usr/bin/python2
 DJANGO_ROOT=.
 
 cd $DJANGO_ROOT

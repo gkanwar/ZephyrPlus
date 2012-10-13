@@ -26,7 +26,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 from models import Zephyr, Subscription, Account
 import django.conf
 
-LOGFILE_NAME = "/var/log/tornado.log"
+LOGFILE_NAME = django.conf.settings.TORNADO_LOGFILE_NAME
 
 class BaseHandler(tornado.web.RequestHandler):
     def get_current_user(self):
@@ -163,7 +163,7 @@ class ChatUpdateHandler(BaseHandler):
             signature += ") ("
         else:
             signature = ""
-        signature += "via ZephyrPlus"
+        signature += django.conf.settings.SIGNATURE or ""
         signature = signature.encode("utf-8")
         log("Send " + class_name + " " + instance + " " + recipient + " " + username.encode("utf-8") + " " + message)
         zephyr.ZNotice(cls=class_name,
@@ -239,6 +239,8 @@ class UserHandler(BaseHandler):
 
 # Writes debuging messages to logfile
 def log(msg):
+    if LOGFILE_NAME is None:
+        return
     #msg = msg.encode("utf-8")
     logfile = open(LOGFILE_NAME, "a")
     datestr = datetime.datetime.now().strftime("[%m/%d %H:%M]")
@@ -248,7 +250,7 @@ def log(msg):
 def sendmail(recipient, subject, message):
     msg = email.mime.text.MIMEText(message)
     msg['Subject'] = subject
-    msg['From'] = 'zephyrplus@mit.edu'
+    msg['From'] = django.conf.settings.EXCEPTIONS_FROM
     msg['To'] = recipient
     s = smtplib.SMTP('outgoing.mit.edu')
     s.sendmail(msg['From'], msg['To'], msg.as_string())
@@ -257,7 +259,8 @@ def sendmail(recipient, subject, message):
 def excepthook(type, value, tb):
     msg = "".join(traceback.format_exception(type, value, tb))
     log(msg)
-    sendmail("zephyrplus-errors@mit.edu", "ZephyrPlus exception", msg)
+    if django.conf.settings.EXCEPTIONS_TO is not None:
+        sendmail(django.conf.settings.EXCEPTIONS_TO, "ZephyrPlus exception", msg)
 
 def installThreadExcepthook():
     """
@@ -282,7 +285,7 @@ def installThreadExcepthook():
 
 settings = {
         "static_path": os.path.join(os.path.dirname(__file__), "static"),
-        "cookie_secret": "rS24mrw/2iCQUSwtuptW8p1jbidrs5eqV3hdPuJ8894L",
+        "cookie_secret": django.conf.settings.SECRET_KEY,
         "login_url": "/login",
         "xsrf_cookies": False,
         "debug": True,

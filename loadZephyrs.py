@@ -18,10 +18,13 @@ import httplib
 import codecs
 #Debugger
 #import pdb
+import django.conf
 
 class ZephyrLoader(threading.Thread):
-    LOGFILE_NAME = "/var/log/zpd.log"
-    KRB_TICKET_CACHE = "/tmp/krb5cc_33"
+    LOGFILE_NAME = django.conf.settings.ZEPHYR_LOGFILE_NAME
+    KRB_TICKET_CACHE = "/tmp/krb5cc_%s"%os.getuid()
+    if 'KRB5CCNAME' in os.environ:
+        KRB_TICKET_CACHE = os.environ['KRB5CCNAME'][5:]
     checkSubs = True
     retrySubTimeout = 0.01
     newSubQueue = Queue.Queue()
@@ -102,12 +105,13 @@ class ZephyrLoader(threading.Thread):
                 #signature = signature[signature.find("(")+1:signature.rfind(")")]
             #else:
                 #signature = ""
-        signature = signature.replace(") (via ZephyrPlus", "").replace("via ZephyrPlus", "")
+        if django.conf.settings.SIGNATURE is not None:
+            signature = signature.replace(") (%s"%django.conf.settings.SIGNATURE, "").replace(django.conf.settings.SIGNATURE, "")
 
         # Authentication check
         if not zMsg.auth and zMsg.uid.address != self.ip:
 	    sender += " (UNAUTH)"
-	    if 'via zephyrplus' in zMsg.fields[0].lower():
+	    if django.conf.settings.SIGNATURE is not None and django.conf.settings.SIGNATURE in zMsg.fields[0].lower():
 		zephyr.ZNotice(cls=zMsg.cls,
 			       instance=zMsg.instance,
 			       recipient=zMsg.recipient,
@@ -170,6 +174,8 @@ class ZephyrLoader(threading.Thread):
 
     # Writes debuging messages to logfile
     def log(self, msg):
+        if self.LOGFILE_NAME is None:
+            return
         logfile = codecs.open(self.LOGFILE_NAME, "a", encoding="utf-8")
         datestr = datetime.datetime.now().strftime("[%m/%d %H:%M]")
         logfile.write(datestr + " " + msg + "\n")

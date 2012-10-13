@@ -11,10 +11,10 @@ MANAGERS = ADMINS
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': 'zephyrplus',                      # Or path to database file if using sqlite3.
-        'USER': 'zephyrplus',                      # Not used with sqlite3.
-        'PASSWORD': 'EeLgFkYDo2NK',                  # Not used with sqlite3.
+        'ENGINE': 'sqlite3', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+        'NAME': 'zephyrs.db',                      # Or path to database file if using sqlite3.
+        'USER': '',                      # Not used with sqlite3.
+        'PASSWORD': '',                  # Not used with sqlite3.
         'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
         'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
     }
@@ -83,6 +83,7 @@ STATICFILES_FINDERS = (
 )
 
 # Make this unique, and don't share it with anybody.
+# This should be overridden in local_settings.py
 SECRET_KEY = '9yc07b*er#dwqtj*r@-3zy-c%$q5-=i&%w@(c+=jv@e(8_v6jp'
 
 # List of callables that know how to import templates from various sources.
@@ -145,3 +146,18 @@ LOGGING = {
         },
     }
 }
+
+#Custom settings
+
+TORNADO_LOGFILE_NAME = None
+ZEPHYR_LOGFILE_NAME = None
+
+SIGNATURE = None
+
+EXCEPTIONS_FROM = "zephyrplus@mit.edu"
+EXCEPTIONS_TO = None
+
+try:
+    from local_settings import *
+except ImportError:
+    pass
