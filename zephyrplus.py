@@ -239,13 +239,13 @@ class UserHandler(BaseHandler):
 
 # Writes debuging messages to logfile
 def log(msg):
-    if LOGFILE_NAME is None:
-        return
-    #msg = msg.encode("utf-8")
-    logfile = open(LOGFILE_NAME, "a")
     datestr = datetime.datetime.now().strftime("[%m/%d %H:%M]")
-    logfile.write(datestr + " " + msg + "\n")
-    logfile.close()
+    if LOGFILE_NAME is not None:
+        logfile = open(LOGFILE_NAME, "a")
+        logfile.write(datestr + " " + msg + "\n")
+        logfile.close()
+    else:
+        print datestr, msg
 
 def sendmail(recipient, subject, message):
     msg = email.mime.text.MIMEText(message)
@@ -324,7 +324,10 @@ def main():
     zephyrLoader = loadZephyrs.ZephyrLoader()
     zephyrLoader.start()
 
-    WebServer().run() # Don't do multithreading for now, just get a stable working website
+    try:
+        WebServer().run() # Don't do multithreading for now, just get a stable working website
+    finally:
+        zephyrLoader.stop = True
 
 if __name__ == "__main__":
     main()

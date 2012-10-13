@@ -174,19 +174,21 @@ class ZephyrLoader(threading.Thread):
 
     # Writes debuging messages to logfile
     def log(self, msg):
-        if self.LOGFILE_NAME is None:
-            return
-        logfile = codecs.open(self.LOGFILE_NAME, "a", encoding="utf-8")
         datestr = datetime.datetime.now().strftime("[%m/%d %H:%M]")
-        logfile.write(datestr + " " + msg + "\n")
-        logfile.close()
+        if self.LOGFILE_NAME is not None:
+            logfile = codecs.open(self.LOGFILE_NAME, "a", encoding="utf-8")
+            logfile.write(datestr + " " + msg + "\n")
+            logfile.close()
+        else:
+            print datestr, msg
 
     def run(self):
         self.log("loadZephyr.py starting...")
         subs = self.loadSubscriptions()
         self.log("Loaded " + str(len(subs)) + " subscriptions.")
+        self.stop = False
 
-        while True:
+        while not self.stop:
             zMsg = _zephyr.receive()
             if zMsg != None:
                 try:
