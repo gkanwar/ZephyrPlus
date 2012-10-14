@@ -220,7 +220,7 @@ a.tooltip:hover span
     background-image:url(../img/noise_light_gray.png);
     text-shadow: #f4f4f4 0px 1px 0px;
 }
-#messages
+#messages_scroll
 {
     position: absolute;
     top: 29px;
@@ -235,7 +235,7 @@ a.tooltip:hover span
 /*    text-shadow: #0f0f0f 0px 1px 0px;*/
     text-shadow: #1c1c1c 0px 1px 0px;
 }
-.messages_entry
+.messages_entry, #mark_read
 {
     padding-top: 5px;
     padding-bottom: 5px;
@@ -246,7 +246,7 @@ a.tooltip:hover span
     margin-left:-20px;
     margin-right:-20px;
 }
-.messages_entry:hover
+.messages_entry:hover, #mark_read:hover
 {
 /*    background-color: #575757;*/
     background-image:url(../img/noise_hover_gray.png);
@@ -279,6 +279,10 @@ a.tooltip:hover span
 {
     background-color: #575757;
 }*/
+#mark_read{
+    text-align: center;
+    display: none;
+}
 
 #sendarea
 {

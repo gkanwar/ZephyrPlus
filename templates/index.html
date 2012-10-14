@@ -66,16 +66,15 @@
 	</div>
       </div>
       <div id="chatarea">
-	<div id="chatheader">all classes</div>
-	<div id="messages">
-	  <script type="text/javascript">
-	    $(document).ready(function()
-	    {
-	      $("#messages").scrollTop($("#messages")[0].scrollHeight);
-	    });
-	  </script>
-	  Loading messages ...
-	</div>
+        <div id="chatheader">all classes</div>
+        <div id="messages_scroll">
+            <div id="messages">
+                Loading messages ...
+            </div>
+            <div id="mark_read">
+                <input type="button" value="Mark all as read" />
+            </div>
+        </div>
 	<div id="sendarea">
 	  <form id="chatsend" method="post" action="chat">
 	    <div id="buttonarea">

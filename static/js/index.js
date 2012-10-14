@@ -76,6 +76,8 @@ $(document).ready(function()
 		    api.storage.last_viewed.type = 0;
 	    }
 	}
+        $("#logged_user")
+            .text(api.username);
     };
     api.onzephyr = function(zephyrs)
     {
@@ -112,11 +114,7 @@ $(document).ready(function()
             //fillPersonals(); // Personals don't exist anymore
             fillClasses();
 	    // Scroll to the bottom of the messages div
-	    $("#messages").prop({ scrollTop: $("#messages").prop("scrollHeight") });
-
-	    //Load logged in username
-	    $("#logged_user")
-		.text(api.username);
+	    //$("#messages_scroll").prop({ scrollTop: $("#messages_scroll").prop("scrollHeight") });
         }
 
 
@@ -136,7 +134,7 @@ $(document).ready(function()
 		$("#messages").append(messageEntry);
 		curViewModified = true;
 		// If the tab isn't focused add it to a missed messages
-		if (!focused)
+		if (!focused || !atBottom)
 		{
 		    addMissedMessage(curZephyr);
                     missed.push(curZephyr);
@@ -165,7 +163,7 @@ $(document).ready(function()
 	// Scroll to the bottom of the messages div
 	if (atBottom && curViewModified && focused)
 	{
-	    $("#messages").animate({ scrollTop: $("#messages").prop("scrollHeight") }, 1000);
+	    $("#messages_scroll").animate({ scrollTop: $("#messages_scroll").prop("scrollHeight") }, 1000);
 	}
 
 	// Update the missed messages counters
@@ -177,9 +175,9 @@ $(document).ready(function()
     
     var scrolled = false;
     // Check for scrolled to bottom
-    $("#messages").scroll(function()
+    $("#messages_scroll").scroll(function()
     {
-        atBottom = ($("#messages").prop("scrollHeight") - ($("#messages").height() + $("#messages").scrollTop())<20);
+        atBottom = ($("#messages_scroll").prop("scrollHeight") - ($("#messages_scroll").height() + $("#messages_scroll").scrollTop())<20);
         // Mark all messages in current class as read if we're at the bottom
         if (atBottom && api.storage && api.storage.last_viewed)
         {
@@ -326,6 +324,8 @@ $(document).ready(function()
     );
     
     $("#settings_link").click(showSettings);
+    
+    $("#mark_read").click(markAllAsRead);
 
 
 });
@@ -344,6 +344,10 @@ var updateTitle = function()
 	numMissed += api.instances[i].missedMessages.length;
     }
     $(document).attr("title", (numMissed==0) ? "ZephyrPlus!" : "ZephyrPlus! ("+numMissed+")");
+    if(numMissed > 0 && api.storage.last_viewed && !api.storage.last_viewed.cls)
+        $("#mark_read").show();
+    else
+        $("#mark_read").hide();
 };
 
 var setCurrentRead = function(class_id, instance_id)
@@ -353,15 +357,16 @@ var setCurrentRead = function(class_id, instance_id)
     var classObj = api.getClassById(class_id);
 
     // Class id defined
-    if (class_id != undefined)
+    if (classObj)
     {
 	// Instance is defined
-	if (instance_id != undefined)
+	if (instanceObj)
 	{
 	    // Clear missed messages for this instance
 	    instanceObj.missedMessages = [];
 	    updateClassMissedMessages(classObj);
 	    updateInstanceMissedMessages(instanceObj);
+            api.storage.instances_last_seen[instance_id] = (new Date()).getTime();
 	}
 	else
 	{
@@ -369,11 +374,21 @@ var setCurrentRead = function(class_id, instance_id)
 	    for (var i = 0; i < classObj.instances.length; i++)
 	    {
 		classObj.instances[i].missedMessages = [];
+                api.storage.instances_last_seen[classObj.instances[i].id] = (new Date()).getTime();
 	    }
 	    updateClassMissedMessages(classObj);
 	}
     }
     updateTitle();
+}
+
+function markAllAsRead(){
+    for(var n=0; n<api.instances.length; n++){
+        setCurrentRead(api.instances[n].parent_class.id, api.instances[n].id);
+    }
+    api.storage.first_visible = {};
+    updateMissedMessages();
+    api.saveStorage();
 }
 
 var addMissedMessage = function(message)
@@ -738,21 +753,6 @@ var fillMessagesByClass = function(class_id, instance_id)
     api.storage.last_viewed.instance = instance_id;
     api.storage.last_logged_in = (new Date()).getTime();
     api.storage.last_viewed.type = 0;
-    if (class_id != undefined)
-    {
-	if (instance_id != undefined)
-	{
-	    api.storage.instances_last_seen[instance_id] = (new Date()).getTime();
-	}
-	else
-	{
-	    for (var i = 0; i < classObj.instances.length; i++)
-	    {
-		api.storage.instances_last_seen[classObj.instances[i].id] = (new Date()).getTime();
-	    }
-	}
-    }
-    api.saveStorage();
 
     var allClassesHeader = $("<span/>")
 	.text("all classes")
@@ -880,13 +880,18 @@ var fillMessagesByClass = function(class_id, instance_id)
             first = api.storage.first_visible['class'+class_id];
         else
             first = api.storage.first_visible[''];
+        if(!first && api.storage.instances_last_seen);
         if(first && $("#message"+first).length>0)
-            $("#messages").scrollTop($("#messages").scrollTop()+$("#message"+first).position().top);
+            $("#messages_scroll").scrollTop($("#messages_scroll").scrollTop()+$("#message"+first).position().top);
         else
-            $("#messages").scrollTop(0);
+            //$("#messages-scroll").scrollTop(0);
+            $("#messages_scroll").scrollTop($("#messages_scroll").prop("scrollHeight"));
     }
     
     $("#chatheader").text(headerText);
+    
+    api.saveStorage();
+    updateTitle();
 };
 
 var fillMessagesByPersonal = function(personal_id)
