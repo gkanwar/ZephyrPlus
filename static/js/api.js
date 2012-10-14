@@ -326,9 +326,9 @@ var personals = [
                     setStatus(api.UPDATESUGGESTED);
                 }
                 version = ver;
-                window.setTimeout(checkVersion, 10*60*1000);
             }, "text");
         }
+        window.setInterval(checkVersion, 5*60*1000);
         
         $.get("/user", function(data){
             api.username = data.username;
