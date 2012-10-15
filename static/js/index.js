@@ -400,7 +400,7 @@ var addMissedMessage = function(message)
     }
 
     // Check that the message is actually after the last seen time for the instance
-    if (api.storage.instances_last_seen[message.parent_instance.id] < message.timestamp.getTime())
+    if ((api.storage.instances_last_seen[message.parent_instance.id] || 0)< message.timestamp.getTime())
     {
 	message.parent_class.missedMessages.push(message);
 	message.parent_instance.missedMessages.push(message);
