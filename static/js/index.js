@@ -691,8 +691,6 @@ var createMessage = function(message)
 
     // Makes sender name brighter.
     sender_text = "<span class='sender'>"+sender_text+"</span>";
-    
-    var links = message_text.match(/https?:\/\/[^ '"\n]+/g);
 
     if(!auth)
 	sender_text += " <span class='unauth'>(UNAUTH)</span>";
@@ -704,6 +702,7 @@ var createMessage = function(message)
 	.append(sender_text)
         .append($("<span class='message_timestamp'/>").text(convertTime(timestamp)));
     var body = $("<pre class='message_body'/>").text(message_text);
+    var links = body.html().match(/https?:\/\/[^ '"\n]+/g);
     if(links)
         for(var n=0; n<links.length; n++)
             body.html(body.html().replace(links[n], "<a href=\""+links[n]+"\" target=\"_blank\">"+links[n]+"</a>"));
