@@ -162,12 +162,12 @@ a.tooltip:hover span
 {
     color:#efefef;
 }
-.classes_entry
+.classes_entry, #show_all_classes
 {    
     padding: 0px 7px 0px 17px;
     margin: 0px -7px 0px -17px;
 }
-.classes_entry:hover
+.classes_entry:hover, #show_all_classes:hover
 {
     background-color: #575757;
     cursor: pointer;
@@ -250,6 +250,10 @@ a.tooltip:hover span
 {
 /*    background-color: #575757;*/
     background-image:url(../img/noise_hover_gray.png);
+}
+.missed, .old_missed
+{
+    border-left: 1px solid #00FFAA;
 }
 .message_header
 {

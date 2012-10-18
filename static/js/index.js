@@ -129,17 +129,23 @@ $(document).ready(function()
 	    // If we're in the class view, compare class id and instance id
 	    if (!needsToBeSetup && api.storage.last_viewed.type == 0 && (curZephyr.parent_class.id == api.storage.last_viewed.cls || api.storage.last_viewed.cls == undefined) && (curZephyr.parent_instance.id == api.storage.last_viewed.instance || api.storage.last_viewed.instance == undefined))
 	    {
-		// Add the zephyr to our view
-		var messageEntry = createMessage(curZephyr);
-		$("#messages").append(messageEntry);
-		curViewModified = true;
-		// If the tab isn't focused add it to a missed messages
-		if (!focused || !atBottom)
-		{
-		    addMissedMessage(curZephyr);
+                // If the tab isn't focused add it to a missed messages
+                if (!focused || !atBottom)
+                {
+                    addMissedMessage(curZephyr);
                     missed.push(curZephyr);
-		    //setTitle(1);
-		}
+                    //setTitle(1);
+                }
+                else{
+                    if(curZephyr.parent_instance.missedMessages.length == 0){
+                        api.storage.instances_last_seen[curZephyr.parent_instance.id] = new Date().getTime();
+                        storageModified = true;
+                    }
+                }
+                // Add the zephyr to our view
+                var messageEntry = createMessage(curZephyr).addClass("old_missed");
+                $("#messages").append(messageEntry);
+                curViewModified = true;
 	    }
 	    // If we're in the personal view, we don't do this!
 	    else if (!needsToBeSetup && api.storage.last_viewed.type == 1)
@@ -182,6 +188,7 @@ $(document).ready(function()
         if (atBottom && api.storage && api.storage.last_viewed)
         {
             setCurrentRead(api.storage.last_viewed.cls, api.storage.last_viewed.instance);
+            storageModified = true;
         }
         scrolled = true;
     });
@@ -228,12 +235,19 @@ $(document).ready(function()
             }
             if(messages[a])
                 api.storage.first_visible[name] = messages[a].id.substr(7); //"message"
+            storageModified = true;
         }
         window.setTimeout(processScroll, 500);
     }
     processScroll();
     
-    window.setInterval(api.saveStorage, 5*60*1000);
+    var storageModified = false;
+    window.setInterval(function(){
+        if(storageModified){
+            api.saveStorage();
+            storageModified = false;
+        }
+    }, 5000);
     
     // Setting the form submission handler
     $("#chatsend").submit(
@@ -373,7 +387,7 @@ var setCurrentRead = function(class_id, instance_id)
 	    // Clear missed messages for the class
 	    for (var i = 0; i < classObj.instances.length; i++)
 	    {
-		classObj.instances[i].missedMessages = [];
+                classObj.instances[i].missedMessages = [];
                 api.storage.instances_last_seen[classObj.instances[i].id] = (new Date()).getTime();
 	    }
 	    updateClassMissedMessages(classObj);
@@ -383,10 +397,15 @@ var setCurrentRead = function(class_id, instance_id)
 }
 
 function markAllAsRead(){
-    for(var n=0; n<api.instances.length; n++){
-        setCurrentRead(api.instances[n].parent_class.id, api.instances[n].id);
-    }
     api.storage.first_visible = {};
+    for(var n=0; n<api.instances.length; n++){
+        for(var i=0; i<api.instances[n].missedMessages.length; i++)
+            if(api.instances[n].missedMessages[i].element)
+                api.instances[n].missedMessages[i].element.removeClass("missed");
+        setCurrentRead(api.instances[n].parent_class.id, api.instances[n].id);
+        //api.storage.first_visible['instance'+api.instances[n].id] = api.instances[n].messages
+    }
+    $("#messages .old_missed").removeClass("old_missed");
     updateMissedMessages();
     api.saveStorage();
 }
@@ -543,23 +562,27 @@ var maxPersonals = 5;
 // Constant defining max number of classes to display in the sidebar
 //var maxClasses = 5;
 
+var showAllClasses = false;
+
 // Load the classes to display in the sidebar
 var fillClasses = function()
 {
     var root = $("#classes_anchor");
     var ul = $("<ul></ul>");
-    api.classes.sort(function(c1, c2)
-		     {
-			 var name1 = c1.name, name2 = c2.name;
-			 var un1=false, un2=false;
-			 if (name1.indexOf("un") == 0) { name1=name1.substr(2); un1=true; }
-			 if (name2.indexOf("un") == 0) { name2=name2.substr(2); un2=true; }
-			 if (name1 > name2) { return 1; }
-			 else if (name1 < name2) { return -1; }
-			 else if (un1 && !un2) { return 1; }
-			 else if (un2 && !un1) { return -1; }
-			 else { return 0; }
-		     });
+    api.classes.sort(function(c1, c2){
+        var name1 = c1.name, name2 = c2.name;
+        var un1=false, un2=false;
+        if (name1.indexOf("un") == 0) { name1=name1.substr(2); un1=true; }
+        if (name2.indexOf("un") == 0) { name2=name2.substr(2); un2=true; }
+        if (name1 > name2) { return 1; }
+        else if (name1 < name2) { return -1; }
+        else if (un1 && !un2) { return 1; }
+        else if (un2 && !un1) { return -1; }
+        else { return 0; }
+    });
+    if(api.classes.length < 10)
+        showAllClasses = true;
+    var showButton = false;
     for (var i = 0; i < api.classes.length; i++)
     {
 	/*	if (i == maxClasses)
@@ -571,6 +594,11 @@ var fillClasses = function()
 	(function()
 	 {
 	     var curClass = api.classes[i];
+             if(curClass.messages.length == 0 && curClass.name != api.username){
+                 showButton = true;
+                 if(!showAllClasses)
+                    return;
+             }
 	     var class_entry = $("<li/>");
 	     var class_entry_div = $("<div/>")
 		 .attr("id", "classes_entry_id_"+curClass.id)
@@ -646,6 +674,15 @@ var fillClasses = function()
 	     }
 	 })();
     }
+    if(showButton && api.classes.length >= 10)
+        ul.append($("<li>")
+                    .attr("id", "show_all_classes")
+                    .text(showAllClasses?"Hide empty classes":"Show all classes")
+                    .click(function(){
+                        showAllClasses = !showAllClasses;
+                        fillClasses();
+                    })
+                );
     root.html(ul);
 };
 
@@ -660,6 +697,8 @@ var createMessage = function(message)
     var signature = message.signature;
     var timestamp = message.timestamp;
     var auth = message.auth;
+    var missed = (timestamp > (api.storage.instances_last_seen[instanceObj.id] || 0));
+    
     var message_entry = $("<div class='messages_entry'/>")
 	.click(function()
 	       {
@@ -667,6 +706,8 @@ var createMessage = function(message)
 		   $("#messagetextarea").focus();
 	       })
         .prop("id", "message"+message.id);
+    if(missed)
+        message_entry.addClass("missed");
     var header = $("<div class='message_header'/>");
     var header_class = $("<span />")
 	//.addClass("class_id_"+classObj.id)
@@ -785,6 +826,7 @@ var fillMessagesByClass = function(class_id, instance_id)
 	
 	var selected = $("#classes_entry_id_"+class_id);
 	if(selected.length==0){
+            showAllClasses = true;
 	    fillClasses();
 	    selected = $("#classes_entry_id_"+class_id);
 	}
@@ -867,6 +909,9 @@ var fillMessagesByClass = function(class_id, instance_id)
 	    $("#messages").append(message_entry);
 	})();
     }
+    
+    $("#messages .old_missed").removeClass("old_missed");
+    $("#messages .missed").removeClass("missed").addClass("old_missed");
 
     // Scroll to the bottom of the messages div
     // $("#messages").prop({ scrollTop: $("#messages").prop("scrollHeight") });
