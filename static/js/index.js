@@ -1180,7 +1180,7 @@ function showSettings(){
     
     var form = $("<form/>");
     
-    if(webkitNotifications){
+    if(window.webkitNotifications){
         var notifyOn = $("<input type='radio' name='notify' id='notifyOn' value='on'/>");
         var notifyOff = $("<input type='radio' name='notify' id='notifyOff' value='off'/>");
         var notifySettings = $("<div>");
@@ -1211,6 +1211,9 @@ function showSettings(){
             form.append(enableNotify, "<br/>");
         }
         form.append("<br/>");
+    }
+    else{
+        form.append("Desktop notifications are not supported in your browser.<br/><br/>");
     }
     
     var signatureInput = $("<input type='text'>").val(api.storage.signature || "");
