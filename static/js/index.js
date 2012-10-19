@@ -253,28 +253,21 @@ $(document).ready(function()
     $("#chatsend").submit(
 	function(event)
 	{
-	    var messageTextArea = $(this).find("#messagetextarea");
+	    var messageTextArea = $("#messagetextarea");
 	    var messageText = messageTextArea.val();
-	    messageTextArea.val('');
-	    var classDropDown = $(this).find("#classdropdown");
-	    var classText = api.getClassById(classDropDown.val()).name;
-	    var instanceDropDown = $(this).find("#instancedropdown");
-	    var instanceId = instanceDropDown.val();
-	    var instanceText;
-	    if (instanceId == "new")
-	    {
-		instanceText = $(this).find("#instancetext").val();
-		if (instanceText == "")
-		{
-		    alert('Please enter an instance (subject) for your message!');
-		    return false;
-		}
-	    }
-	    else
-	    {
-		instanceText = api.getInstanceById(instanceId).name;
-	    }
-
+	    var classText = $("#classdropdown").val();
+	    var instanceText = $("#instancedropdown").val();
+            
+            if(!api.classDict[classText]){
+                if(!confirm(
+                    "You are not subscribed to class \"" + classText + "\".\n" +
+                    "Are you sure you want to send this message?\n\n" + 
+                    "(Note that you will not be able to see your message after it is sent.)"
+                ))
+                    return false;
+            }
+            
+            messageTextArea.val('');
 	    $.post("/chat",
 		   {
 		       'class': classText,
@@ -299,25 +292,20 @@ $(document).ready(function()
 		addZephyrClass();
 		e.stopPropagation();	//Don't switch back to the default view
 	    });
-
-    // Changes instances options on class selection change
-    $("#classdropdown").change(
-	function() {
-	    fillInstancesDropDown();
-	}
+    
+    $("#classdropdown").focus(
+        function() {
+            fillClassesDropDown();
+            $(this).autocomplete("search");
+            this.select();
+        }
     );
 
-    // Hide/display the instance test box if "New instance" is selected
-    $("#instancedropdown").change(
+    $("#instancedropdown").focus(
 	function() {
-	    if ($(this).val() == "new")
-	    {
-		$("#instancetext").show();
-	    }
-	    else
-	    {
-		$("#instancetext").hide();
-	    }
+            fillInstancesDropDown();
+            $(this).autocomplete("search");
+            this.select();
 	}
     );
 
@@ -683,7 +671,7 @@ var fillClasses = function()
                         fillClasses();
                     })
                 );
-    root.html(ul);
+    root.html("").append(ul);
 };
 
 var createMessage = function(message)
@@ -803,7 +791,8 @@ var fillMessagesByClass = function(class_id, instance_id)
 		   fillButtonArea();
 	       });
     var headerText = $("#chatheader")
-	.html(allClassesHeader)
+	.html("")
+        .append(allClassesHeader)
 	.off("click");
     var messagesOut;
 
@@ -911,7 +900,8 @@ var fillMessagesByClass = function(class_id, instance_id)
     }
     
     $("#messages .old_missed").removeClass("old_missed");
-    $("#messages .missed").removeClass("missed").addClass("old_missed");
+    if(classObj)
+        $("#messages .missed").removeClass("missed").addClass("old_missed");
 
     // Scroll to the bottom of the messages div
     // $("#messages").prop({ scrollTop: $("#messages").prop("scrollHeight") });
@@ -931,8 +921,6 @@ var fillMessagesByClass = function(class_id, instance_id)
             //$("#messages-scroll").scrollTop(0);
             $("#messages_scroll").scrollTop($("#messages_scroll").prop("scrollHeight"));
     }
-    
-    $("#chatheader").text(headerText);
     
     api.saveStorage();
     updateTitle();
@@ -981,71 +969,61 @@ var fillButtonArea = function(class_id, instance_id)
 
 var fillClassesDropDown = function(class_id)
 {
-    // Clear the dropdown
-    $("#classdropdown").html('');
-    // Loop through the classes and add them
+    var options = [];
     for(var i = 0; i < api.classes.length; i++)
     {
-	var curClass = api.classes[i];
-	var option = $("<option/>")
-	    .val(curClass.id)
-	    .attr("id", "option_class_id_"+curClass.id)
-	    .text(curClass.name);
-	$("#classdropdown").append(option);
+	options.push(api.classes[i].name);
     }
 
+    $("#classdropdown").autocomplete({
+        source: options,
+        minLength: 0,
+        delay: 0,
+        position: {
+            my: "left bottom",
+            at: "left top"
+        }
+    });
+    
     // If we're given a default class, make it selected
     if (typeof(class_id) != 'undefined')
     {
-	var class_option = $("#option_class_id_"+class_id);
-	class_option.attr('selected', true);
-	selectedClass = class_id;
+        var classObj = api.getClassById(class_id);
+        if(classObj)
+            $("#classdropdown").val(classObj.name);
     }
 };
 
 var fillInstancesDropDown = function(instance_id)
 {
-    // Figure out which class is selected (or fill in a default if there isn't one)
-    var selectedClass = 0;
-    if (typeof($("#classdropdown").val()) != 'undefined')
-    {
-	selectedClass = $("#classdropdown").val();
-    }
+    // Figure out which class is selected
+    var classObj = api.classDict[$("#classdropdown").val()];
 
-    // Clear the dropdown
-    $("#instancedropdown").html('');
-    // Loop through that class's instances and create an option for each one
-    for(var i = 0; i < api.getClassById(selectedClass).instances.length; i++)
-    {
-	var curInstance = api.getClassById(selectedClass).instances[i];
-	var option = $("<option/>")
-	    .val(curInstance.id)
-	    .attr("id", "option_instance_id_"+curInstance.id)
-	    .text(curInstance.name);
-	$("#instancedropdown").append(option);
+    var options = [];
+    if(classObj){
+        for(var i = 0; i < classObj.instances.length; i++){
+            options.push(classObj.instances[i].name);
+        }
     }
-    // Add in the new instance option
-    var option = $("<option/>")
-	.val("new")
-	.attr("id", "option_instance_id_new")
-	.text("New instance");
-    $("#instancedropdown").append(option);
-
-    // Check for the new instance option being selected
-    if ($("#instancedropdown").val() == "new")
-    {
-	$("#instancetext").show();
-    }
-    else
-    {
-	$("#instancetext").hide();
-    }
-
+    if(options.length == 0)
+        options.push("personal");
+    
+    $("#instancedropdown").autocomplete({
+        source: options,
+        minLength: 0,
+        delay: 0,
+        position: {
+            my: "left bottom",
+            at: "left top"
+        }
+    });
+    
     // If there's a particular default instance, make it selected
     if (typeof(instance_id) != 'undefined')
     {
-	var instance_option = $("#option_instance_id_"+instance_id);
-	instance_option.attr('selected', true);
+	var instanceObj = api.getInstanceById(instance_id);
+        if(instanceObj)
+            $("#instancedropdown").val(instanceObj.name);
     }
 };
 

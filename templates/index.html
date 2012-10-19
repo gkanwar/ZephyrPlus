@@ -3,13 +3,14 @@
 <html>
   <head>
     <title>ZephyrPlus!</title>
-    <link href="/static/styles/style.css" type="text/css" rel="stylesheet" />
 
     <link href="http://fonts.googleapis.com/css?family=Ubuntu+Mono" rel="stylesheet" type="text/css">
 
     <link rel="icon" type="image/png" href="../static/img/zp_fav.png" />
 
     <link href="/static/js/jquery/jquery-ui-1.8.18.custom.css" type="text/css" rel="stylesheet" />
+    <link href="/static/styles/style.css" type="text/css" rel="stylesheet" />
+
     <script src="/static/js/jquery/jquery-1.7.1.min.js"></script>
     <script src="/static/js/jquery/jquery-ui-1.8.18.custom.min.js"></script>
     <script src="/static/js/api.js"></script>
@@ -79,15 +80,12 @@
 	  <form id="chatsend" method="post" action="chat">
 	    <div id="buttonarea">
 	      <span id="classbuttonarea">
-		Class:
-		<select name="class" id="classdropdown">
-		</select>
+		<label for="classdropdown">Class:</label>
+		<input type="text" name="class" id="classdropdown" />
 	      </span>
 	      <span id="instancebuttonarea">
-		Instance:
-		<select name="instance" id="instancedropdown">
-		</select>
-		<input type="text" name="instanceText" id="instancetext" style="display:none" />
+		<label for="instancedropdown">Instance (subject):</label>
+		<input type="text" name="instance" id="instancedropdown" />
 	      </span>
 	      <input type="submit" name="submit" id="sendzephyr" value="send" />
 	    </div>

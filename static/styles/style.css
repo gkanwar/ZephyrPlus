@@ -462,3 +462,13 @@ a.headerlink:hover
     text-shadow: #000000 0px 1px 0px;
     padding: 10px 35px 10px 35px;
 }
+
+.ui-widget, .ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget button
+{
+    font-family: inherit;
+}
+.ui-menu .ui-menu-item a
+{
+    line-height: normal;
+    padding: inherit;
+}
