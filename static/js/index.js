@@ -982,7 +982,8 @@ var fillClassesDropDown = function(class_id)
         position: {
             my: "left bottom",
             at: "left top"
-        }
+        },
+        autoFocus: true
     });
     
     // If we're given a default class, make it selected
@@ -1015,7 +1016,8 @@ var fillInstancesDropDown = function(instance_id)
         position: {
             my: "left bottom",
             at: "left top"
-        }
+        },
+        autoFocus: true
     });
     
     // If there's a particular default instance, make it selected
