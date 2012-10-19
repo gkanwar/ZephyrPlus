@@ -327,7 +327,7 @@ $(document).ready(function()
     
     $("#settings_link").click(showSettings);
     
-    $("#mark_read").click(markAllAsRead);
+    $("#mark_read input").click(markAllAsRead);
 
 
 });
