@@ -316,7 +316,7 @@ $(document).ready(function()
     ).keyup(
 	function() {
 	    var lines=this.value.split("\n");
-	    if(lines.length>2 && lines[lines.length-2]=="." && lines[lines.length-1]==""){
+	    if(lines.length>=2 && lines[lines.length-2]=="." && lines[lines.length-1]==""){
 		lines.length-=2;
 		this.value=lines.join("\n");
 		$("#messagetextarea").change();
@@ -719,23 +719,33 @@ var createMessage = function(message)
 	       });
 
     // Makes sender name brighter.
-    sender_text = "<span class='sender'>"+sender_text+"</span>";
+    sender_text = $("<span />")
+	.append("<span class='sender'>"+sender_text+"</span>");
 
     if(!auth)
-	sender_text += " <span class='unauth'>(UNAUTH)</span>";
+	sender_text.append(" <span class='unauth'>(UNAUTH)</span>");
     
     if(signature)
-        sender_text+=" ("+signature+")";
+        sender_text.append(" ("+signature+")");
+
     header.append(header_class).append(" / ")
 	.append(header_instance).append(" / ")
 	.append(sender_text)
         .append($("<span class='message_timestamp'/>").text(convertTime(timestamp)));
     var body = $("<pre class='message_body'/>").text(message_text);
+
     var links = body.html().match(/https?:\/\/[^ '"\n]+/g);
     if(links)
         for(var n=0; n<links.length; n++)
             body.html(body.html().replace(links[n], "<a href=\""+links[n]+"\" target=\"_blank\">"+links[n]+"</a>"));
-	body.html(formatText(body.html()));
+
+    var format = function (elt) {
+	elt.html(formatText(elt.html()));
+    };
+    format(body);
+    format(header_class);
+    format(header_instance);
+    format(sender_text);
     message_entry.append(header, body);
     message.element = message_entry;
     return message_entry
@@ -963,8 +973,8 @@ var fillMessagesByPersonal = function(personal_id)
 
 var fillButtonArea = function(class_id, instance_id)
 {
-    fillClassesDropDown(class_id);
-    fillInstancesDropDown(instance_id);
+    fillClassesDropDown(class_id || "");
+    fillInstancesDropDown(instance_id || "");
 };
 
 var fillClassesDropDown = function(class_id)
@@ -990,8 +1000,10 @@ var fillClassesDropDown = function(class_id)
     if (typeof(class_id) != 'undefined')
     {
         var classObj = api.getClassById(class_id);
-        if(classObj)
+        if (classObj)
             $("#classdropdown").val(classObj.name);
+        else if (class_id === "")
+	    $("#classdropdown").val("");
     }
 };
 
@@ -1024,8 +1036,10 @@ var fillInstancesDropDown = function(instance_id)
     if (typeof(instance_id) != 'undefined')
     {
 	var instanceObj = api.getInstanceById(instance_id);
-        if(instanceObj)
+        if (instanceObj)
             $("#instancedropdown").val(instanceObj.name);
+        else if (instance_id === "")
+	    $("#instancedropdown").val("");
     }
 };
 
@@ -1089,6 +1103,51 @@ function hsvToRgb(h, s, v){
     return [r * 255, g * 255, b * 255];
 }
 
+function xtermToColor(color) {
+    // convert an xterm color number to an html color name
+    // or 24-bit hash value
+    // Values taken from http://www.mudpedia.org/wiki/Xterm_256_colors#8_to_24_bit_color_conversion
+
+    // if color is nOt an integer, assume that it's a valid color name
+    if (parseInt(color) == color) {
+        color = parseInt(color);
+    } else {
+        return color;
+    }
+
+    var normalIntensities = ["0x00", "0xC0"],
+        brightIntensities = ["0x80", "0xFF"],
+        rgbIntensities = ["0x00", "0x5F", "0x87", "0xAF", "0xD7", "0xFF"],
+        grayScaleStart = "0x08",
+        grayScaleIncrement = 10;
+
+    // black, red, green, yellow, blue, magenta, cyan, white
+    var traditionalColorMap = [[0,0,0], [1,0,0], [0,1,0], [1,1,0], [0,0,1], [1,0,1], [0,1,1], [1,1,1]];
+
+    function colorMapToHex(colorMap, intensityList) {
+        hex = 65536 * parseInt(intensityList[colorMap[0]]) +
+          256 * parseInt(intensityList[colorMap[1]]) +
+          parseInt(intensityList[colorMap[2]]);
+        return "#" + hex.toString(16);
+    }
+
+    if (color < 8) {
+        return colorMapToHex(traditionalColorMap[color], normalIntensities);
+    } else if (color < 16) {
+        return colorMapToHex(traditionalColorMap[color % 8], brightIntensities);
+    } else if (color < 232) {
+        color = color - 16;
+        return colorMapToHex([Math.floor(color / 36) % 6,
+                              Math.floor(color / 6) % 6,
+                              color % 6],
+                             rgbIntensities);
+    } else if (color < 256) {
+        color = color - 232;
+        return colorMapToHex([0,0,0], [parseInt(grayScaleStart) + parseInt(grayScaleIncrement) * color]);
+    }
+    return "";
+}
+
 function wrapStr(str, len){
     if(!len)
 	len=65;
@@ -1119,36 +1178,47 @@ function wrapStr(str, len){
 
 /* Formats text according to formatting in Zephyr */
 function formatText(str){
-	var fText = str;
-	fText = replaceZephyrTag("b", "b", fText);
-	fText = replaceZephyrTag("bold", "b", fText);
-	fText = replaceZephyrTag("i", "i", fText);
-	fText = replaceZephyrTag("italic", "i", fText);
-	//fText = replaceZephyrTag("big", "big", fText);
-	//fText = replaceZephyrTag("small", "small", fText);
+    var fText = str;
+    fText = fText.replace(/@@/g, "&#64;"); // escape double @@'s
+    fText = replaceZephyrTag("b", "b", fText);
+    fText = replaceZephyrTag("bold", "b", fText);
+    fText = replaceZephyrTag("i", "i", fText);
+    fText = replaceZephyrTag("italic", "i", fText);
+    fText = replaceZephyrTag("color", function (str, color, offset, s) {
+	return '<font color="' + xtermToColor(color) + '">';
+    }, fText);
+    //fText = replaceZephyrTag("big", "big", fText);
+    //fText = replaceZephyrTag("small", "small", fText);
+    fText = replaceZephyrTag("", "span", fText); // must be last
 
-	return fText;
+    return fText;
 }
 
 /* Replace zephyr tags with html tags */
 function replaceZephyrTag(zephyrTag, htmlTag, str) {
-	var regex1 = RegExp("@" + zephyrTag + "\\{([^\\}]*)\\}", "g");
-	var regex2 = RegExp("@" + zephyrTag + "\\[([^\\]]*)\\]", "g");
-	var regex3 = RegExp("@" + zephyrTag + "\\(([^\\)]*)\\)", "g");
+    var regex1 = RegExp("@" + zephyrTag + "\\{([^\\}]*)\\}", "g");
+    var regex2 = RegExp("@" + zephyrTag + "\\[([^\\]]*)\\]", "g");
+    var regex3 = RegExp("@" + zephyrTag + "\\(([^\\)]*)\\)", "g");
+    var regex4 = RegExp("@" + zephyrTag + "\\<([^\\)]*)\\<", "g");
 
-	openTag = "<" + htmlTag + ">";
-	closeTag = "</" + htmlTag + ">";
+    var tag;
+    if (typeof(htmlTag) === 'function') {
+	tag = htmlTag;
+    } else {
+	tag = "<" + htmlTag + ">$1</" + htmlTag + ">";
+    }
 
-	var rText = str;
-	if(rText.match(regex1)){
-		rText = rText.replace(regex1, openTag + "$1" + closeTag);
-	} else if(rText.match(regex2)){
-		rText = rText.replace(regex2, openTag + "$1" + closeTag);
-	} else if(rText.match(regex3)){
-		rText = rText.replace(regex3, openTag + "$1" + closeTag);
+    var rText = str;
+    var regexList = [regex1, regex2, regex3, regex4];
+    for (var i = 0; i < regexList.length; i++) {
+	var regex = regexList[i];
+	if (rText.match(regex)) {
+	    rText = rText.replace(regex, tag);
+	    break;
 	}
+    }
 
-	return rText;
+    return rText;
 }
 
 var settingsDialog;

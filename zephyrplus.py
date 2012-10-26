@@ -157,7 +157,7 @@ class ChatUpdateHandler(BaseHandler):
         instance = self.get_argument('instance', 'personal').encode("utf-8")
         recipient = self.get_argument('recipient', '').encode("utf-8")
         signature = self.get_argument('signature', None)
-        message = self.get_argument('message').encode("utf-8")
+        message = self.get_argument('message', '').encode("utf-8")
         username = self.current_user.username
         if signature is not None:
             signature += ") ("
