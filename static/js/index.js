@@ -719,23 +719,33 @@ var createMessage = function(message)
 	       });
 
     // Makes sender name brighter.
-    sender_text = "<span class='sender'>"+sender_text+"</span>";
+    sender_text = $("<span />")
+	.append("<span class='sender'>"+sender_text+"</span>");
 
     if(!auth)
-	sender_text += " <span class='unauth'>(UNAUTH)</span>";
+	sender_text.append(" <span class='unauth'>(UNAUTH)</span>");
     
     if(signature)
-        sender_text+=" ("+signature+")";
+        sender_text.append(" ("+signature+")");
+
     header.append(header_class).append(" / ")
 	.append(header_instance).append(" / ")
 	.append(sender_text)
         .append($("<span class='message_timestamp'/>").text(convertTime(timestamp)));
     var body = $("<pre class='message_body'/>").text(message_text);
+
     var links = body.html().match(/https?:\/\/[^ '"\n]+/g);
     if(links)
         for(var n=0; n<links.length; n++)
             body.html(body.html().replace(links[n], "<a href=\""+links[n]+"\" target=\"_blank\">"+links[n]+"</a>"));
-	body.html(formatText(body.html()));
+
+    var format = function (elt) {
+	elt.html(formatText(elt.html()));
+    };
+    format(body);
+    format(header_class);
+    format(header_instance);
+    format(sender_text);
     message_entry.append(header, body);
     message.element = message_entry;
     return message_entry
