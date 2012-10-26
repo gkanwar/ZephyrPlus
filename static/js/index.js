@@ -1188,6 +1188,7 @@ function replaceZephyrTag(zephyrTag, htmlTag, str) {
     var regex1 = RegExp("@" + zephyrTag + "\\{([^\\}]*)\\}", "g");
     var regex2 = RegExp("@" + zephyrTag + "\\[([^\\]]*)\\]", "g");
     var regex3 = RegExp("@" + zephyrTag + "\\(([^\\)]*)\\)", "g");
+    var regex4 = RegExp("@" + zephyrTag + "\\<([^\\)]*)\\<", "g");
 
     var tag;
     if (typeof(htmlTag) === 'function') {
@@ -1197,12 +1198,13 @@ function replaceZephyrTag(zephyrTag, htmlTag, str) {
     }
 
     var rText = str;
-    if(rText.match(regex1)){
-	rText = rText.replace(regex1, tag);
-    } else if(rText.match(regex2)){
-	rText = rText.replace(regex2, tag);
-    } else if(rText.match(regex3)){
-	rText = rText.replace(regex3, tag);
+    var regexList = [regex1, regex2, regex3, regex4];
+    for (var i = 0; i < regexList.length; i++) {
+	var regex = regexList[i];
+	if (rText.match(regex)) {
+	    rText = rText.replace(regex, tag);
+	    break;
+	}
     }
 
     return rText;
