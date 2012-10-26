@@ -316,7 +316,7 @@ $(document).ready(function()
     ).keyup(
 	function() {
 	    var lines=this.value.split("\n");
-	    if(lines.length>2 && lines[lines.length-2]=="." && lines[lines.length-1]==""){
+	    if(lines.length>=2 && lines[lines.length-2]=="." && lines[lines.length-1]==""){
 		lines.length-=2;
 		this.value=lines.join("\n");
 		$("#messagetextarea").change();
