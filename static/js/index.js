@@ -720,24 +720,19 @@ var createMessage = function(message)
 
     // Makes sender name brighter.
     sender_text = $("<span />")
-	.append("<span class='sender'>"+sender_text+"</span>");
+	.append($("<span class='sender'>").text(sender_text));
 
     if(!auth)
 	sender_text.append(" <span class='unauth'>(UNAUTH)</span>");
     
     if(signature)
-        sender_text.append(" ("+signature+")");
+        sender_text.append(" ", $("<span class='signature'>").text("("+signature+")"));
 
     header.append(header_class).append(" / ")
 	.append(header_instance).append(" / ")
 	.append(sender_text)
         .append($("<span class='message_timestamp'/>").text(convertTime(timestamp)));
     var body = $("<pre class='message_body'/>").text(message_text);
-
-    var links = body.html().match(/https?:\/\/[^ '"\n]+/g);
-    if(links)
-        for(var n=0; n<links.length; n++)
-            body.html(body.html().replace(links[n], "<a href=\""+links[n]+"\" target=\"_blank\">"+links[n]+"</a>"));
 
     var format = function (elt) {
 	elt.html(formatText(elt.html()));
@@ -746,6 +741,9 @@ var createMessage = function(message)
     format(header_class);
     format(header_instance);
     format(sender_text);
+
+    body.html(body.html().replace(/https?:\/\/[^ '"\n]+/g, "<a href=\"$&\" target=\"_blank\">$&</a>"));
+
     message_entry.append(header, body);
     message.element = message_entry;
     return message_entry
@@ -1177,6 +1175,7 @@ function wrapStr(str, len){
 }
 
 /* Formats text according to formatting in Zephyr */
+/* str must not contain html */
 function formatText(str){
     var fText = str;
     fText = fText.replace(/@@/g, "&#64;"); // escape double @@'s
@@ -1184,12 +1183,19 @@ function formatText(str){
     fText = replaceZephyrTag("bold", "b", fText);
     fText = replaceZephyrTag("i", "i", fText);
     fText = replaceZephyrTag("italic", "i", fText);
+
     fText = replaceZephyrTag("color", function (str, color, offset, s) {
-	return '<font color="' + xtermToColor(color) + '">';
+	return $("<span>").css("color", xtermToColor(color))[0].outerHTML;
     }, fText);
-    //fText = replaceZephyrTag("big", "big", fText);
-    //fText = replaceZephyrTag("small", "small", fText);
-    fText = replaceZephyrTag("", "span", fText); // must be last
+    // Move </span>s to end of section
+    fText = replaceZephyrTag("", function(match, inside, offset, s){
+        var endspans = "";
+        inside = inside.replace(/<\/span>/g, function(){
+            endspans += "</span>";
+            return "";
+        });
+        return inside + endspans;
+    }, fText);
 
     return fText;
 }
@@ -1199,7 +1205,6 @@ function replaceZephyrTag(zephyrTag, htmlTag, str) {
     var regex1 = RegExp("@" + zephyrTag + "\\{([^\\}]*)\\}", "g");
     var regex2 = RegExp("@" + zephyrTag + "\\[([^\\]]*)\\]", "g");
     var regex3 = RegExp("@" + zephyrTag + "\\(([^\\)]*)\\)", "g");
-    var regex4 = RegExp("@" + zephyrTag + "\\<([^\\)]*)\\<", "g");
 
     var tag;
     if (typeof(htmlTag) === 'function') {
@@ -1209,7 +1214,7 @@ function replaceZephyrTag(zephyrTag, htmlTag, str) {
     }
 
     var rText = str;
-    var regexList = [regex1, regex2, regex3, regex4];
+    var regexList = [regex1, regex2, regex3];
     for (var i = 0; i < regexList.length; i++) {
 	var regex = regexList[i];
 	if (rText.match(regex)) {
