@@ -1169,6 +1169,7 @@ function wrapStr(str, len){
 /* Formats text according to formatting in Zephyr */
 function formatText(str){
     var fText = str;
+    fText = fText.replace(/@@/g, "&#64;"); // escape double @@'s
     fText = replaceZephyrTag("b", "b", fText);
     fText = replaceZephyrTag("bold", "b", fText);
     fText = replaceZephyrTag("i", "i", fText);
