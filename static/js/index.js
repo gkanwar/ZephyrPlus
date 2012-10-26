@@ -963,8 +963,8 @@ var fillMessagesByPersonal = function(personal_id)
 
 var fillButtonArea = function(class_id, instance_id)
 {
-    fillClassesDropDown(class_id);
-    fillInstancesDropDown(instance_id);
+    fillClassesDropDown(class_id || "");
+    fillInstancesDropDown(instance_id || "");
 };
 
 var fillClassesDropDown = function(class_id)
@@ -990,8 +990,10 @@ var fillClassesDropDown = function(class_id)
     if (typeof(class_id) != 'undefined')
     {
         var classObj = api.getClassById(class_id);
-        if(classObj)
+        if (classObj)
             $("#classdropdown").val(classObj.name);
+        else if (class_id === "")
+	    $("#classdropdown").val("");
     }
 };
 
@@ -1024,8 +1026,10 @@ var fillInstancesDropDown = function(instance_id)
     if (typeof(instance_id) != 'undefined')
     {
 	var instanceObj = api.getInstanceById(instance_id);
-        if(instanceObj)
+        if (instanceObj)
             $("#instancedropdown").val(instanceObj.name);
+        else if (instance_id === "")
+	    $("#instancedropdown").val("");
     }
 };
 
