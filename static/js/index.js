@@ -1093,6 +1093,51 @@ function hsvToRgb(h, s, v){
     return [r * 255, g * 255, b * 255];
 }
 
+function xtermToColor(color) {
+    // convert an xterm color number to an html color name
+    // or 24-bit hash value
+    // Values taken from http://www.mudpedia.org/wiki/Xterm_256_colors#8_to_24_bit_color_conversion
+
+    // if color is nOt an integer, assume that it's a valid color name
+    if (parseInt(color) == color) {
+        color = parseInt(color);
+    } else {
+        return color;
+    }
+
+    var normalIntensities = ["0x00", "0xC0"],
+        brightIntensities = ["0x80", "0xFF"],
+        rgbIntensities = ["0x00", "0x5F", "0x87", "0xAF", "0xD7", "0xFF"],
+        grayScaleStart = "0x08",
+        grayScaleIncrement = 10;
+
+    // black, red, green, yellow, blue, magenta, cyan, white
+    var traditionalColorMap = [[0,0,0], [1,0,0], [0,1,0], [1,1,0], [0,0,1], [1,0,1], [0,1,1], [1,1,1]];
+
+    function colorMapToHex(colorMap, intensityList) {
+        hex = 65536 * parseInt(intensityList[colorMap[0]]) +
+          256 * parseInt(intensityList[colorMap[1]]) +
+          parseInt(intensityList[colorMap[2]]);
+        return "#" + hex.toString(16);
+    }
+
+    if (color < 8) {
+        return colorMapToHex(traditionalColorMap[color], normalIntensities);
+    } else if (color < 16) {
+        return colorMapToHex(traditionalColorMap[color % 8], brightIntensities);
+    } else if (color < 232) {
+        color = color - 16;
+        return colorMapToHex([Math.floor(color / 36) % 6,
+                              Math.floor(color / 6) % 6,
+                              color % 6],
+                             rgbIntensities);
+    } else if (color < 256) {
+        color = color - 232;
+        return colorMapToHex([0,0,0], [parseInt(grayScaleStart) + parseInt(grayScaleIncrement) * color]);
+    }
+    return "";
+}
+
 function wrapStr(str, len){
     if(!len)
 	len=65;
@@ -1123,36 +1168,44 @@ function wrapStr(str, len){
 
 /* Formats text according to formatting in Zephyr */
 function formatText(str){
-	var fText = str;
-	fText = replaceZephyrTag("b", "b", fText);
-	fText = replaceZephyrTag("bold", "b", fText);
-	fText = replaceZephyrTag("i", "i", fText);
-	fText = replaceZephyrTag("italic", "i", fText);
-	//fText = replaceZephyrTag("big", "big", fText);
-	//fText = replaceZephyrTag("small", "small", fText);
+    var fText = str;
+    fText = replaceZephyrTag("b", "b", fText);
+    fText = replaceZephyrTag("bold", "b", fText);
+    fText = replaceZephyrTag("i", "i", fText);
+    fText = replaceZephyrTag("italic", "i", fText);
+    fText = replaceZephyrTag("color", function (str, color, offset, s) {
+	return '<font color="' + xtermToColor(color) + '">';
+    }, fText);
+    //fText = replaceZephyrTag("big", "big", fText);
+    //fText = replaceZephyrTag("small", "small", fText);
+    fText = replaceZephyrTag("", "span", fText); // must be last
 
-	return fText;
+    return fText;
 }
 
 /* Replace zephyr tags with html tags */
 function replaceZephyrTag(zephyrTag, htmlTag, str) {
-	var regex1 = RegExp("@" + zephyrTag + "\\{([^\\}]*)\\}", "g");
-	var regex2 = RegExp("@" + zephyrTag + "\\[([^\\]]*)\\]", "g");
-	var regex3 = RegExp("@" + zephyrTag + "\\(([^\\)]*)\\)", "g");
+    var regex1 = RegExp("@" + zephyrTag + "\\{([^\\}]*)\\}", "g");
+    var regex2 = RegExp("@" + zephyrTag + "\\[([^\\]]*)\\]", "g");
+    var regex3 = RegExp("@" + zephyrTag + "\\(([^\\)]*)\\)", "g");
 
-	openTag = "<" + htmlTag + ">";
-	closeTag = "</" + htmlTag + ">";
+    var tag;
+    if (typeof(htmlTag) === 'function') {
+	tag = htmlTag;
+    } else {
+	tag = "<" + htmlTag + ">$1</" + htmlTag + ">";
+    }
 
-	var rText = str;
-	if(rText.match(regex1)){
-		rText = rText.replace(regex1, openTag + "$1" + closeTag);
-	} else if(rText.match(regex2)){
-		rText = rText.replace(regex2, openTag + "$1" + closeTag);
-	} else if(rText.match(regex3)){
-		rText = rText.replace(regex3, openTag + "$1" + closeTag);
-	}
+    var rText = str;
+    if(rText.match(regex1)){
+	rText = rText.replace(regex1, tag);
+    } else if(rText.match(regex2)){
+	rText = rText.replace(regex2, tag);
+    } else if(rText.match(regex3)){
+	rText = rText.replace(regex3, tag);
+    }
 
-	return rText;
+    return rText;
 }
 
 var settingsDialog;
