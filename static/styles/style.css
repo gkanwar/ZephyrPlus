@@ -278,6 +278,21 @@ a.tooltip:hover span
 {
     display: inline;
 }
+.messages_entry.cursor .message_timestamp
+{
+    display: inline;
+    color: #808080;
+}
+.messages_entry.cursor:hover .message_timestamp
+{
+    color: #A1A1A1;
+}
+.messages_entry.cursor:before
+{
+    content: "->";
+    float: left;
+    margin-left: -20px;
+}
 /*
 .message_body:hover
 {

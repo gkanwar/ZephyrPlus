@@ -319,7 +319,7 @@ $(document).ready(function()
 	    if(lines.length>=2 && lines[lines.length-2]=="." && lines[lines.length-1]==""){
 		lines.length-=2;
 		this.value=lines.join("\n");
-		$("#messagetextarea").change();
+		$("#messagetextarea").change().blur();
 		$("#chatsend").submit();
 	    }
 	}
@@ -329,7 +329,7 @@ $(document).ready(function()
     
     $("#mark_read input").click(markAllAsRead);
 
-
+    $(document).keypress(processKeybindings);
 });
 
 
@@ -690,6 +690,7 @@ var createMessage = function(message)
     var message_entry = $("<div class='messages_entry'/>")
 	.click(function()
 	       {
+		   messageCursor(this);
 		   fillButtonArea(classObj.id, instanceObj.id);
 		   $("#messagetextarea").focus();
 	       })
@@ -1058,6 +1059,36 @@ var addZephyrClass = function()
     }
 };
 
+function messageCursor(message) {
+    var current = $('.messages_entry.cursor');
+    if (message === undefined) {
+	// get the message currently under the cursor
+	return current;
+    }
+    else {
+	// set the message that has the cursor
+        message = $(message);
+	current.removeClass('cursor');
+	message.addClass('cursor');
+    }
+}
+
+function firstVisibleMessage(message) {
+    // get the first message visible in the scroll area
+    return $('#messages .messages_entry').filter(function () {
+        return $(this).position().top >= 0;
+    }).first();
+}
+
+function scrollToMessage(message) {
+    // if message isn't visible in the scroll area, scroll to it
+    var scroll = $('#messages_scroll');
+    var pos = message.position().top;
+    if (pos < 0 || pos + message.height() > 0.8*scroll.height()) {
+        scroll.scrollTop(scroll.scrollTop() + pos);
+    }
+}
+
 function hashStringToColor(str){
     var sum=0;
     for(var n=0; n<str.length; n++){
@@ -1306,3 +1337,43 @@ function showSettings(){
     form.dialog({title: "Settings"});
     settingsDialog=form;
 }
+
+// keybindings
+function processKeybindings (event) {
+    if (/textarea|select/i.test(event.target.nodeName) ||
+        event.target.type === "text")
+        return true; // ignore keypresses in textarea
+    var key = String.fromCharCode(event.which);
+    for (keybinding in keybindingsDict) {
+        if (keybindingsDict[keybinding] == key) {
+            keybindingHandlers[keybinding]();
+        }
+    }
+    return false;
+}
+var keybindingsDict = {
+    moveNext: "n",
+    movePrev: "p",
+    zwrite: "z",
+};
+var keybindingHandlers = {
+    moveNext: function () {
+        var current = messageCursor();
+        var next = current.length ? current.next() : firstVisibleMessage();
+        if (next.length) {
+            messageCursor(next);
+            scrollToMessage(next);
+        }
+    },
+    movePrev: function () {
+        var current = messageCursor();
+        var prev = current.length ? current.prev() : firstVisibleMessage();
+        if (prev.length) {
+            messageCursor(prev);
+            scrollToMessage(prev);
+        }
+    },
+    zwrite: function () {
+        $('#classdropdown').focus();
+    },
+};
