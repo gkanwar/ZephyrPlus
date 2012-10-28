@@ -1374,6 +1374,9 @@ var keybindingsDict = {
     pageUp: "b",
     zwrite: "z",
     reply: "r",
+    viewClass: "c",
+    viewInstance: "i",
+    viewAll: "V",
 };
 var keybindingHandlers = {
     moveNext: function () {
@@ -1432,7 +1435,36 @@ var keybindingHandlers = {
             fillButtonArea(message.parent_class.id, message.parent_instance.id);
             $("#messagetextarea").focus();
         }
-    }
+    },
+    viewClass: function () {
+        var current = messageCursor();
+        if (current.length) {
+            var message = api.getMessageById(current.attr('id').substr(7));
+            var class_id = message.parent_class.id;
+            fillMessagesByClass(class_id);
+            fillButtonArea(class_id);
+            scrollToMessage(current);
+        }
+    },
+    viewInstance: function () {
+        var current = messageCursor();
+        if (current.length) {
+            var message = api.getMessageById(current.attr('id').substr(7));
+            var class_id = message.parent_class.id;
+            var instance_id = message.parent_instance.id;
+            fillMessagesByClass(class_id, instance_id);
+            fillButtonArea(class_id, instance_id);
+            scrollToMessage(current);
+        }
+    },
+    viewAll: function () {
+        var current = messageCursor();        
+        if (!current.length)
+            current = firstVisibleMessage();
+        fillMessagesByClass();
+        fillButtonArea();
+        scrollToMessage(current);
+    },
 };
 function processSpecialKeybindings(event) {
     var in_textarea = (/textarea|select/i.test(event.target.nodeName) ||
