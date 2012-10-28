@@ -330,6 +330,7 @@ $(document).ready(function()
     $("#mark_read input").click(markAllAsRead);
 
     $(document).keypress(processKeybindings);
+    $(document).keydown(processSpecialKeybindings);
 });
 
 
@@ -1399,3 +1400,23 @@ var keybindingHandlers = {
 	$("#messagetextarea").focus();
     }
 };
+function processSpecialKeybindings(event) {
+    var in_textarea = (/textarea|select/i.test(event.target.nodeName) ||
+                       event.target.type === "text")
+    switch (event.which) {
+    case 40: // down arrow
+        if (!in_textarea)
+            keybindingHandlers.moveNext();
+        break;
+    case 38: // up arrow
+        if (!in_textarea)
+            keybindingHandlers.movePrev();
+        break;
+    case 27: // esc
+        $("#messagetextarea").focus().blur();
+        break;
+    default:
+        return;
+    }
+    return false;
+}
