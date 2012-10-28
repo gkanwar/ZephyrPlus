@@ -299,6 +299,26 @@ $(document).ready(function()
             $(this).autocomplete("search");
             this.select();
         }
+    ).autocomplete({
+        source: [],
+        minLength: 0,
+        delay: 0,
+        position: {
+            my: "left bottom",
+            at: "left top"
+        },
+        autoFocus: true,
+        select: function (event) {
+            // suppress tab-key auto-select behavior
+            if (event.which === 9)
+                return false;
+        }
+    }).keypress(
+        function (event) {
+            // suppress enter-key submit behavior
+            if (event.which == 13)
+                return false;
+        }
     );
 
     $("#instancedropdown").focus(
@@ -307,6 +327,26 @@ $(document).ready(function()
             $(this).autocomplete("search");
             this.select();
 	}
+    ).autocomplete({
+        source: [],
+        minLength: 0,
+        delay: 0,
+        position: {
+            my: "left bottom",
+            at: "left top"
+        },
+        autoFocus: true,
+        select: function (event) {
+            // suppress tab-key auto-select behavior
+            if (event.which === 9)
+                return false;
+        }
+    }).keypress(
+        function (event) {
+            // suppress enter-key submit behavior
+            if (event.which == 13)
+                return false;
+        }
     );
 
     $("#messagetextarea").change(
@@ -985,16 +1025,7 @@ var fillClassesDropDown = function(class_id)
 	options.push(api.classes[i].name);
     }
 
-    $("#classdropdown").autocomplete({
-        source: options,
-        minLength: 0,
-        delay: 0,
-        position: {
-            my: "left bottom",
-            at: "left top"
-        },
-        autoFocus: true
-    });
+    $("#classdropdown").autocomplete("option", "source", options);
     
     // If we're given a default class, make it selected
     if (typeof(class_id) != 'undefined')
@@ -1021,16 +1052,7 @@ var fillInstancesDropDown = function(instance_id)
     if(options.length == 0)
         options.push("personal");
     
-    $("#instancedropdown").autocomplete({
-        source: options,
-        minLength: 0,
-        delay: 0,
-        position: {
-            my: "left bottom",
-            at: "left top"
-        },
-        autoFocus: true
-    });
+    $("#instancedropdown").autocomplete("option", "source", options);
     
     // If there's a particular default instance, make it selected
     if (typeof(instance_id) != 'undefined')
