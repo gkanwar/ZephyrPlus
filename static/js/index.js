@@ -1074,17 +1074,27 @@ function messageCursor(message) {
     }
 }
 
-function firstVisibleMessage(message) {
+function firstVisibleMessage() {
     // get the first message visible in the scroll area
     return $('#messages .messages_entry').filter(function () {
         return $(this).position().top >= 0;
     }).first();
 }
 
+function messagesWithinPageOf(message) {
+    // get messages that can be seen on the same page as the given message
+    return $('#messages .messages_entry').filter(function () {
+        var offset = $(this).position().top - $(message).position().top;
+        var height = $('#messages_scroll').height();
+        return ($(this).height() + offset < height &&
+                $(message).height() - offset < height)
+    });
+}
+
 function scrollToMessage(message) {
     // if message isn't visible in the scroll area, scroll to it
     var scroll = $('#messages_scroll');
-    var pos = message.position().top;
+    var pos = $(message).position().top;
     if (pos < 0 || pos + message.height() > 0.8*scroll.height()) {
         scroll.scrollTop(scroll.scrollTop() + pos);
     }
@@ -1340,23 +1350,28 @@ function showSettings(){
 }
 
 // keybindings
-function processKeybindings (event) {
+function processKeybindings(event) {
     if (/textarea|select/i.test(event.target.nodeName) ||
         event.target.type === "text")
         return true; // ignore keypresses in textarea
     var key = String.fromCharCode(event.which);
+    var triggered = false;
     for (keybinding in keybindingsDict) {
         if (keybindingsDict[keybinding] == key) {
             keybindingHandlers[keybinding]();
+            triggered = true;
         }
     }
-    return false;
+    if (triggered)
+        return false;
 }
 var keybindingsDict = {
     moveNext: "n",
     movePrev: "p",
     moveLast: ">",
     moveFirst: "<",
+    pageDown: "f",
+    pageUp: "b",
     zwrite: "z",
     reply: "r",
 };
@@ -1391,13 +1406,32 @@ var keybindingHandlers = {
             scrollToMessage(first);
         }
     },
+    pageDown: function () {
+        var current = messageCursor();
+        var next = current.length ? messagesWithinPageOf(current).last() : firstVisibleMessage();
+        if (next.length) {
+            messageCursor(next);
+            scrollToMessage(next);
+        }
+    },
+    pageUp: function () {
+        var current = messageCursor();
+        var next = current.length ? messagesWithinPageOf(current).first() : firstVisibleMessage();
+        if (next.length) {
+            messageCursor(next);
+            scrollToMessage(next);
+        }
+    },
     zwrite: function () {
         $('#classdropdown').focus();
     },
     reply: function () {
-        var message = api.getMessageById(messageCursor().attr('id').substr(7));
-	fillButtonArea(message.parent_class.id, message.parent_instance.id);
-	$("#messagetextarea").focus();
+        var current = messageCursor();
+        if (current.length) {
+            var message = api.getMessageById(current.attr('id').substr(7));
+            fillButtonArea(message.parent_class.id, message.parent_instance.id);
+            $("#messagetextarea").focus();
+        }
     }
 };
 function processSpecialKeybindings(event) {
@@ -1411,6 +1445,14 @@ function processSpecialKeybindings(event) {
     case 38: // up arrow
         if (!in_textarea)
             keybindingHandlers.movePrev();
+        break;
+    case 34: // page down
+        if (!in_textarea)
+            keybindingHandlers.pageDown();
+        break;
+    case 33: // page up
+        if (!in_textarea)
+            keybindingHandlers.pageUp();
         break;
     case 27: // esc
         $("#messagetextarea").focus().blur();
