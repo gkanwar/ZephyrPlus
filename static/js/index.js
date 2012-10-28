@@ -1354,7 +1354,10 @@ function processKeybindings (event) {
 var keybindingsDict = {
     moveNext: "n",
     movePrev: "p",
+    moveLast: ">",
+    moveFirst: "<",
     zwrite: "z",
+    reply: "r",
 };
 var keybindingHandlers = {
     moveNext: function () {
@@ -1373,7 +1376,26 @@ var keybindingHandlers = {
             scrollToMessage(prev);
         }
     },
+    moveLast: function () {
+        var last = $('#messages .messages_entry').last();
+        if (last.length) {
+            messageCursor(last);
+            scrollToMessage(last);
+        }
+    },
+    moveFirst: function () {
+        var first = $('#messages .messages_entry').first();
+        if (first.length) {
+            messageCursor(first);
+            scrollToMessage(first);
+        }
+    },
     zwrite: function () {
         $('#classdropdown').focus();
     },
+    reply: function () {
+        var message = api.getMessageById(messageCursor().attr('id').substr(7));
+	fillButtonArea(message.parent_class.id, message.parent_instance.id);
+	$("#messagetextarea").focus();
+    }
 };
