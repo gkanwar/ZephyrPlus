@@ -1084,7 +1084,7 @@ var addZephyrClass = function()
 };
 
 function messageCursor(message) {
-    var current = $('.messages_entry.cursor');
+    var current = $('#messages .messages_entry.cursor');
     if (message === undefined) {
 	// get the message currently under the cursor
 	return current;
@@ -1404,7 +1404,7 @@ var keybindingsDict = {
 var keybindingHandlers = {
     moveNext: function () {
         var current = messageCursor();
-        var next = current.length ? current.next() : firstVisibleMessage();
+        var next = current.length ? current.next('.messages_entry') : firstVisibleMessage();
         if (next.length) {
             messageCursor(next);
             scrollToMessage(next);
@@ -1412,7 +1412,7 @@ var keybindingHandlers = {
     },
     movePrev: function () {
         var current = messageCursor();
-        var prev = current.length ? current.prev() : firstVisibleMessage();
+        var prev = current.length ? current.prev('.messages_entry') : firstVisibleMessage();
         if (prev.length) {
             messageCursor(prev);
             scrollToMessage(prev);
