@@ -1387,7 +1387,7 @@ function processKeybindings(event) {
     var key = String.fromCharCode(event.which);
     var triggered = false;
     for (keybinding in keybindingsDict) {
-        if (keybindingsDict[keybinding] == key) {
+        if (key == keybindingsDict[keybinding] || $.inArray(key, keybindingsDict[keybinding]) >= 0) {
             keybindingHandlers[keybinding]();
             triggered = true;
         }
@@ -1396,17 +1396,17 @@ function processKeybindings(event) {
         return false;
 }
 var keybindingsDict = {
-    moveNext: "n",
-    movePrev: "p",
+    moveNext: ["n", "j"],
+    movePrev: ["p", "k"],
     moveLast: ">",
     moveFirst: "<",
-    pageDown: "f",
-    pageUp: "b",
+    pageDown: ["f", "d"],
+    pageUp: ["b", "u"],
     zwrite: "z",
     reply: "r",
     viewClass: "c",
     viewInstance: "i",
-    viewAll: "V",
+    viewAll: ["a", "V"],
 };
 var keybindingHandlers = {
     moveNext: function () {
