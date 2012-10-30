@@ -309,16 +309,23 @@ $(document).ready(function()
             at: "left top"
         },
         autoFocus: true,
-        select: function (event) {
-            // suppress tab-key auto-select behavior
-            if (event.which === 9)
+        search: function (event) {
+            // on backspace: don't search (interferes with menu-closing)
+            if (event.which == 8) {
                 return false;
+            }
         }
-    }).keypress(
+    }).keydown(
         function (event) {
-            // suppress enter-key submit behavior
-            if (event.which == 13)
+            // on backspace: close menu if open
+            if (event.which == 8 && $(this).autocomplete('widget').is(':visible')) {
+                $(this).autocomplete('close');
                 return false;
+            }
+            // suppress enter-key submit behavior
+            if (event.which == 13) {
+                return false;
+            }
         }
     );
 
@@ -337,16 +344,23 @@ $(document).ready(function()
             at: "left top"
         },
         autoFocus: true,
-        select: function (event) {
-            // suppress tab-key auto-select behavior
-            if (event.which === 9)
+        search: function (event) {
+            // on backspace: don't search (interferes with menu-closing)
+            if (event.which == 8) {
                 return false;
+            }
         }
-    }).keypress(
+    }).keydown(
         function (event) {
-            // suppress enter-key submit behavior
-            if (event.which == 13)
+            // on backspace: close menu if open
+            if (event.which == 8 && $(this).autocomplete('widget').is(':visible')) {
+                $(this).autocomplete('close');
                 return false;
+            }
+            // suppress enter-key submit behavior
+            if (event.which == 13) {
+                return false;
+            }
         }
     );
 
