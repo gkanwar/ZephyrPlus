@@ -235,6 +235,11 @@ a.tooltip:hover span
 /*    text-shadow: #0f0f0f 0px 1px 0px;*/
     text-shadow: #1c1c1c 0px 1px 0px;
 }
+.no_messages
+{
+    padding-top: 1em;
+    font-style: italic;
+}
 .messages_entry, #mark_read
 {
     padding-top: 5px;

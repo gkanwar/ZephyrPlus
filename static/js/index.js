@@ -145,6 +145,7 @@ $(document).ready(function()
                 // Add the zephyr to our view
                 var messageEntry = createMessage(curZephyr).addClass("old_missed");
                 $("#messages").append(messageEntry);
+                $("#messages .no_zephyrs").remove();
                 curViewModified = true;
 	    }
 	    // If we're in the personal view, we don't do this!
@@ -936,7 +937,7 @@ var fillMessagesByClass = function(class_id, instance_id)
     if (messagesOut.length == 0)
     {
 	(function(){
-	    $("#messages").append("<br /><i>(No Zephyrs from the past three days.)</i>");
+	    $("#messages").append("<div class='no_messages'>(No Zephyrs from the past three days.)</div>");
 	})();
     }
 
