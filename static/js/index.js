@@ -929,6 +929,9 @@ var fillMessagesByClass = function(class_id, instance_id)
 			 else { return 0; }
 		     });
 
+    // Save cursor position
+    var cursor = messageCursor();
+
     // Actually fill in the messages
     $(".messages_entry").detach();
     $("#messages").html('');
@@ -953,6 +956,10 @@ var fillMessagesByClass = function(class_id, instance_id)
     $("#messages .old_missed").removeClass("old_missed");
     if(classObj)
         $("#messages .missed").removeClass("missed").addClass("old_missed");
+
+    // if cursor isn't visible, remove it
+    if (cursor.parents('html').length == 0)
+        cursor.removeClass('cursor');
 
     // Scroll to the bottom of the messages div
     // $("#messages").prop({ scrollTop: $("#messages").prop("scrollHeight") });
