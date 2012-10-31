@@ -492,3 +492,7 @@ a.headerlink:hover
     line-height: normal;
     padding: inherit;
 }
+#keymaps td
+{
+    padding: 0 10px;
+}

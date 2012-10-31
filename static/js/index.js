@@ -1421,6 +1421,23 @@ var keybindingsDict = {
     viewClass: "c",
     viewInstance: "i",
     viewAll: ["a", "V"],
+    markAllAsRead: "x",
+    help: ["h", "?"],
+};
+var keybindingsFriendly = {
+    moveNext: "Move to next message",
+    movePrev: "Move to previous message",
+    moveLast: "Move to last message",
+    moveFirst: "Move to first message",
+    pageDown: "Page down",
+    pageUp: "Page up",
+    zwrite: "Compose a zephyr",
+    reply: "Reply to the current message",
+    viewClass: "View zephyrs in selected class",
+    viewInstance: "View zephyrs in selected instance",
+    viewAll: "View all zephyrs",
+    markAllAsRead: "Mark all as read",
+    help: "Show this help dialog",
 };
 var keybindingHandlers = {
     moveNext: function () {
@@ -1509,7 +1526,31 @@ var keybindingHandlers = {
         fillButtonArea();
         scrollToMessage(current);
     },
+    markAllAsRead: markAllAsRead,
+    help: function () {
+        var helpDialog = window.helpDialog;
+        if (helpDialog === undefined) {
+            helpDialog = $('<table id="keymaps">');
+            for (key in keybindingsDict) {
+                var dt = $('<td>').append(keybindingsDict[key].toString());
+                var dd = $('<td>').append(keybindingsFriendly[key]);
+                var tr = $('<tr>').append(dt).append(dd);
+                helpDialog.append(tr);
+            }
+            helpDialog.dialog({title: 'Keymaps', height: 400, width: 400});
+            window.helpDialog = helpDialog;
+        }
+        else {
+            if (helpDialog.dialog('isOpen')) {
+                helpDialog.dialog('close');
+            }
+            else {
+                helpDialog.dialog('open');
+            }
+        }
+    }
 };
+
 function processSpecialKeybindings(event) {
     var in_textarea = (/textarea|select/i.test(event.target.nodeName) ||
                        event.target.type === "text")
