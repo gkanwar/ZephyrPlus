@@ -1356,6 +1356,15 @@ function showSettings(){
     else{
         form.append("Desktop notifications are not supported in your browser.<br/><br/>");
     }
+
+    var keybindingsCheckbox = $("<input type='checkbox'>");
+    keybindingsCheckbox.prop('checked', api.storage.keybindings);
+
+    form.append(
+        "Enable keybindings:<br/>",
+        keybindingsCheckbox,
+        "<br/><br/>"
+    );
     
     var signatureInput = $("<input type='text'>").val(api.storage.signature || "");
     form.append(
@@ -1363,10 +1372,12 @@ function showSettings(){
         signatureInput,
         "<br/><br/>"
     );
-    
+
     function save(){
         if(notifyOn)
             api.storage.notify=notifyOn[0].checked;
+        if(keybindingsCheckbox)
+            api.storage.keybindings=keybindingsCheckbox.prop('checked');
         if(signatureInput.val())
             api.storage.signature=signatureInput.val();
         else
@@ -1398,6 +1409,8 @@ function processKeybindings(event) {
     if (/textarea|select/i.test(event.target.nodeName) ||
         event.target.type === "text")
         return true; // ignore keypresses in textarea
+    if (!api.storage.keybindings)
+        return true; // keybindings disabled
     var key = String.fromCharCode(event.which);
     var triggered = false;
     for (keybinding in keybindingsDict) {
@@ -1552,30 +1565,30 @@ var keybindingHandlers = {
 };
 
 function processSpecialKeybindings(event) {
-    var in_textarea = (/textarea|select/i.test(event.target.nodeName) ||
-                       event.target.type === "text")
+    if (!api.storage.keybindings)
+        return true; // keybindings disabled
+    if (event.which == 27) { // esc
+        $("#messagetextarea").focus().blur();
+        return false;
+    }
+    if (/textarea|select/i.test(event.target.nodeName) ||
+             event.target.type === "text") {
+        return true;; // in textarea
+    }
     switch (event.which) {
     case 40: // down arrow
-        if (!in_textarea)
-            keybindingHandlers.moveNext();
-        break;
+        keybindingHandlers.moveNext();
+        return false;
     case 38: // up arrow
-        if (!in_textarea)
-            keybindingHandlers.movePrev();
-        break;
+        keybindingHandlers.movePrev();
+        return false;
     case 34: // page down
-        if (!in_textarea)
-            keybindingHandlers.pageDown();
-        break;
+        keybindingHandlers.pageDown();
+        return false;
     case 33: // page up
-        if (!in_textarea)
-            keybindingHandlers.pageUp();
-        break;
-    case 27: // esc
-        $("#messagetextarea").focus().blur();
-        break;
+        keybindingHandlers.pageUp();
+        return false;
     default:
-        return;
+        return true;
     }
-    return false;
 }
