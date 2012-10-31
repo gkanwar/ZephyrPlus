@@ -1545,12 +1545,15 @@ var keybindingHandlers = {
         if (helpDialog === undefined) {
             helpDialog = $('<table id="keymaps">');
             for (key in keybindingsDict) {
-                var dt = $('<td>').append(keybindingsDict[key].toString());
-                var dd = $('<td>').append(keybindingsFriendly[key]);
-                var tr = $('<tr>').append(dt).append(dd);
+                var dt = $('<td>').text(keybindingsDict[key].toString());
+                var dd = $('<td>').text(keybindingsFriendly[key]);
+                var tr = $('<tr>').append(dt, dd);
                 helpDialog.append(tr);
             }
-            helpDialog.dialog({title: 'Keymaps', height: 400, width: 400});
+            var tr = $('<tr>').append($('<td>').text('esc'),
+                                      $('<td>').text('Unfocus textbox'));
+            helpDialog.append(tr);
+            helpDialog.dialog({title: 'Keymaps', width: 'auto'});
             window.helpDialog = helpDialog;
         }
         else {
