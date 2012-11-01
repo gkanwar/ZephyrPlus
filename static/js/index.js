@@ -145,7 +145,7 @@ $(document).ready(function()
                 // Add the zephyr to our view
                 var messageEntry = createMessage(curZephyr).addClass("old_missed");
                 $("#messages").append(messageEntry);
-                $("#messages .no_zephyrs").remove();
+                $("#messages .no_messages").remove();
                 curViewModified = true;
 	    }
 	    // If we're in the personal view, we don't do this!
