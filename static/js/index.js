@@ -145,6 +145,7 @@ $(document).ready(function()
                 // Add the zephyr to our view
                 var messageEntry = createMessage(curZephyr).addClass("old_missed");
                 $("#messages").append(messageEntry);
+                $("#messages .no_messages").remove();
                 curViewModified = true;
 	    }
 	    // If we're in the personal view, we don't do this!
@@ -299,6 +300,33 @@ $(document).ready(function()
             $(this).autocomplete("search");
             this.select();
         }
+    ).autocomplete({
+        source: [],
+        minLength: 0,
+        delay: 0,
+        position: {
+            my: "left bottom",
+            at: "left top"
+        },
+        autoFocus: true,
+        search: function (event) {
+            // on backspace: don't search (interferes with menu-closing)
+            if (event.which == 8) {
+                return false;
+            }
+        }
+    }).keydown(
+        function (event) {
+            // on backspace: close menu if open
+            if (event.which == 8 && $(this).autocomplete('widget').is(':visible')) {
+                $(this).autocomplete('close');
+                return false;
+            }
+            // suppress enter-key submit behavior
+            if (event.which == 13) {
+                return false;
+            }
+        }
     );
 
     $("#instancedropdown").focus(
@@ -307,6 +335,33 @@ $(document).ready(function()
             $(this).autocomplete("search");
             this.select();
 	}
+    ).autocomplete({
+        source: [],
+        minLength: 0,
+        delay: 0,
+        position: {
+            my: "left bottom",
+            at: "left top"
+        },
+        autoFocus: true,
+        search: function (event) {
+            // on backspace: don't search (interferes with menu-closing)
+            if (event.which == 8) {
+                return false;
+            }
+        }
+    }).keydown(
+        function (event) {
+            // on backspace: close menu if open
+            if (event.which == 8 && $(this).autocomplete('widget').is(':visible')) {
+                $(this).autocomplete('close');
+                return false;
+            }
+            // suppress enter-key submit behavior
+            if (event.which == 13) {
+                return false;
+            }
+        }
     );
 
     $("#messagetextarea").change(
@@ -319,7 +374,7 @@ $(document).ready(function()
 	    if(lines.length>=2 && lines[lines.length-2]=="." && lines[lines.length-1]==""){
 		lines.length-=2;
 		this.value=lines.join("\n");
-		$("#messagetextarea").change();
+		$("#messagetextarea").change().blur();
 		$("#chatsend").submit();
 	    }
 	}
@@ -329,7 +384,8 @@ $(document).ready(function()
     
     $("#mark_read input").click(markAllAsRead);
 
-
+    $(document).keypress(processKeybindings);
+    $(document).keydown(processSpecialKeybindings);
 });
 
 
@@ -690,6 +746,7 @@ var createMessage = function(message)
     var message_entry = $("<div class='messages_entry'/>")
 	.click(function()
 	       {
+		   messageCursor(this);
 		   fillButtonArea(classObj.id, instanceObj.id);
 		   $("#messagetextarea").focus();
 	       })
@@ -886,6 +943,9 @@ var fillMessagesByClass = function(class_id, instance_id)
 			 else { return 0; }
 		     });
 
+    // Save cursor position
+    var cursor = messageCursor();
+
     // Actually fill in the messages
     $(".messages_entry").detach();
     $("#messages").html('');
@@ -894,7 +954,7 @@ var fillMessagesByClass = function(class_id, instance_id)
     if (messagesOut.length == 0)
     {
 	(function(){
-	    $("#messages").append("<br /><i>(No Zephyrs from the past three days.)</i>");
+	    $("#messages").append("<div class='no_messages'>(No Zephyrs from the past three days.)</div>");
 	})();
     }
 
@@ -910,6 +970,10 @@ var fillMessagesByClass = function(class_id, instance_id)
     $("#messages .old_missed").removeClass("old_missed");
     if(classObj)
         $("#messages .missed").removeClass("missed").addClass("old_missed");
+
+    // if cursor isn't visible, remove it
+    if (cursor.parents('html').length == 0)
+        cursor.removeClass('cursor');
 
     // Scroll to the bottom of the messages div
     // $("#messages").prop({ scrollTop: $("#messages").prop("scrollHeight") });
@@ -983,16 +1047,7 @@ var fillClassesDropDown = function(class_id)
 	options.push(api.classes[i].name);
     }
 
-    $("#classdropdown").autocomplete({
-        source: options,
-        minLength: 0,
-        delay: 0,
-        position: {
-            my: "left bottom",
-            at: "left top"
-        },
-        autoFocus: true
-    });
+    $("#classdropdown").autocomplete("option", "source", options);
     
     // If we're given a default class, make it selected
     if (typeof(class_id) != 'undefined')
@@ -1019,16 +1074,7 @@ var fillInstancesDropDown = function(instance_id)
     if(options.length == 0)
         options.push("personal");
     
-    $("#instancedropdown").autocomplete({
-        source: options,
-        minLength: 0,
-        delay: 0,
-        position: {
-            my: "left bottom",
-            at: "left top"
-        },
-        autoFocus: true
-    });
+    $("#instancedropdown").autocomplete("option", "source", options);
     
     // If there's a particular default instance, make it selected
     if (typeof(instance_id) != 'undefined')
@@ -1057,6 +1103,46 @@ var addZephyrClass = function()
 	});
     }
 };
+
+function messageCursor(message) {
+    var current = $('#messages .messages_entry.cursor');
+    if (message === undefined) {
+	// get the message currently under the cursor
+	return current;
+    }
+    else {
+	// set the message that has the cursor
+        message = $(message);
+	current.removeClass('cursor');
+	message.addClass('cursor');
+    }
+}
+
+function firstVisibleMessage() {
+    // get the first message visible in the scroll area
+    return $('#messages .messages_entry').filter(function () {
+        return $(this).position().top >= 0;
+    }).first();
+}
+
+function messagesWithinPageOf(message) {
+    // get messages that can be seen on the same page as the given message
+    return $('#messages .messages_entry').filter(function () {
+        var offset = $(this).position().top - $(message).position().top;
+        var height = $('#messages_scroll').height();
+        return ($(this).height() + offset < height &&
+                $(message).height() - offset < height)
+    });
+}
+
+function scrollToMessage(message) {
+    // if message isn't visible in the scroll area, scroll to it
+    var scroll = $('#messages_scroll');
+    var pos = $(message).position().top;
+    if (pos < 0 || pos + message.height() > 0.8*scroll.height()) {
+        scroll.scrollTop(scroll.scrollTop() + pos);
+    }
+}
 
 function hashStringToColor(str){
     var sum=0;
@@ -1270,6 +1356,15 @@ function showSettings(){
     else{
         form.append("Desktop notifications are not supported in your browser.<br/><br/>");
     }
+
+    var keybindingsCheckbox = $("<input type='checkbox'>");
+    keybindingsCheckbox.prop('checked', api.storage.keybindings);
+
+    form.append(
+        "Enable keybindings:<br/>",
+        keybindingsCheckbox,
+        "<br/><br/>"
+    );
     
     var signatureInput = $("<input type='text'>").val(api.storage.signature || "");
     form.append(
@@ -1277,10 +1372,12 @@ function showSettings(){
         signatureInput,
         "<br/><br/>"
     );
-    
+
     function save(){
         if(notifyOn)
             api.storage.notify=notifyOn[0].checked;
+        if(keybindingsCheckbox)
+            api.storage.keybindings=keybindingsCheckbox.prop('checked');
         if(signatureInput.val())
             api.storage.signature=signatureInput.val();
         else
@@ -1305,4 +1402,196 @@ function showSettings(){
     
     form.dialog({title: "Settings"});
     settingsDialog=form;
+}
+
+// keybindings
+function processKeybindings(event) {
+    if (/textarea|select/i.test(event.target.nodeName) ||
+        event.target.type === "text")
+        return true; // ignore keypresses in textarea
+    if (!api.storage.keybindings)
+        return true; // keybindings disabled
+    var key = String.fromCharCode(event.which);
+    var triggered = false;
+    for (keybinding in keybindingsDict) {
+        if (key == keybindingsDict[keybinding] || $.inArray(key, keybindingsDict[keybinding]) >= 0) {
+            keybindingHandlers[keybinding]();
+            triggered = true;
+        }
+    }
+    if (triggered)
+        return false;
+}
+var keybindingsDict = {
+    moveNext: ["n", "j"],
+    movePrev: ["p", "k"],
+    moveLast: ">",
+    moveFirst: "<",
+    pageDown: ["f", "d"],
+    pageUp: ["b", "u"],
+    zwrite: "z",
+    reply: "r",
+    viewClass: "c",
+    viewInstance: "i",
+    viewAll: ["a", "V"],
+    markAllAsRead: "x",
+    help: ["h", "?"],
+};
+var keybindingsFriendly = {
+    moveNext: "Move to next message",
+    movePrev: "Move to previous message",
+    moveLast: "Move to last message",
+    moveFirst: "Move to first message",
+    pageDown: "Page down",
+    pageUp: "Page up",
+    zwrite: "Compose a zephyr",
+    reply: "Reply to the current message",
+    viewClass: "View zephyrs in selected class",
+    viewInstance: "View zephyrs in selected instance",
+    viewAll: "View all zephyrs",
+    markAllAsRead: "Mark all as read",
+    help: "Show this help dialog",
+};
+var keybindingHandlers = {
+    moveNext: function () {
+        var current = messageCursor();
+        var next = current.length ? current.next('.messages_entry') : firstVisibleMessage();
+        if (next.length) {
+            messageCursor(next);
+            scrollToMessage(next);
+        }
+    },
+    movePrev: function () {
+        var current = messageCursor();
+        var prev = current.length ? current.prev('.messages_entry') : firstVisibleMessage();
+        if (prev.length) {
+            messageCursor(prev);
+            scrollToMessage(prev);
+        }
+    },
+    moveLast: function () {
+        var last = $('#messages .messages_entry').last();
+        if (last.length) {
+            messageCursor(last);
+            scrollToMessage(last);
+        }
+    },
+    moveFirst: function () {
+        var first = $('#messages .messages_entry').first();
+        if (first.length) {
+            messageCursor(first);
+            scrollToMessage(first);
+        }
+    },
+    pageDown: function () {
+        var current = messageCursor();
+        var next = current.length ? messagesWithinPageOf(current).last() : firstVisibleMessage();
+        if (next.length) {
+            messageCursor(next);
+            scrollToMessage(next);
+        }
+    },
+    pageUp: function () {
+        var current = messageCursor();
+        var next = current.length ? messagesWithinPageOf(current).first() : firstVisibleMessage();
+        if (next.length) {
+            messageCursor(next);
+            scrollToMessage(next);
+        }
+    },
+    zwrite: function () {
+        $('#classdropdown').focus();
+    },
+    reply: function () {
+        var current = messageCursor();
+        if (current.length) {
+            var message = api.getMessageById(current.attr('id').substr(7));
+            fillButtonArea(message.parent_class.id, message.parent_instance.id);
+            $("#messagetextarea").focus();
+        }
+    },
+    viewClass: function () {
+        var current = messageCursor();
+        if (current.length) {
+            var message = api.getMessageById(current.attr('id').substr(7));
+            var class_id = message.parent_class.id;
+            fillMessagesByClass(class_id);
+            fillButtonArea(class_id);
+            scrollToMessage(current);
+        }
+    },
+    viewInstance: function () {
+        var current = messageCursor();
+        if (current.length) {
+            var message = api.getMessageById(current.attr('id').substr(7));
+            var class_id = message.parent_class.id;
+            var instance_id = message.parent_instance.id;
+            fillMessagesByClass(class_id, instance_id);
+            fillButtonArea(class_id, instance_id);
+            scrollToMessage(current);
+        }
+    },
+    viewAll: function () {
+        var current = messageCursor();        
+        if (!current.length)
+            current = firstVisibleMessage();
+        fillMessagesByClass();
+        fillButtonArea();
+        scrollToMessage(current);
+    },
+    markAllAsRead: markAllAsRead,
+    help: function () {
+        var helpDialog = window.helpDialog;
+        if (helpDialog === undefined) {
+            helpDialog = $('<table id="keymaps">');
+            for (key in keybindingsDict) {
+                var dt = $('<td>').text(keybindingsDict[key].toString());
+                var dd = $('<td>').text(keybindingsFriendly[key]);
+                var tr = $('<tr>').append(dt, dd);
+                helpDialog.append(tr);
+            }
+            var tr = $('<tr>').append($('<td>').text('esc'),
+                                      $('<td>').text('Unfocus textbox'));
+            helpDialog.append(tr);
+            helpDialog.dialog({title: 'Keymaps', width: 'auto'});
+            window.helpDialog = helpDialog;
+        }
+        else {
+            if (helpDialog.dialog('isOpen')) {
+                helpDialog.dialog('close');
+            }
+            else {
+                helpDialog.dialog('open');
+            }
+        }
+    }
+};
+
+function processSpecialKeybindings(event) {
+    if (!api.storage.keybindings)
+        return true; // keybindings disabled
+    if (event.which == 27) { // esc
+        $("#messagetextarea").focus().blur();
+        return false;
+    }
+    if (/textarea|select/i.test(event.target.nodeName) ||
+             event.target.type === "text") {
+        return true;; // in textarea
+    }
+    switch (event.which) {
+    case 40: // down arrow
+        keybindingHandlers.moveNext();
+        return false;
+    case 38: // up arrow
+        keybindingHandlers.movePrev();
+        return false;
+    case 34: // page down
+        keybindingHandlers.pageDown();
+        return false;
+    case 33: // page up
+        keybindingHandlers.pageUp();
+        return false;
+    default:
+        return true;
+    }
 }
