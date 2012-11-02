@@ -1118,29 +1118,53 @@ function messageCursor(message) {
     }
 }
 
+function binarySearch(test, arr) {
+    var a = 0, b = arr.length;
+    var first;
+    while (b-a > 1) {
+        var c = Math.floor((a+b)/2);
+        if (test(arr[c])) {
+            b = c;
+            first = c;
+        }
+        else {
+            a = c;
+        }
+    }
+    return first;
+}
+
 function firstVisibleMessage() {
     // get the first message visible in the scroll area
-    return $('#messages .messages_entry').filter(function () {
-        return $(this).position().top >= 0;
-    }).first();
+    var messages = $('#messages .messages_entry');
+    var i = binarySearch(function (message) {
+        return $(message).position().top >= 0;
+    }, messages);
+    return $(messages[i]);
 }
 
 function messagesWithinPageOf(message) {
     // get messages that can be seen on the same page as the given message
-    return $('#messages .messages_entry').filter(function () {
-        var offset = $(this).position().top - $(message).position().top;
-        var height = $('#messages_scroll').height();
-        return ($(this).height() + offset < height &&
-                $(message).height() - offset < height)
-    });
+    var messages = $('#messages .messages_entry');
+    var height = $('#messages_scroll')[0].clientHeight;
+    var i = binarySearch(function (other) {
+        var offset = $(other).position().top - $(message).position().top;
+        return offset - $(message).height() > -height;
+    }, messages);
+    var j = binarySearch(function (other) {
+        var offset = $(other).position().top - $(message).position().top;
+        return offset + $(other).height() > height;
+    }, messages);
+    return messages.slice(i, j);
 }
 
 function scrollToMessage(message) {
     // if message isn't visible in the scroll area, scroll to it
     var scroll = $('#messages_scroll');
+    var height = scroll[0].clientHeight;
     var pos = $(message).position().top;
-    if (pos < 0 || pos + message.height() > 0.8*scroll.height()) {
-        scroll.scrollTop(scroll.scrollTop() + pos);
+    if (pos < 0 || pos + $(message).height() > height) {
+        scroll.scrollTop(scroll.scrollTop() + pos - 0.5*height + 0.5*$(message).height());
     }
 }
 
