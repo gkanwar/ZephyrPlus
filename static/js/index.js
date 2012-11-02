@@ -1411,6 +1411,8 @@ function processKeybindings(event) {
         return true; // ignore keypresses in textarea
     if (!api.storage.keybindings)
         return true; // keybindings disabled
+    if (event.ctrlKey || event.altKey)
+        return true; // ctrl or alt was pressed
     var key = String.fromCharCode(event.which);
     var triggered = false;
     for (keybinding in keybindingsDict) {
@@ -1578,6 +1580,8 @@ function processSpecialKeybindings(event) {
              event.target.type === "text") {
         return true;; // in textarea
     }
+    if (event.ctrlKey || event.altKey)
+        return true; // ctrl or alt was pressed
     switch (event.which) {
     case 40: // down arrow
         keybindingHandlers.moveNext();
