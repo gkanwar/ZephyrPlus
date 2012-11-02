@@ -235,6 +235,11 @@ a.tooltip:hover span
 /*    text-shadow: #0f0f0f 0px 1px 0px;*/
     text-shadow: #1c1c1c 0px 1px 0px;
 }
+.no_messages
+{
+    padding-top: 1em;
+    font-style: italic;
+}
 .messages_entry, #mark_read
 {
     padding-top: 5px;
@@ -277,6 +282,21 @@ a.tooltip:hover span
 .messages_entry:hover .message_timestamp
 {
     display: inline;
+}
+.messages_entry.cursor .message_timestamp
+{
+    display: inline;
+    color: #808080;
+}
+.messages_entry.cursor:hover .message_timestamp
+{
+    color: #A1A1A1;
+}
+.messages_entry.cursor:before
+{
+    content: "->";
+    float: left;
+    margin-left: -20px;
 }
 /*
 .message_body:hover
@@ -471,4 +491,8 @@ a.headerlink:hover
 {
     line-height: normal;
     padding: inherit;
+}
+#keymaps td
+{
+    padding: 0 10px;
 }
