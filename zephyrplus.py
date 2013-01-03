@@ -170,7 +170,8 @@ class ChatUpdateHandler(BaseHandler):
                 instance=instance,
                 recipient=recipient,
                 message=signature+'\x00'+message+'\n',
-                sender=username if '@' in username else username + '@ATHENA.MIT.EDU').send()
+                sender=username if '@' in username else username + '@ATHENA.MIT.EDU',
+                format='http://zephyr.1ts.org/wiki/df').send()
 
 class NewZephyrHandler(tornado.web.RequestHandler):
     def get(self, *args, **kwargs):
