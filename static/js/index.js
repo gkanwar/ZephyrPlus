@@ -1316,9 +1316,10 @@ function formatText(str){
 
 /* Replace zephyr tags with html tags */
 function replaceZephyrTag(zephyrTag, htmlTag, str) {
-    var regex1 = RegExp("@" + zephyrTag + "\\{([^\\}]*)\\}", "g");
-    var regex2 = RegExp("@" + zephyrTag + "\\[([^\\]]*)\\]", "g");
-    var regex3 = RegExp("@" + zephyrTag + "\\(([^\\)]*)\\)", "g");
+    var regexList = [RegExp("@" + zephyrTag + "\\{(.*?)\\}", "g"),
+                     RegExp("@" + zephyrTag + "\\[(.*?)\\]", "g"),
+                     RegExp("@" + zephyrTag + "\\((.*?)\\)", "g"),
+                     RegExp("@" + zephyrTag + "&lt;(.*?)&gt;", "g")];
 
     var tag;
     if (typeof(htmlTag) === 'function') {
@@ -1328,7 +1329,6 @@ function replaceZephyrTag(zephyrTag, htmlTag, str) {
     }
 
     var rText = str;
-    var regexList = [regex1, regex2, regex3];
     for (var i = 0; i < regexList.length; i++) {
 	var regex = regexList[i];
 	if (rText.match(regex)) {
