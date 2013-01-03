@@ -258,7 +258,7 @@ a.tooltip:hover span
 }
 .missed, .old_missed
 {
-    border-left: 1px solid #00FFAA;
+    border-left: 1px solid #C5C5C5;
 }
 .message_header
 {

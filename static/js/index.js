@@ -449,6 +449,7 @@ function markAllAsRead(){
         setCurrentRead(api.instances[n].parent_class.id, api.instances[n].id);
         //api.storage.first_visible['instance'+api.instances[n].id] = api.instances[n].messages
     }
+    $("#messages .missed").removeClass("missed");
     $("#messages .old_missed").removeClass("old_missed");
     updateMissedMessages();
     api.saveStorage();
