@@ -1221,26 +1221,28 @@ function xtermToColor(color) {
     if (parseInt(color) == color) {
         color = parseInt(color);
     } else {
-        return color;
+        return $("<span>").css("color", color)[0].style.color;
     }
 
-    var normalIntensities = ["0x00", "0xC0"],
-        brightIntensities = ["0x80", "0xFF"],
-        rgbIntensities = ["0x00", "0x5F", "0x87", "0xAF", "0xD7", "0xFF"],
-        grayScaleStart = "0x08",
+    var normalIntensities = [0x00, 0xC0],
+        brightIntensities = [0x80, 0xFF],
+        rgbIntensities = [0x00, 0x5F, 0x87, 0xAF, 0xD7, 0xFF],
+        grayScaleStart = 0x08,
         grayScaleIncrement = 10;
 
     // black, red, green, yellow, blue, magenta, cyan, white
     var traditionalColorMap = [[0,0,0], [1,0,0], [0,1,0], [1,1,0], [0,0,1], [1,0,1], [0,1,1], [1,1,1]];
 
     function colorMapToHex(colorMap, intensityList) {
-        hex = 65536 * parseInt(intensityList[colorMap[0]]) +
-          256 * parseInt(intensityList[colorMap[1]]) +
-          parseInt(intensityList[colorMap[2]]);
-        return "#" + hex.toString(16);
+        return "rgb(" + intensityList[colorMap[0]] + ", " +
+                        intensityList[colorMap[1]] + ", " +
+                        intensityList[colorMap[2]] + ")";
     }
 
-    if (color < 8) {
+    if (color <= 0) {
+        return "";
+    }
+    else if (color < 8) {
         return colorMapToHex(traditionalColorMap[color], normalIntensities);
     } else if (color < 16) {
         return colorMapToHex(traditionalColorMap[color % 8], brightIntensities);
@@ -1252,7 +1254,7 @@ function xtermToColor(color) {
                              rgbIntensities);
     } else if (color < 256) {
         color = color - 232;
-        return colorMapToHex([0,0,0], [parseInt(grayScaleStart) + parseInt(grayScaleIncrement) * color]);
+        return colorMapToHex([0,0,0], [grayScaleStart + grayScaleIncrement * color]);
     }
     return "";
 }
@@ -1286,7 +1288,7 @@ function wrapStr(str, len){
 }
 
 /* Formats text according to formatting in Zephyr */
-/* str must not contain html */
+/* str must not contain unescaped angle brackets */
 function formatText(str){
     var fText = str;
     fText = fText.replace(/@@/g, "&#64;"); // escape double @@'s
@@ -1295,15 +1297,16 @@ function formatText(str){
     fText = replaceZephyrTag("i", "i", fText);
     fText = replaceZephyrTag("italic", "i", fText);
 
+    var colors = [];
     fText = replaceZephyrTag("color", function (str, color, offset, s) {
-	return $("<span>").css("color", xtermToColor(color))[0].outerHTML;
+        colors.push(xtermToColor(color));
+        return "<" + (colors.length - 1) + ">";
     }, fText);
-    // Move </span>s to end of section
     fText = replaceZephyrTag("", function(match, inside, offset, s){
         var endspans = "";
-        inside = inside.replace(/<\/span>/g, function(){
+        inside = inside.replace(/<(\d+)>/g, function(m, num){
             endspans += "</span>";
-            return "";
+            return "<span style='color:" + colors[parseInt(num)] + "'>";
         });
         return inside + endspans;
     }, fText);
