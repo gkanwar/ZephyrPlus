@@ -1182,10 +1182,10 @@ function hashStringToColor(str){
         colors[n%3]+=sum%2;
         sum=Math.floor(sum/2);
     }
-    colors=hsvToRgb(colors[0]/255, colors[1]/255, (colors[2]/255+1)/2); //Increase brightness
+    colors=hsvToRgb(colors[0]/255, colors[1]/255, (colors[2]/255+2)/3); //Increase brightness
     var colorStr="#";
     for(var n=0; n<3; n++){
-        var s=Math.floor(colors[n]).toString(16);
+        var s=Math.floor((9*colors[n]+255)/10).toString(16);
         colorStr+=(s.length==2) ? s : ("0"+s);
     }
     return colorStr;
