@@ -122,6 +122,7 @@ INSTALLED_APPS = (
     # 'django.contrib.admindocs',
 	'chat',
     'django_extensions',
+    'south',
 )
 
 # A sample logging configuration. The only tangible logging
