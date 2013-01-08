@@ -116,7 +116,7 @@ class ChatUpdateHandler(BaseHandler):
         longpoll = self.get_argument('longpoll', "False")
         #TODO: do input validation on arguments
         if class_name is not None:
-            sub = Subscription(class_name=class_name, instance=instance, recipient=recipient)
+            sub = Subscription.get_or_create(class_name=class_name, instance=instance, recipient=recipient)[0]
         else:
             sub = self.current_user
         zephyrs = Zephyr.objects.filter(sub.get_filter(), date__gt=datetime.datetime.fromtimestamp(float(startdate)/1000),
