@@ -56,7 +56,6 @@ class Subscription(models.Model):
 
 def _on_subscription_create(sender, instance, created, **kwargs):
     if created and sender == Subscription:
-        print instance
         instance._compute_parents()
         instance.save()
 models.signals.post_save.connect(_on_subscription_create, sender=Subscription)
