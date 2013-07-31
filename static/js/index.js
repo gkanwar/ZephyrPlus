@@ -27,7 +27,7 @@ $(document).ready(function()
 	.css("cursor", "pointer");
 
     // Create the API object and define the callbacks
-    api = new ZephyrAPI();
+    api = new ZephyrAPI(new RoostSource());
     api.onready = function()
     {
 	// Set a flag so that onzephyr can perform setup functions
@@ -78,6 +78,13 @@ $(document).ready(function()
 	}
         $("#logged_user")
             .text(api.username);
+
+	$("#settings_link").click(showSettings);
+	
+	$("#mark_read input").click(markAllAsRead);
+
+	$(document).keypress(processKeybindings);
+	$(document).keydown(processSpecialKeybindings);
     };
     api.onzephyr = function(zephyrs)
     {
@@ -193,8 +200,29 @@ $(document).ready(function()
         }
         scrolled = true;
     });
+
+    var statusDialog = $("<div/>").dialog({autoOpen: false});
+    // TODO: put the status dialog in html
     api.onstatuschange=function(status){
-        if(status == api.UPDATESUGGESTED){
+	console.log(status);
+	if (status == ZephyrAPI.CONNECTING) {
+	    statusDialog.dialog("option", "title", "Connecting...");
+	    statusDialog.html("If this dialog doesn't go away in a few seconds, try one of the following: <br/>" +
+			      "<ul>" +
+			      "<li>Click somewhere</li>" +
+			      "<li><a href='javascript:location.reload()'>Refresh</a></li>" +
+			      "<li><a href='javascript:localStorage.clear(); location.reload()'>Clear localStorage</a></li>" +
+			      "<li>Check that <a href='https://roost.mit.edu/api-test.html'>Roost</a> is working </li>" +
+			      "</ul>").dialog("open");
+	}
+	else if (status == ZephyrAPI.LOADING) {
+	    statusDialog.dialog("option", "title", "Loading zephyrs...");
+	    statusDialog.html("This may take a few seconds.").dialog("open");
+	}
+	else {
+	    statusDialog.dialog("close");
+	}
+        if(status == ZephyrAPI.UPDATE_AVAILABLE){
             $("<div>").html("ZephyrPlus has been updated!  Refresh the page to update to the latest version!")
                       .dialog({
                           buttons: {
@@ -207,10 +235,11 @@ $(document).ready(function()
                           }
                       });
         }
-        else if(status == api.UPDATEREQUIRED){
+        else if(status == ZephyrAPI.UPDATE_REQUIRED){
             location.reload();
         }
     }
+    api.onstatuschange(api.status);
     
     function processScroll(){
         if(scrolled){
@@ -269,18 +298,12 @@ $(document).ready(function()
             }
             
             messageTextArea.val('');
-	    $.post("/chat",
-		   {
-		       'class': classText,
-		       'instance': instanceText,
-		       'message': messageText,
-		       'signature': api.storage.signature,
-		   },
-		   function()
-		   {
-		       console.log("Success!");
-		   }
-		  );
+            api.sendZephyr({
+                class: classText,
+                instance: instanceText,
+                message: messageText,
+                signature: api.storage.signature
+            });
 	    return false;
 	}
     );
@@ -379,13 +402,6 @@ $(document).ready(function()
 	    }
 	}
     );
-    
-    $("#settings_link").click(showSettings);
-    
-    $("#mark_read input").click(markAllAsRead);
-
-    $(document).keypress(processKeybindings);
-    $(document).keydown(processSpecialKeybindings);
 });
 
 
