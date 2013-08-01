@@ -205,11 +205,21 @@ $(document).ready(function()
     // TODO: put the status dialog in html
     api.onstatuschange=function(status){
 	console.log(status);
-	if (status == ZephyrAPI.CONNECTING) {
+	if (status == ZephyrAPI.TICKETS_NEEDED) {
+	    statusDialog.dialog("option", "title", "Tickets needed");
+	    statusDialog.dialog("option", "buttons", [{
+		text: "Login to Roost",
+		click: function() {
+		    api.getTickets();
+		}
+	    }]);
+	    statusDialog.html("").dialog("open");
+	}
+	else if (status == ZephyrAPI.CONNECTING) {
 	    statusDialog.dialog("option", "title", "Connecting...");
+	    statusDialog.dialog("option", "buttons", []);
 	    statusDialog.html("If this dialog doesn't go away in a few seconds, try one of the following: <br/>" +
 			      "<ul>" +
-			      "<li>Click somewhere</li>" +
 			      "<li><a href='javascript:location.reload()'>Refresh</a></li>" +
 			      "<li><a href='javascript:localStorage.clear(); location.reload()'>Clear localStorage</a></li>" +
 			      "<li>Check that <a href='https://roost.mit.edu/api-test.html'>Roost</a> is working </li>" +
@@ -217,6 +227,7 @@ $(document).ready(function()
 	}
 	else if (status == ZephyrAPI.LOADING) {
 	    statusDialog.dialog("option", "title", "Loading zephyrs...");
+	    statusDialog.dialog("option", "buttons", []);
 	    statusDialog.html("This may take a few seconds.").dialog("open");
 	}
 	else {

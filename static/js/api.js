@@ -410,6 +410,10 @@ var personals = [
                 return false;
             }).then(callback, api.onerror);
 	}
+
+	api.getTickets = function() {
+	    source.getTickets();
+	}
         
     }
 
@@ -420,6 +424,7 @@ var personals = [
     ZephyrAPI.RECONNECTING = "RECONNECTING";
     ZephyrAPI.UPDATE_AVAILABLE = "UPDATE_AVAILABLE";
     ZephyrAPI.UPDATE_REQUIRED = "UPDATE_REQUIRED";
+    ZephyrAPI.TICKETS_NEEDED = "TICKETS_NEEDED";
     
     ZephyrAPI.PERSONALS_TAG = "\u2194\u00A0";
     
@@ -581,11 +586,7 @@ RoostSource.prototype.init = function() {
     this.model = new MessageModel(this.roostApi);
 
     roost.ticketManager.addEventListener("ticket-needed", function(ev) {
-        function getTickets() {
-            roost.ticketManager.refreshTickets({interactive: true});
-            document.removeEventListener("click", getTickets);
-        }
-        document.addEventListener("click", getTickets, false);
+	roost.setStatus_(ZephyrAPI.TICKETS_NEEDED);
     });
 
     this.ticketManager.addEventListener("webathena-error", function() {
@@ -624,6 +625,10 @@ RoostSource.prototype.init = function() {
             subscriptions: subscriptions
         }
     });
+}
+
+RoostSource.prototype.getTickets = function() {
+    this.ticketManager.refreshTickets({interactive: true});
 }
 
 RoostSource.prototype.stripRealm = function(sender) {
