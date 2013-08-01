@@ -745,6 +745,8 @@ var fillClasses = function()
                     })
                 );
     root.html("").append(ul);
+
+    updateMissedMessages();
 };
 
 var createMessage = function(message)
@@ -780,6 +782,7 @@ var createMessage = function(message)
 	       {
 		   fillMessagesByClass(classObj.id);
 		   fillButtonArea(classObj.id);
+		   return false;
 	       });
     var header_instance = $("<span />")
 	//.addClass("instance_id_"+instanceObj.id)
@@ -790,11 +793,18 @@ var createMessage = function(message)
 	       {
 		   fillMessagesByClass(classObj.id, instanceObj.id);
 		   fillButtonArea(classObj.id, instanceObj.id);
+		   return false;
 	       });
 
-    // Makes sender name brighter.
     sender_text = $("<span />")
-	.append($("<span class='sender'>").text(sender_text));
+	.append($("<span class='sender'>").text(sender_text))
+	.css("cursor", "pointer")
+	.click(function() {
+	    var id = api.getPersonalsClass(message.sender).id;
+	    fillMessagesByClass(id);
+	    fillButtonArea(id);
+	    return false;
+	});
 
     if(!auth)
 	sender_text.append(" <span class='unauth'>(UNAUTH)</span>");
@@ -886,7 +896,7 @@ var fillMessagesByClass = function(class_id, instance_id)
     {
 	var headerText_class = $("<span />")
 	    //.addClass("class_id_"+classObj.name)
-	    .text(classObj.name)
+	    .text(classObj.name.replace(RegExp("^" + ZephyrAPI.PERSONALS_TAG), "private conversation with "))
 	    .css("cursor", "pointer")
 	    .click(function()
 		   {
@@ -1115,7 +1125,6 @@ var addZephyrClass = function()
     if(new_class_name != "" && api.classDict[new_class_name] == undefined) {
         api.addSubscription(new_class_name, undefined, undefined, function(){
 	    fillClasses();
-	    updateMissedMessages();
 	    fillMessagesByClass(api.classDict[new_class_name].id);
 	});
     }

@@ -315,6 +315,10 @@ var personals = [
         api.getClassById = function(id){
             return classIdDict[id];
         }
+
+	api.getPersonalsClass = function(name) {
+	    return findClass(ZephyrAPI.PERSONALS_TAG + name);
+	}
         
         api.getInstanceById = function(id){
             return instanceIdDict[id];
@@ -417,7 +421,7 @@ var personals = [
     ZephyrAPI.UPDATE_AVAILABLE = "UPDATE_AVAILABLE";
     ZephyrAPI.UPDATE_REQUIRED = "UPDATE_REQUIRED";
     
-    ZephyrAPI.PERSONALS_TAG = "\u2194 ";
+    ZephyrAPI.PERSONALS_TAG = "\u2194\u00A0";
     
     window.ZephyrAPI = ZephyrAPI;
 })();
