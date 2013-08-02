@@ -531,7 +531,11 @@ NativeSource.prototype.getOldMessages = function(sub, startdate) {
         recipient: sub.recipient,
         startdate: startdate-0,
         longpoll: false
-    }, null, "json");
+    }, null, "json")
+    .then(function(messages) {
+	this.procMessages(messages);
+	return messages;
+    }.bind(this));
 }
 
 NativeSource.prototype.addSubscription = function(sub) {
