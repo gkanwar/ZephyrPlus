@@ -1,7 +1,7 @@
 /*
  * ZephyrAPI -- Interface with server backend
  * 
- *      api = new ZephyrAPI()
+ *      api = new ZephyrAPI(source)
  *              Create a new instance of the API and connect to server
  * 
  * Methods
@@ -290,19 +290,31 @@
 	}
 
 	api.getTickets = function() {
-	    source.getTickets();
+	    if (typeof source.getTickets == "function")
+		source.getTickets();
+	}
+
+	api.denyTickets = function() {
+	    if (typeof source.denyTickets == "function")
+		source.denyTickets();
+	}
+
+	api.arePersonalsSupported = function() {
+	    if (typeof source.arePersonalsSupported == "function")
+		return source.arePersonalsSupported();
+	    return false;
 	}
         
     }
 
-    ZephyrAPI.DISCONNECTED = "DISCONNECTED";
-    ZephyrAPI.CONNECTING = "CONNECTING";
-    ZephyrAPI.LOADING = "LOADING";
-    ZephyrAPI.CONNECTED = "CONNECTED";
-    ZephyrAPI.RECONNECTING = "RECONNECTING";
+    ZephyrAPI.DISCONNECTED = "00 DISCONNECTED";
+    ZephyrAPI.TICKETS_NEEDED = "01 TICKETS_NEEDED";
+    ZephyrAPI.CONNECTING = "02 CONNECTING";
+    ZephyrAPI.LOADING = "03 LOADING";
+    ZephyrAPI.RECONNECTING = "04 RECONNECTING";
+    ZephyrAPI.CONNECTED = "05 CONNECTED";
     ZephyrAPI.UPDATE_AVAILABLE = "UPDATE_AVAILABLE";
     ZephyrAPI.UPDATE_REQUIRED = "UPDATE_REQUIRED";
-    ZephyrAPI.TICKETS_NEEDED = "TICKETS_NEEDED";
     
     ZephyrAPI.PERSONALS_TAG = "\u2194\u00A0";
     
@@ -614,13 +626,17 @@ RoostSource.prototype.sendZephyr = function(params) {
         message.class = "message";
     }
     
-    if (window.location.href.toLowerCase().match(/[a-z]+plus/)) {
-        if (message.signature)
-            message.signature += ") (";
-        message.signature += "Sent from " + window.location.href.toLowerCase().match(/([a-z]+)plus/)[1][0].toUpperCase() + "+";
+    if (!message.signature) {
+	if (window.location.href.toLowerCase().match(/[a-z]+plus/)) {
+            message.signature = "Sent from " +
+		window.location.href.toLowerCase().match(/([a-z]+)plus/)[1][0].toUpperCase() +
+		"+";
+	}
+	else {
+	    message.signature = "";
+	}
     }
-    
-    
+
     return this.roostApi.post("/v1/zwrite", {
 	message: message
     }, {
@@ -649,6 +665,124 @@ RoostSource.prototype.saveStorage = function(data) {
         }
     }.bind(this));
 }
+
+RoostSource.prototype.arePersonalsSupported = function() {
+    return true;
+}
+
+function HybridSource() {
+    this.nativeSource = new NativeSource();
+    this.roostSource = new RoostSource({is_personal: true});
+
+    this.roostEnabled = true;
+
+    this.gotNativeMessages = false;
+    this.gotRoostMessages = false;
+    this.messageQueue = [];
+    this.messagesDispatched = false;
+}
+
+HybridSource.prototype = new APISource();
+
+HybridSource.prototype.init = function() {
+    this.nativeSource.onzephyr = function(messages) {
+	this.gotNativeMessages = true;
+	this.procMessages(messages);
+    }.bind(this);
+
+    this.roostSource.onzephyr = function(messages) {
+	this.gotRoostMessages = true;
+	this.procMessages(messages);
+    }.bind(this);
+
+    this.nativeSource.onstatuschange = this.roostSource.onstatuschange =
+	this.procStatusChange.bind(this);
+
+    this.roostSource.init()
+	.then(function() {
+	    this.roostSource.start();
+	}.bind(this));
+    return this.nativeSource.init();
+}
+
+HybridSource.prototype.getTickets = function () {
+    this.roostSource.getTickets();
+}
+
+HybridSource.prototype.denyTickets = function () {
+    this.roostEnabled = false;
+    this.procStatusChange();
+    this.procMessages([]);
+}
+
+HybridSource.prototype.procMessages = function(messages) {
+    if (this.dispatchedMessages) {
+	this.dispatchMessages_(messages);
+	return;
+    }
+
+    this.messageQueue = this.messageQueue.concat(messages);
+    if (this.gotNativeMessages && (!this.roostEnabled || this.gotRoostMessages)) {
+	this.messageQueue.sort(function(a, b) {
+	    return a.timestamp - b.timestamp;
+	});
+	this.dispatchMessages_(this.messageQueue);
+	this.dispatchedMessages = true;
+    }
+}
+
+HybridSource.prototype.procStatusChange = function() {
+    var nativeStat = this.nativeSource.status;
+    var roostStat = this.roostSource.status;
+
+    if (!this.roostEnabled) {
+	this.setStatus_(nativeStat);
+    }
+    else {
+	this.setStatus_(nativeStat < roostStat ? nativeStat : roostStat);
+    }
+}
+
+HybridSource.prototype.start = function() {
+    this.nativeSource.start();
+}
+
+HybridSource.prototype.getOldMessages = function(sub, startdate) {
+    if (this.roostEnabled && sub.recipient && sub.recipient != "*") {
+	return this.roostSource.getOldMessages(sub, startdate);
+    }
+    return this.nativeSource.getOldMessages(sub, startdate);
+}
+
+HybridSource.prototype.addSubscription = function(sub) {
+    if (this.roostEnabled && sub.recipient && sub.recipient != "*") {
+	return this.roostSource.addSubscription(sub);
+    }
+    return this.nativeSource.addSubscription(sub);
+}
+
+HybridSource.prototype.removeSubscription = function(sub) {
+    if (this.roostEnabled && sub.recipient && sub.recipient != "*") {
+	return this.roostSource.removeSubscription(sub);
+    }
+    return this.nativeSource.removeSubscription(sub);
+}
+
+HybridSource.prototype.sendZephyr = function(params) {
+    if (this.roostEnabled) {
+	return this.roostSource.sendZephyr(params);
+    }
+    return this.nativeSource.sendZephyr(params);
+}
+
+HybridSource.prototype.saveStorage = function(data) {
+    return this.nativeSource.saveStorage(data);
+}
+
+HybridSource.prototype.arePersonalsSupported = function() {
+    return this.roostEnabled;
+}
+
 
 if (!String.prototype.startsWith) {
     String.prototype.startsWith = function startsWith(other) {

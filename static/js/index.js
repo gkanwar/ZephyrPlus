@@ -27,7 +27,8 @@ $(document).ready(function()
 	.css("cursor", "pointer");
 
     // Create the API object and define the callbacks
-    api = new ZephyrAPI(new RoostSource());
+    api = new ZephyrAPI(location.href.toLowerCase().indexOf("roost") != -1 ?
+			new RoostSource() : new HybridSource());
     api.onready = function()
     {
 	// Set a flag so that onzephyr can perform setup functions
