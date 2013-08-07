@@ -300,7 +300,8 @@ $(document).ready(function()
 	    var classText = $("#classdropdown").val();
 	    var instanceText = $("#instancedropdown").val();
             
-            if(!api.classDict[classText]){
+            if(!api.classDict[classText] &&
+                    !(api.arePersonalsSupported() && classText.startsWith(ZephyrAPI.PERSONALS_TAG))){
                 if(!confirm(
                     "You are not subscribed to class \"" + classText + "\".\n" +
                     "Are you sure you want to send this message?\n\n" + 
@@ -809,14 +810,17 @@ var createMessage = function(message)
 	       });
 
     sender_text = $("<span />")
-	.append($("<span class='sender'>").text(sender_text))
-	.css("cursor", "pointer")
-	.click(function() {
-	    var id = api.getPersonalsClass(message.sender).id;
-	    fillMessagesByClass(id);
-	    fillButtonArea(id);
-	    return false;
-	});
+	.append($("<span class='sender'>").text(sender_text));
+    if (api.arePersonalsSupported() && auth) {
+	sender_text
+	    .css("cursor", "pointer")
+	    .click(function() {
+		var id = api.getPersonalsClass(message.sender).id;
+		fillMessagesByClass(id);
+		fillButtonArea(id);
+		return false;
+	    });
+    }
 
     if(!auth)
 	sender_text.append(" <span class='unauth'>(UNAUTH)</span>");
