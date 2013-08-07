@@ -289,9 +289,9 @@
             }).then(callback, api.onerror);
 	}
 
-	api.getTickets = function() {
+	api.getTickets = function(callback) {
 	    if (typeof source.getTickets == "function")
-		source.getTickets();
+		source.getTickets(callback);
 	}
 
 	api.denyTickets = function() {
@@ -494,14 +494,20 @@ RoostSource.prototype.init = function() {
 
     this.setStatus_(ZephyrAPI.CONNECTING);
 
-    return Q.all(
+    Q.all(
         [roost.ticketManager.getTicket("server"),
          roost.ticketManager.getTicket("zephyr")]
     ).then(function() {
-        return [roost.storageManager.principal(),
-                roost.roostApi.get('/v1/subscriptions'),
-                roost.roostApi.get('/v1/info')];
-    }).spread(function(username, subscriptions, info) {
+	if (typeof roost.ticketCB == "function") {
+	    roost.ticketCB();
+	}
+    });
+
+    return Q.all([
+	roost.storageManager.principal(),
+        roost.roostApi.get('/v1/subscriptions'),
+        roost.roostApi.get('/v1/info')
+    ]).spread(function(username, subscriptions, info) {
         var at = username.lastIndexOf("@");
         if (at != -1) {
             roost.realm = username.substr(at + 1);
@@ -522,8 +528,9 @@ RoostSource.prototype.init = function() {
     });
 }
 
-RoostSource.prototype.getTickets = function() {
+RoostSource.prototype.getTickets = function(cb) {
     this.ticketManager.refreshTickets({interactive: true});
+    this.ticketCB = cb;
 }
 
 RoostSource.prototype.stripRealm = function(sender) {
@@ -559,7 +566,6 @@ RoostSource.prototype.procMessages = function(messages) {
 }
 
 RoostSource.prototype.start = function() {
-    window.source = this;
     var oldMessages = [];
     var reverseTail = this.model.newReverseTail("", this.filter, function(messages, isDone) {
 	oldMessages = messages.concat(oldMessages);
@@ -713,8 +719,8 @@ HybridSource.prototype.init = function() {
     }.bind(this));
 }
 
-HybridSource.prototype.getTickets = function () {
-    this.roostSource.getTickets();
+HybridSource.prototype.getTickets = function (callback) {
+    this.roostSource.getTickets(callback);
 }
 
 HybridSource.prototype.denyTickets = function () {
