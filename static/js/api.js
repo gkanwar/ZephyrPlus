@@ -488,7 +488,8 @@ RoostSource.prototype.init = function() {
     });
 
     this.storageManager.addEventListener("usermismatch", function() {
-        console.log("User mismatch do something useful");
+	localStorage.clear();
+	window.location.reload();
     });
 
     this.setStatus_(ZephyrAPI.CONNECTING);
@@ -698,11 +699,18 @@ HybridSource.prototype.init = function() {
     this.nativeSource.onstatuschange = this.roostSource.onstatuschange =
 	this.procStatusChange.bind(this);
 
-    this.roostSource.init()
-	.then(function() {
+    return this.nativeSource.init()
+    .then(function(data) {
+	this.roostSource.init()
+	.then(function(roostData) {
+	    if (roostData.username != data.username + "@" + this.roostSource.realm) {
+		localStorage.clear();
+		window.location.reload();
+	    }
 	    this.roostSource.start();
 	}.bind(this));
-    return this.nativeSource.init();
+	return data;
+    }.bind(this));
 }
 
 HybridSource.prototype.getTickets = function () {
