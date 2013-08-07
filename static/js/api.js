@@ -578,6 +578,14 @@ RoostSource.prototype.start = function() {
 	    
 	    this.setStatus_(ZephyrAPI.CONNECTED);
 
+	    this.roostApi.addEventListener("disconnect", function() {
+		this.setStatus_(ZephyrAPI.RECONNECTING);
+		this.roostApi.reconnectTries_ = 100;
+	    }.bind(this));
+	    this.roostApi.addEventListener("connect", function() {
+		this.setStatus_(ZephyrAPI.CONNECTED);
+	    }.bind(this));
+
 	    this.tail = this.model.newTail(this.last_message_id, this.filter, this.procMessages.bind(this));
 	    this.tail.expandTo(100000);
 	}
