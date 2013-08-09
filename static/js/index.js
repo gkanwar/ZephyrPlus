@@ -1430,6 +1430,7 @@ function replaceZephyrTag(zephyrTag, htmlTag, str) {
 }
 
 var settingsDialog;
+// TODO: Refactor this, this is the worst settings dialog ever
 function showSettings(){
     if(settingsDialog){
         settingsDialog.dialog("open");
@@ -1438,6 +1439,20 @@ function showSettings(){
     
     var form = $("<form/>");
     
+    if (api.arePersonalsSupported()) {
+	var disableRoostButton = $("<input type='button'>")
+	    .val("Disable Roost")
+	    .click(function() {
+		localStorage.clear();
+		location.reload();
+	    })
+	    .button();
+	form.append(
+	    disableRoostButton,
+	    "<br/><br/>"
+	);
+    }
+
     if(window.webkitNotifications){
         var notifyOn = $("<input type='radio' name='notify' id='notifyOn' value='on'/>");
         var notifyOff = $("<input type='radio' name='notify' id='notifyOff' value='off'/>");
@@ -1485,7 +1500,7 @@ function showSettings(){
     
     var signatureInput = $("<input type='text'>").val(api.storage.signature || "");
     form.append(
-        "Signature<br/>",
+        "Signature:<br/>",
         signatureInput,
         "<br/><br/>"
     );
@@ -1507,17 +1522,21 @@ function showSettings(){
         form.dialog("close");
     }
     
-    form.append(
-        $("<input type='button' value='Save' />")
-            .click(save),
-        $("<input type='button' value='Cancel' />")
-            .click(cancel)
-    ).submit(function(e){
+    form.submit(function(e){
         e.preventDefault();
         save();
     });
     
-    form.dialog({title: "Settings"});
+    form.dialog({
+	title: "Settings",
+	buttons: [{
+	    text: "Save",
+	    click: save
+	}, {
+	    text: "Cancel",
+	    click: cancel
+	}]
+    });
     settingsDialog=form;
 }
 
