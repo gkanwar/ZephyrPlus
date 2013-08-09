@@ -202,39 +202,57 @@ $(document).ready(function()
         scrolled = true;
     });
 
-    var statusDialog = $("<div/>").dialog({autoOpen: false});
-    // TODO: put the status dialog in html
+    var ticketsDialog;
+    var statusDiv = $("#status");
     api.onstatuschange=function(status){
 	console.log(status);
+	if (ticketsDialog && ticketsDialog.dialog("isOpen")) {
+            ticketsDialog.dialog("close");
+	}
 	if (status == ZephyrAPI.TICKETS_NEEDED) {
-	    statusDialog.dialog("option", "title", "Tickets needed");
-	    statusDialog.dialog("option", "buttons", [{
-		text: "Login to Roost",
-		click: function() {
-		    api.getTickets();
-		}
-	    }]);
-	    statusDialog.html("").dialog("open");
+	    if (!ticketsDialog) {
+		ticketsDialog = $("<div/>").dialog({
+		    width: 500,
+		    open: function() {
+			$("#roostLogin").focus();
+		    },
+		    buttons: [{
+			id: "roostLogin",
+			text: "Login to Roost",
+			click: function() {
+			    api.getTickets(function() {
+				localStorage.roostIntegrationEnabledBefore = true;
+			    });
+			},
+			autofocus: true
+		    },{
+			text: "No thanks",
+			click: function() {
+			    api.denyTickets();
+			    delete localStorage.roostIntegrationEnabledBefore;
+			}
+		    }]
+		});
+	    }
+	    var title, text;
+	    var roost = "<a href='https://github.com/davidben/roost' target='_blank'>Roost</a>";
+	    var davidben = "<a href='https://davidben.net/thesis-testimonials.pdf' target='_blank'>" +
+		"davidben's insanity</a>";
+	    if (localStorage.roostIntegrationEnabledBefore) {
+		title = "Tickets needed";
+		text = "Your Roost tickets have expired. " +
+		    "Would you like to renew them?";
+	    }
+	    else {
+		title = "RoostPlus";
+		text = "Would you like to enable RoostPlus? " +
+		    "RoostPlus uses the power of " + davidben + " (" + roost + ") " +
+		    "to allow you to send and receive personals (private messages) in ZephyrPlus.";
+	    }
+	    ticketsDialog.dialog("option", "title", title);
+	    ticketsDialog.html(text).dialog("open");
 	}
-	else if (status == ZephyrAPI.CONNECTING) {
-	    statusDialog.dialog("option", "title", "Connecting...");
-	    statusDialog.dialog("option", "buttons", []);
-	    statusDialog.html("If this dialog doesn't go away in a few seconds, try one of the following: <br/>" +
-			      "<ul>" +
-			      "<li><a href='javascript:location.reload()'>Refresh</a></li>" +
-			      "<li><a href='javascript:localStorage.clear(); location.reload()'>Clear localStorage</a></li>" +
-			      "<li>Check that <a href='https://roost.mit.edu/api-test.html'>Roost</a> is working </li>" +
-			      "</ul>").dialog("open");
-	}
-	else if (status == ZephyrAPI.LOADING) {
-	    statusDialog.dialog("option", "title", "Loading zephyrs...");
-	    statusDialog.dialog("option", "buttons", []);
-	    statusDialog.html("This may take a few seconds.").dialog("open");
-	}
-	else {
-	    statusDialog.dialog("close");
-	}
-        if(status == ZephyrAPI.UPDATE_AVAILABLE){
+        else if(status == ZephyrAPI.UPDATE_AVAILABLE){
             $("<div>").html("ZephyrPlus has been updated!  Refresh the page to update to the latest version!")
                       .dialog({
                           buttons: {
@@ -250,6 +268,36 @@ $(document).ready(function()
         else if(status == ZephyrAPI.UPDATE_REQUIRED){
             location.reload();
         }
+	else {
+	    var statusText;
+	    var statusColor;
+
+	    if (status == ZephyrAPI.DISCONNECTED) {
+		statusText = "disconnected";
+		statusColor = "#FFAAAA";
+	    }
+	    else if (status == ZephyrAPI.CONNECTING) {
+		statusText = "connecting...";
+		statusColor = "#DDDDDD";
+	    }
+	    else if (status == ZephyrAPI.RECONNECTING) {
+		statusText = "reconnecting...";
+		statusColor = "#FFEE80";
+	    }
+	    else {
+		statusColor = "#CCFFCC";
+	    }
+
+	    if (statusText) {
+		statusDiv.text(statusText);
+		statusDiv.show();
+	    }
+	    else {
+		statusDiv.text("connected");
+		statusDiv.fadeOut(1500);
+	    }
+	    statusDiv.css("background-color", statusColor);
+	}
     }
     api.onstatuschange(api.status);
     
