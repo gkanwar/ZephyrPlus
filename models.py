@@ -37,8 +37,14 @@ class Subscription(models.Model):
     def get_filter(self):
         return models.Q(dst=self) | models.Q(dst__parents=self)
 
+    _cached_parents = None
+    def get_parents(self):
+        if self._cached_parents is None:
+	    self._cached_parents = self.parents.all()
+	return self._cached_parents
+    
     def match(self, zephyr):
-        return zephyr.dst == self or self in zephyr.dst.parents.all()
+        return zephyr.dst == self or self in zephyr.dst.get_parents()
 
     def _compute_parents(self):
         parents = []
@@ -86,9 +92,15 @@ class Account(models.Model):
             #subs = list(subs)
             #return models.Q(dst__in=subs)
             return models.Q(receivers__username=self.username)
+
+	_cached_subscriptions = None
+	def get_subscriptions(self):
+	    if self._cached_subscriptions is None:
+	        self._cached_subscriptions = self.subscriptions.all()
+	    return self._cached_subscriptions
 	
 	def match(self, zephyr):
-            for sub in self.subscriptions.all():
+            for sub in self.get_subscriptions():
                 if sub.match(zephyr):
                     return True
             return False
