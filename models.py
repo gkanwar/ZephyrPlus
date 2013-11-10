@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Q
 import datetime
 
 APPLICATION_NAME = "chat"
@@ -9,6 +10,10 @@ class Zephyr(models.Model):
 	date = models.DateTimeField()
 	dst = models.ForeignKey('Subscription')
 	signature = models.TextField(blank=True, null=True)
+	receivers = models.ManyToManyField("Account", blank=True)
+	
+	def _compute_receivers(self):
+	    self.receivers = Account.objects.filter(Q(subscriptions=self.dst)|Q(subscriptions__in=self.dst.parents.all()))
 
 	class Meta:
 		app_label = APPLICATION_NAME
@@ -16,6 +21,12 @@ class Zephyr(models.Model):
 
 	def __unicode__(self):
 		return self.sender + " to " + unicode(self.dst) + " on " + unicode(self.date)
+
+def _on_zephyr_create(sender, instance, created, **kwargs):
+    if created and sender == Zephyr:
+        instance._compute_receivers()
+        instance.save()
+models.signals.post_save.connect(_on_zephyr_create, sender=Zephyr)
 
 class Subscription(models.Model):
     class_name = models.CharField(max_length=200)
@@ -33,6 +44,10 @@ class Subscription(models.Model):
         parents = []
         if self.class_name[:2] == 'un' and len(self.class_name) > 2:
             parents.append(Subscription.objects.get_or_create(class_name=self.class_name[2:], \
+                                                              instance=self.instance, \
+                                                              recipient=self.recipient)[0])
+        if self.class_name[-2:] == '.d' and len(self.class_name) > 2:
+            parents.append(Subscription.objects.get_or_create(class_name=self.class_name[:-2], \
                                                               instance=self.instance, \
                                                               recipient=self.recipient)[0])
         if self.instance != '*':
@@ -66,7 +81,11 @@ class Account(models.Model):
 	js_data = models.TextField(default='{}')
 	
 	def get_filter(self):
-            return models.Q(dst__account__username=self.username) | models.Q(dst__parents__account__username=self.username)
+            #return models.Q(dst__account__username=self.username) | models.Q(dst__parents__account__username=self.username)
+            #subs = Subscription.objects.filter(models.Q(account__username=self.username) | models.Q(parents__account__username=self.username))
+            #subs = list(subs)
+            #return models.Q(dst__in=subs)
+            return models.Q(receivers__username=self.username)
 	
 	def match(self, zephyr):
             for sub in self.subscriptions.all():

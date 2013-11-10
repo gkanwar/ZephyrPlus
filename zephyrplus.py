@@ -25,11 +25,13 @@ zephyr.init()
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 from models import Zephyr, Subscription, Account
 import django.conf
+from django import db
 
 LOGFILE_NAME = django.conf.settings.TORNADO_LOGFILE_NAME
 
 class BaseHandler(tornado.web.RequestHandler):
     def get_current_user(self):
+        debug_log("get_current_user")
         #username = self.get_secure_cookie("user", max_age_days=31)
         username = self.get_secure_cookie("user")
         if username is not None:
@@ -38,6 +40,7 @@ class BaseHandler(tornado.web.RequestHandler):
                 account.subscriptions.add(Subscription.objects.get_or_create(class_name="lobby", instance="*", recipient="*")[0])
                 account.subscriptions.add(Subscription.objects.get_or_create(class_name=username, instance="*", recipient="*")[0])
                 zephyrLoader.addSubscription(Subscription.objects.get_or_create(class_name=username, instance="*", recipient="*")[0])
+            debug_log("get_current_user done %s"%username)
             return account
         return None
 
@@ -108,6 +111,7 @@ class ChatUpdateHandler(BaseHandler):
     @tornado.web.asynchronous
     @tornado.web.authenticated
     def get(self, *args, **kwargs):
+        debug_log("get")
         class_name=self.get_argument('class', None)
         instance = self.get_argument('instance', "*")
         recipient = self.get_argument('recipient', "*")
@@ -115,21 +119,44 @@ class ChatUpdateHandler(BaseHandler):
         enddate = self.get_argument('enddate', str(1000*2**35)) # if longpolling, should not have end date
         longpoll = self.get_argument('longpoll', "False")
         #TODO: do input validation on arguments
+
+        startdate = datetime.datetime.fromtimestamp(float(startdate)/1000)
+        enddate = datetime.datetime.fromtimestamp(float(enddate)/1000)
+
         if class_name is not None:
             sub = Subscription.objects.get_or_create(class_name=class_name, instance=instance, recipient=recipient)[0]
         else:
             sub = self.current_user
-        zephyrs = Zephyr.objects.filter(sub.get_filter(), date__gt=datetime.datetime.fromtimestamp(float(startdate)/1000),
-                date__lt=datetime.datetime.fromtimestamp(float(enddate)/1000))
 
-        if len(zephyrs) == 0 and longpoll.lower() == "true":
+        debug_log("get got sub")
+        zephyrs = Zephyr.objects.filter(sub.get_filter(),
+                                        date__gt=startdate,
+                                        date__lt=enddate).select_related('dst').order_by('id')
+        debug_log("get got zephyrs")
+
+        if enddate > datetime.datetime.now():
+            simple_zephyrs = Zephyr.objects.filter(sub.get_filter()).order_by('-id')
+            exists = simple_zephyrs.exists() and simple_zephyrs[0].date > startdate
+        else:
+            exists = zephyrs.exists()
+
+        if not exists and longpoll.lower() == "true":
+            debug_log("get not zephyr.exists")
             MessageWaitor.wait_for_messages(self,sub)
         else:
+            debug_log("get zephyr.exists")
             self.write_zephyrs(zephyrs)
+        debug_log("get done")
 
     def write_zephyrs(self, zephyrs):
+        debug_log("write_zephyrs")
         response = []
+        last_id = 0
         for zephyr in zephyrs:
+            if zephyr.id == last_id:
+                continue
+            last_id = zephyr.id
+            debug_log(str(last_id))
             totalMilliSeconds = int(math.ceil((time.mktime(zephyr.date.timetuple()) + zephyr.date.microsecond/1e6)*1000))
             values = {
                     'id': zephyr.id,
@@ -142,14 +169,19 @@ class ChatUpdateHandler(BaseHandler):
                     'signature': zephyr.signature
                     }
             response.append(values)
+            if len(response) > 5000:
+                break
         self.set_header('Content-Type', 'text/plain')
         self.write(simplejson.dumps(response))
         self.finish()
+        debug_log("write_zephyrs done")
 
     def on_connection_close(self):
+        debug_log("on_connection_close")
         for waitee in MessageWaitor.waiters:
             if waitee[0] == self:
                 MessageWaitor.waiters.remove(waitee)
+        debug_log("on_connection_close done")
 
     @tornado.web.authenticated
     def post(self, *args, **kwargs):
@@ -175,10 +207,12 @@ class ChatUpdateHandler(BaseHandler):
 
 class NewZephyrHandler(tornado.web.RequestHandler):
     def get(self, *args, **kwargs):
+        debug_log("new zephyr start")
         z_id = self.get_argument('id', default=0)
         if z_id != None and z_id > 0:
             z = Zephyr.objects.filter(id=z_id)
             MessageWaitor.new_message(z[0])
+        debug_log("new zephyr end")
 #class NewZephyrHandler(threading.Thread):
 #    def run(self):
 #        while True:
@@ -240,13 +274,18 @@ class UserHandler(BaseHandler):
 
 # Writes debuging messages to logfile
 def log(msg):
-    datestr = datetime.datetime.now().strftime("[%m/%d %H:%M]")
+    datestr = datetime.datetime.now().strftime("[%m/%d %H:%M:%S.%f]")
     if LOGFILE_NAME is not None:
         logfile = open(LOGFILE_NAME, "a")
         logfile.write(datestr + " " + msg + "\n")
         logfile.close()
     else:
         print datestr, msg
+
+def debug_log(msg):
+    #log(msg)
+    #print datetime.datetime.now(), msg
+    pass
 
 def sendmail(recipient, subject, message):
     msg = email.mime.text.MIMEText(message)

@@ -52,27 +52,29 @@ class ZephyrLoader(threading.Thread):
         subs = zephyr.Subscriptions()
         toplevelClasses = Subscription.objects.filter(instance='*', recipient='*')
         db.reset_queries()
+        done = 0
+        total = len(toplevelClasses)
         for sub in toplevelClasses:
             self.subscribe(sub, subs)
+            done += 1
+            if done%100 == 0:
+                self.log("%s/%s subscriptions loaded"%(done, total))
         return subs
 
     def subscribe(self, sub, subs):
-        try:
-            subs.add((sub.class_name.encode("utf-8"), str(sub.instance), str(sub.recipient)))
-            # time.sleep(0.01) # Loading too quickly 
-        except IOError as (errno, strerror):
-            # SERVNAK: Usually is a temp. issue, loading too quickly. Try to sub once
-            # more, but give up after a second try
-            if strerror == "SERVNAK received":
-                try:
+        while True:
+            try:
+                subs.add((sub.class_name.encode("utf-8"), str(sub.instance), str(sub.recipient)))
+                time.sleep(0.001) # Loading too quickly 
+                return
+            except IOError as (errno, strerror):
+                # SERVNAK: Usually is a temp. issue, loading too quickly.
+                if strerror == "SERVNAK received":
                     time.sleep(self.retrySubTimeout)
-                    subs.add((sub.class_name.encode("utf-8"), str(sub.instance), str(sub.recipient)))
-                except IOError:
-                    return
-            else:
-                sys.stderr.write("Could not handle IOError " + str(errno) + " " + strerror)
-                sys.stderr.write("Exitting...")
-                sys.exit(2)
+                else:
+                    sys.stderr.write("Could not handle IOError " + str(errno) + " " + strerror)
+                    sys.stderr.write("Exitting...")
+                    sys.exit(2)
 
 
     # Inserts a received ZNotice into our database
@@ -111,7 +113,7 @@ class ZephyrLoader(threading.Thread):
         # Authentication check
         if not zMsg.auth and zMsg.uid.address != self.ip:
 	    sender += " (UNAUTH)"
-	    if django.conf.settings.SIGNATURE is not None and django.conf.settings.SIGNATURE in zMsg.fields[0].lower():
+	    if django.conf.settings.SIGNATURE is not None and django.conf.settings.SIGNATURE.lower() in zMsg.fields[0].lower():
 		zephyr.ZNotice(cls=zMsg.cls,
 			       instance=zMsg.instance,
 			       recipient=zMsg.recipient,
@@ -169,8 +171,9 @@ class ZephyrLoader(threading.Thread):
                 zephyr._z.sub('', '', '')
                 self.lastTicketTime = ticketTime
                 self.log("Tickets renewed")
-        except:
+        except Exception as e:
             self.log("Tickets not found")
+            self.log(str(e))
 
     # Writes debuging messages to logfile
     def log(self, msg):
