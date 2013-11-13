@@ -1449,36 +1449,14 @@ function showSettings(){
     
     var form = $("<form/>");
     
-    if (api.arePersonalsSupported()) {
-	var disableRoostButton = $("<input type='button'>")
-	    .val("Disable Roost")
-	    .click(function() {
-		localStorage.clear();
-		location.reload();
-	    })
-	    .button();
-	form.append(
-	    disableRoostButton,
-	    "<br/><br/>"
-	);
-    }
-
     if(window.webkitNotifications){
-        var notifyOn = $("<input type='radio' name='notify' id='notifyOn' value='on'/>");
-        var notifyOff = $("<input type='radio' name='notify' id='notifyOff' value='off'/>");
-        var notifySettings = $("<div>");
-        notifySettings.append(
-            "Desktop notifications:<br/>",
-            notifyOn,
-            "<label for='notifyOn'>On</label><br/>",
-            notifyOff,
-            "<label for='notifyOff'>Off</label><br/>"
-        );
-        if(api.storage.notify)
-            notifyOn[0].checked=true;
-        else
-            notifyOff[0].checked=true;
-        form.append(notifySettings);
+	var notifySettings = $("<span />");
+	var notifyCheckbox = $("<input type='checkbox' id='notify' />");
+	notifyCheckbox[0].checked = api.storage.notify;
+        notifySettings.append(notifyCheckbox,
+			      "&nbsp;<label for='notify'>Enable desktop notifications</label>");
+	form.append("<br/>", notifySettings);
+	
         if(webkitNotifications.checkPermission() != 0){
             notifySettings.hide();
             var enableNotify = $("<input type='button' value='Enable desktop notifications'/>");
@@ -1491,35 +1469,47 @@ function showSettings(){
                     }
                 });
             });
-            form.append(enableNotify, "<br/>");
+	    enableNotify.button();
+            form.append(enableNotify);
         }
-        form.append("<br/>");
+        form.append("<br/><br/>");
     }
     else{
         form.append("Desktop notifications are not supported in your browser.<br/><br/>");
     }
 
-    var keybindingsCheckbox = $("<input type='checkbox'>");
+    var keybindingsCheckbox = $("<input type='checkbox' id='keybindings_setting'>");
     keybindingsCheckbox.prop('checked', api.storage.keybindings);
 
-    form.append(
-        "Enable keybindings:<br/>",
-        keybindingsCheckbox,
-        "<br/><br/>"
-    );
+    form.append(keybindingsCheckbox,
+		"&nbsp;<label for='keybindings_setting'>Enable keyboard shortcuts (press '?' for help)</label>",
+		"<br/><br/>");
     
-    var signatureInput = $("<input type='text'>").val(api.storage.signature || "");
+    var signatureInput = $("<input type='text' id='signature'>").val(api.storage.signature || "");
     form.append(
-        "Signature:<br/>",
+        "<label for='signature'>Signature:</label>&nbsp;",
         signatureInput,
         "<br/><br/>"
     );
 
+    if (api.arePersonalsSupported()) {
+	var disableRoostButton = $("<input type='button'>")
+	    .val("Disable RoostPlus (restarts client)")
+	    .click(function() {
+		localStorage.clear();
+		location.reload();
+	    })
+	    .button();
+	form.append(
+	    disableRoostButton,
+	    "<br/><br/>"
+	);
+    }
+
     function save(){
-        if(notifyOn)
-            api.storage.notify=notifyOn[0].checked;
-        if(keybindingsCheckbox)
-            api.storage.keybindings=keybindingsCheckbox.prop('checked');
+        if(notifyCheckbox)
+            api.storage.notify=notifyCheckbox[0].checked;
+        api.storage.keybindings=keybindingsCheckbox.prop('checked');
         if(signatureInput.val())
             api.storage.signature=signatureInput.val();
         else
@@ -1545,7 +1535,8 @@ function showSettings(){
 	}, {
 	    text: "Cancel",
 	    click: cancel
-	}]
+	}],
+	width: 500
     });
     settingsDialog=form;
 }
