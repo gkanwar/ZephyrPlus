@@ -480,6 +480,7 @@ RoostSource.prototype.init = function() {
     this.model = new MessageModel(this.roostApi);
 
     roost.ticketManager.addEventListener("ticket-needed", function(ev) {
+	roost.oldStatus = roost.status;
 	roost.setStatus_(ZephyrAPI.TICKETS_NEEDED);
     });
 
@@ -493,15 +494,6 @@ RoostSource.prototype.init = function() {
     });
 
     this.setStatus_(ZephyrAPI.CONNECTING);
-
-    Q.all(
-        [roost.ticketManager.getTicket("server"),
-         roost.ticketManager.getTicket("zephyr")]
-    ).then(function() {
-	if (typeof roost.ticketCB == "function") {
-	    roost.ticketCB();
-	}
-    });
 
     return Q.all([
 	roost.storageManager.principal(),
@@ -530,7 +522,15 @@ RoostSource.prototype.init = function() {
 
 RoostSource.prototype.getTickets = function(cb) {
     this.ticketManager.refreshTickets({interactive: true});
-    this.ticketCB = cb;
+    Q.all(
+        [this.ticketManager.getTicket("server"),
+         this.ticketManager.getTicket("zephyr")]
+    ).then(function() {
+	if (typeof cb == "function") {
+	    cb();
+	}
+	this.setStatus_(this.oldStatus);
+    }.bind(this));
 }
 
 RoostSource.prototype.stripRealm = function(sender) {
@@ -652,12 +652,19 @@ RoostSource.prototype.sendZephyr = function(params) {
 	}
     }
 
-    return this.roostApi.post("/v1/zwrite", {
-	message: message
-    }, {
-	withZephyr: true,
-	interactive: true
-    });
+    // The user can send a zephyr without clicking (with dot-enter),
+    // so the tickets popup might get blocked.  Setting interactive to
+    // false doesn't work, so we use this workaround.
+
+    this.ticketManager.refreshTickets();
+
+    return this.ticketManager.getTicket("zephyr").then(function() {
+	return this.roostApi.post("/v1/zwrite", {
+	    message: message
+	}, {
+	    withZephyr: true
+	});
+    }.bind(this));
 }
 
 RoostSource.prototype.saveStorage = function(data) {

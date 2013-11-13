@@ -232,6 +232,7 @@ $(document).ready(function()
 			click: function() {
 			    api.getTickets(function() {
 				localStorage.roostIntegrationEnabledBefore = true;
+				ticketsDialog.dialog("close");
 			    });
 			},
 			autofocus: true
