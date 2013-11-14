@@ -304,7 +304,8 @@
 		return source.arePersonalsSupported();
 	    return false;
 	}
-        
+        api.source = source;
+
     }
 
     ZephyrAPI.DISCONNECTED = "00 DISCONNECTED";
@@ -580,11 +581,19 @@ RoostSource.prototype.start = function() {
 
 	    this.roostApi.addEventListener("disconnect", function() {
 		this.setStatus_(ZephyrAPI.RECONNECTING);
-		this.roostApi.reconnectTries_ = 100;
 	    }.bind(this));
 	    this.roostApi.addEventListener("connect", function() {
 		this.setStatus_(ZephyrAPI.CONNECTED);
 	    }.bind(this));
+
+	    // Roost doubles the reconnect delay after every failed
+	    // reconnect, which is inconvenient
+	    window.setInterval(function() {
+		this.roostApi.reconnectTries_ = 1000;
+		if (this.roostApi.reconnectDelay_ > 8000) {
+		    this.roostApi.reconnectDelay_ = 8000;
+		}
+	    }.bind(this), 5000);
 
 	    this.tail = this.model.newTail(this.last_message_id, this.filter, this.procMessages.bind(this));
 	    this.tail.expandTo(100000);
