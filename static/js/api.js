@@ -474,7 +474,7 @@ RoostSource.prototype = new APISource();
 
 RoostSource.prototype.init = function() {
     var roost = this;
-    this.storageManager = new StorageManager();
+    this.storageManager = new StorageManager(new LocalStorageWrapper());
     this.ticketManager = new TicketManager(CONFIG.webathena, this.storageManager);
     this.roostApi = new API(CONFIG.server, CONFIG.serverPrincipal,
                             this.storageManager, this.ticketManager);
