@@ -27,7 +27,18 @@ $(document).ready(function()
 	.css("cursor", "pointer");
 
     // Create the API object and define the callbacks
-    api = new ZephyrAPI();
+    var source;
+    if (location.protocol == "http:") {
+	source = new NativeSource();
+    }
+    else if (location.href.toLowerCase().indexOf("roost") != -1) {
+	source = new RoostSource();
+    }
+    else {
+	source = new HybridSource();
+    }
+    api = new ZephyrAPI(source);
+
     api.onready = function()
     {
 	// Set a flag so that onzephyr can perform setup functions
@@ -78,6 +89,13 @@ $(document).ready(function()
 	}
         $("#logged_user")
             .text(api.username);
+
+	$("#settings_link").click(showSettings);
+	
+	$("#mark_read input").click(markAllAsRead);
+
+	$(document).keypress(processKeybindings);
+	$(document).keydown(processSpecialKeybindings);
     };
     api.onzephyr = function(zephyrs)
     {
@@ -193,8 +211,59 @@ $(document).ready(function()
         }
         scrolled = true;
     });
+
+    var ticketsDialog;
+    var statusDiv = $("#status");
     api.onstatuschange=function(status){
-        if(status == api.UPDATESUGGESTED){
+	console.log(status);
+	if (ticketsDialog && ticketsDialog.dialog("isOpen")) {
+            ticketsDialog.dialog("close");
+	}
+	if (status == ZephyrAPI.TICKETS_NEEDED) {
+	    if (!ticketsDialog) {
+		ticketsDialog = $("<div/>").dialog({
+		    width: 500,
+		    open: function() {
+			$("#roostLogin").focus();
+		    },
+		    buttons: [{
+			id: "roostLogin",
+			text: "Login to Roost",
+			click: function() {
+			    api.getTickets(function() {
+				localStorage.roostIntegrationEnabledBefore = true;
+				ticketsDialog.dialog("close");
+			    });
+			},
+			autofocus: true
+		    },{
+			text: "No thanks",
+			click: function() {
+			    api.denyTickets();
+			    delete localStorage.roostIntegrationEnabledBefore;
+			}
+		    }]
+		});
+	    }
+	    var title, text;
+	    var roost = "<a href='https://github.com/davidben/roost' target='_blank'>Roost</a>";
+	    var davidben = "<a href='https://davidben.net/thesis-testimonials.pdf' target='_blank'>" +
+		"davidben's insanity</a>";
+	    if (localStorage.roostIntegrationEnabledBefore) {
+		title = "Tickets needed";
+		text = "Your Roost tickets have expired. " +
+		    "Would you like to renew them?";
+	    }
+	    else {
+		title = "RoostPlus";
+		text = "Would you like to enable RoostPlus? " +
+		    "RoostPlus uses the power of " + davidben + " (" + roost + ") " +
+		    "to allow you to send and receive personals (private messages) in ZephyrPlus.";
+	    }
+	    ticketsDialog.dialog("option", "title", title);
+	    ticketsDialog.html(text).dialog("open");
+	}
+        else if(status == ZephyrAPI.UPDATE_AVAILABLE){
             $("<div>").html("ZephyrPlus has been updated!  Refresh the page to update to the latest version!")
                       .dialog({
                           buttons: {
@@ -207,10 +276,41 @@ $(document).ready(function()
                           }
                       });
         }
-        else if(status == api.UPDATEREQUIRED){
+        else if(status == ZephyrAPI.UPDATE_REQUIRED){
             location.reload();
         }
+	else {
+	    var statusText;
+	    var statusColor;
+
+	    if (status == ZephyrAPI.DISCONNECTED) {
+		statusText = "disconnected";
+		statusColor = "#FFAAAA";
+	    }
+	    else if (status == ZephyrAPI.CONNECTING) {
+		statusText = "connecting...";
+		statusColor = "#DDDDDD";
+	    }
+	    else if (status == ZephyrAPI.RECONNECTING) {
+		statusText = "reconnecting...";
+		statusColor = "#FFEE80";
+	    }
+	    else {
+		statusColor = "#CCFFCC";
+	    }
+
+	    if (statusText) {
+		statusDiv.text(statusText);
+		statusDiv.show();
+	    }
+	    else {
+		statusDiv.text("connected");
+		statusDiv.fadeOut(1500);
+	    }
+	    statusDiv.css("background-color", statusColor);
+	}
     }
+    api.onstatuschange(api.status);
     
     function processScroll(){
         if(scrolled){
@@ -259,7 +359,8 @@ $(document).ready(function()
 	    var classText = $("#classdropdown").val();
 	    var instanceText = $("#instancedropdown").val();
             
-            if(!api.classDict[classText]){
+            if(!api.classDict[classText] &&
+                    !(api.arePersonalsSupported() && classText.startsWith(ZephyrAPI.PERSONALS_TAG))){
                 if(!confirm(
                     "You are not subscribed to class \"" + classText + "\".\n" +
                     "Are you sure you want to send this message?\n\n" + 
@@ -269,18 +370,12 @@ $(document).ready(function()
             }
             
             messageTextArea.val('');
-	    $.post("/chat",
-		   {
-		       'class': classText,
-		       'instance': instanceText,
-		       'message': messageText,
-		       'signature': api.storage.signature,
-		   },
-		   function()
-		   {
-		       console.log("Success!");
-		   }
-		  );
+            api.sendZephyr({
+                class: classText,
+                instance: instanceText,
+                message: messageText,
+                signature: api.storage.signature
+            });
 	    return false;
 	}
     );
@@ -379,13 +474,6 @@ $(document).ready(function()
 	    }
 	}
     );
-    
-    $("#settings_link").click(showSettings);
-    
-    $("#mark_read input").click(markAllAsRead);
-
-    $(document).keypress(processKeybindings);
-    $(document).keydown(processSpecialKeybindings);
 });
 
 
@@ -729,6 +817,8 @@ var fillClasses = function()
                     })
                 );
     root.html("").append(ul);
+
+    updateMissedMessages();
 };
 
 var createMessage = function(message)
@@ -764,6 +854,7 @@ var createMessage = function(message)
 	       {
 		   fillMessagesByClass(classObj.id);
 		   fillButtonArea(classObj.id);
+		   return false;
 	       });
     var header_instance = $("<span />")
 	//.addClass("instance_id_"+instanceObj.id)
@@ -774,11 +865,21 @@ var createMessage = function(message)
 	       {
 		   fillMessagesByClass(classObj.id, instanceObj.id);
 		   fillButtonArea(classObj.id, instanceObj.id);
+		   return false;
 	       });
 
-    // Makes sender name brighter.
     sender_text = $("<span />")
 	.append($("<span class='sender'>").text(sender_text));
+    if (api.arePersonalsSupported() && auth) {
+	sender_text
+	    .css("cursor", "pointer")
+	    .click(function() {
+		var id = api.getPersonalsClass(message.sender).id;
+		fillMessagesByClass(id);
+		fillButtonArea(id);
+		return false;
+	    });
+    }
 
     if(!auth)
 	sender_text.append(" <span class='unauth'>(UNAUTH)</span>");
@@ -870,7 +971,7 @@ var fillMessagesByClass = function(class_id, instance_id)
     {
 	var headerText_class = $("<span />")
 	    //.addClass("class_id_"+classObj.name)
-	    .text(classObj.name)
+	    .text(classObj.name.replace(RegExp("^" + ZephyrAPI.PERSONALS_TAG), "private conversation with "))
 	    .css("cursor", "pointer")
 	    .click(function()
 		   {
@@ -1099,7 +1200,6 @@ var addZephyrClass = function()
     if(new_class_name != "" && api.classDict[new_class_name] == undefined) {
         api.addSubscription(new_class_name, undefined, undefined, function(){
 	    fillClasses();
-	    updateMissedMessages();
 	    fillMessagesByClass(api.classDict[new_class_name].id);
 	});
     }
@@ -1341,6 +1441,7 @@ function replaceZephyrTag(zephyrTag, htmlTag, str) {
 }
 
 var settingsDialog;
+// TODO: Refactor this, this is the worst settings dialog ever
 function showSettings(){
     if(settingsDialog){
         settingsDialog.dialog("open");
@@ -1350,21 +1451,13 @@ function showSettings(){
     var form = $("<form/>");
     
     if(window.webkitNotifications){
-        var notifyOn = $("<input type='radio' name='notify' id='notifyOn' value='on'/>");
-        var notifyOff = $("<input type='radio' name='notify' id='notifyOff' value='off'/>");
-        var notifySettings = $("<div>");
-        notifySettings.append(
-            "Desktop notifications:<br/>",
-            notifyOn,
-            "<label for='notifyOn'>On</label><br/>",
-            notifyOff,
-            "<label for='notifyOff'>Off</label><br/>"
-        );
-        if(api.storage.notify)
-            notifyOn[0].checked=true;
-        else
-            notifyOff[0].checked=true;
-        form.append(notifySettings);
+	var notifySettings = $("<span />");
+	var notifyCheckbox = $("<input type='checkbox' id='notify' />");
+	notifyCheckbox[0].checked = api.storage.notify;
+        notifySettings.append(notifyCheckbox,
+			      "&nbsp;<label for='notify'>Enable desktop notifications</label>");
+	form.append("<br/>", notifySettings);
+	
         if(webkitNotifications.checkPermission() != 0){
             notifySettings.hide();
             var enableNotify = $("<input type='button' value='Enable desktop notifications'/>");
@@ -1377,35 +1470,47 @@ function showSettings(){
                     }
                 });
             });
-            form.append(enableNotify, "<br/>");
+	    enableNotify.button();
+            form.append(enableNotify);
         }
-        form.append("<br/>");
+        form.append("<br/><br/>");
     }
     else{
         form.append("Desktop notifications are not supported in your browser.<br/><br/>");
     }
 
-    var keybindingsCheckbox = $("<input type='checkbox'>");
+    var keybindingsCheckbox = $("<input type='checkbox' id='keybindings_setting'>");
     keybindingsCheckbox.prop('checked', api.storage.keybindings);
 
-    form.append(
-        "Enable keybindings:<br/>",
-        keybindingsCheckbox,
-        "<br/><br/>"
-    );
+    form.append(keybindingsCheckbox,
+		"&nbsp;<label for='keybindings_setting'>Enable keyboard shortcuts (press '?' for help)</label>",
+		"<br/><br/>");
     
-    var signatureInput = $("<input type='text'>").val(api.storage.signature || "");
+    var signatureInput = $("<input type='text' id='signature'>").val(api.storage.signature || "");
     form.append(
-        "Signature<br/>",
+        "<label for='signature'>Signature:</label>&nbsp;",
         signatureInput,
         "<br/><br/>"
     );
 
+    if (api.arePersonalsSupported()) {
+	var disableRoostButton = $("<input type='button'>")
+	    .val("Disable RoostPlus (restarts client)")
+	    .click(function() {
+		localStorage.clear();
+		location.reload();
+	    })
+	    .button();
+	form.append(
+	    disableRoostButton,
+	    "<br/><br/>"
+	);
+    }
+
     function save(){
-        if(notifyOn)
-            api.storage.notify=notifyOn[0].checked;
-        if(keybindingsCheckbox)
-            api.storage.keybindings=keybindingsCheckbox.prop('checked');
+        if(notifyCheckbox)
+            api.storage.notify=notifyCheckbox[0].checked;
+        api.storage.keybindings=keybindingsCheckbox.prop('checked');
         if(signatureInput.val())
             api.storage.signature=signatureInput.val();
         else
@@ -1418,17 +1523,22 @@ function showSettings(){
         form.dialog("close");
     }
     
-    form.append(
-        $("<input type='button' value='Save' />")
-            .click(save),
-        $("<input type='button' value='Cancel' />")
-            .click(cancel)
-    ).submit(function(e){
+    form.submit(function(e){
         e.preventDefault();
         save();
     });
     
-    form.dialog({title: "Settings"});
+    form.dialog({
+	title: "Settings",
+	buttons: [{
+	    text: "Save",
+	    click: save
+	}, {
+	    text: "Cancel",
+	    click: cancel
+	}],
+	width: 500
+    });
     settingsDialog=form;
 }
 
