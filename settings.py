@@ -158,6 +158,8 @@ SIGNATURE = None
 EXCEPTIONS_FROM = "zephyrplus@mit.edu"
 EXCEPTIONS_TO = None
 
+ORIGIN = None
+
 try:
     from local_settings import *
 except ImportError:
