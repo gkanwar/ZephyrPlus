@@ -3,7 +3,7 @@
     <title>ZephyrPlus!</title>
     <link href="/static/styles/login.css" type="text/css" rel="stylesheet" />
 
-    <link rel="icon" type="image/png" href="../static/img/zp_fav.png" />
+    <link rel="icon" type="image/png" href="/static/img/zp_fav.png" />
 
     <link href="//fonts.googleapis.com/css?family=Ubuntu+Mono" rel="stylesheet" type="text/css">
 
@@ -34,12 +34,13 @@
 	</center>
 	<div id="loginandlink">
 	  <div id="loginbutton">
-	    <form method="get" action="login">
+	    <form method="get" action="/login">
 	      <input type="submit" value="login with certificates">
+              <input type="hidden" name="next" value="{{ next }}">
 	    </form>
 	  </div>
 	  <div id="abouthelp">
-	    <a id="about" href="../static/pages/about.html">about</a> | <a id="help" href="../static/pages/help.html">help</a>
+	    <a id="about" href="/static/pages/about.html">about</a> | <a id="help" href="/static/pages/help.html">help</a>
 	  </div>
 	</div>
       </div>

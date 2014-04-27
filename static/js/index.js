@@ -126,7 +126,8 @@ $(document).ready(function()
 		
 
             // Fill in the messages and button area
-    	    fillMessagesByClass(api.storage.last_viewed.cls, api.storage.last_viewed.instance);
+            fillMessagesByHistoricalClass();
+            window.addEventListener("popstate", fillMessagesByHistoricalClass);
             fillButtonArea(api.storage.last_viewed.cls, api.storage.last_viewed.instance);
             // Fill in the personals and classes sidebar
             //fillPersonals(); // Personals don't exist anymore
@@ -489,7 +490,14 @@ var updateTitle = function()
     {
 	numMissed += api.instances[i].missedMessages.length;
     }
-    $(document).attr("title", (numMissed==0) ? "ZephyrPlus!" : "ZephyrPlus! ("+numMissed+")");
+
+    var classObj = api.getClassById(api.storage.last_viewed.cls);
+    var instanceObj = api.getInstanceById(api.storage.last_viewed.instance);
+
+    $(document).attr("title",
+                     (numMissed == 0 ? "ZephyrPlus!" : "ZephyrPlus! ("+numMissed+")") +
+                     (classObj ? " (" + classObj.name + (instanceObj ? "/" + instanceObj.name : "" ) + ")" : "")
+                    );
     if(numMissed > 0 && api.storage.last_viewed && !api.storage.last_viewed.cls)
         $("#mark_read").show();
     else
@@ -1098,6 +1106,7 @@ var fillMessagesByClass = function(class_id, instance_id)
     
     api.saveStorage();
     updateTitle();
+    updateHistoryState(class_id, instance_id);
 };
 
 var fillMessagesByPersonal = function(personal_id)
@@ -1266,6 +1275,83 @@ function scrollToMessage(message) {
     var pos = $(message).position().top;
     if (pos < 0 || pos + $(message).height() > height) {
         scroll.scrollTop(scroll.scrollTop() + pos - 0.5*height + 0.5*$(message).height());
+    }
+}
+
+function fillMessagesByHistoricalClass() {
+    if (window.history.state !== null) {
+        fillMessagesByClass(window.history.state.classId,
+                            window.history.state.instanceId);
+        return;
+    }
+
+    var path = window.location.pathname.substr(1).split("/");
+
+    if (path.length > 0) {
+        var className, instanceName;
+        for (var n = 0; n < path.length / 2; n++) {
+            if (path[2 * n] === "class") {
+                className = decodeURIComponent(path[2 * n + 1]);
+            }
+            else if (path[2 * n] === "instance") {
+                instanceName = decodeURIComponent(path[2 * n + 1]);
+            }
+        }
+        if (className !== undefined) {
+            function fillMessages() {
+                var classObj = api.classDict[className];
+                if (instanceName !== undefined) {
+                    var instanceObj = classObj.instanceDict[instanceName];
+                    if (instanceObj) {
+                        fillMessagesByClass(classObj.id, instanceObj.id);
+                        return;
+                    }
+                }
+                fillMessagesByClass(classObj.id);
+            }
+
+            if (api.classDict[className]) {
+                api.getOldMessages(className, undefined, undefined, undefined, fillMessages);
+            }
+            else {
+                api.addSubscription(className, undefined, undefined, function() {
+                    fillClasses();
+                    fillMessages();
+                });
+            }
+
+            return;
+        }
+    }
+    
+    fillMessagesByClass(api.storage.last_viewed.cls, api.storage.last_viewed.instance);
+}
+
+function updateHistoryState(classId, instanceId) {
+    if (window.history.state === null ||
+        window.history.state.classId !== classId ||
+        window.history.state.instanceId !== instanceId) {
+
+        var url = "/";
+
+        var classObj = api.getClassById(classId);
+        if (classObj && !classObj.name.startsWith(ZephyrAPI.PERSONALS_TAG)) {
+            url = "/class/" + encodeURIComponent(classObj.name);
+            var instanceObj = api.getInstanceById(instanceId);
+            if (instanceObj) {
+                url += "/instance/" + encodeURIComponent(instanceObj.name);
+            }
+        }
+
+        var newState = {classId: classId,
+                        instanceId: instanceId};
+
+        if (url == window.location.pathname) {
+            window.history.replaceState(newState, "", url);
+        }
+        else {
+            window.history.pushState(newState, "", url);
+        }
     }
 }
 

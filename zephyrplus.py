@@ -45,9 +45,9 @@ class BaseHandler(tornado.web.RequestHandler):
         return None
 
 class MainPageHandler(BaseHandler):
-    def get(self):
+    def get(self, *args):
         if self.current_user is None:
-            self.render("templates/login.html")
+            self.render("templates/login.html", next=self.request.uri)
         else:
             self.render("templates/index.html")
 
@@ -337,7 +337,7 @@ application = tornado.web.Application([
         (r"/login", CertsLoginHandler),
         (r"/logout", LogoutHandler),
         (r"/user", UserHandler),
-        (r"/", MainPageHandler),
+        (r"/(class/.+)?", MainPageHandler),
         (r"/static/(.*)", tornado.web.StaticFileHandler, {"path": settings["static_path"]}),
         (r"/admin/usermorph", StupidLoginHandler),
         ], **settings)
