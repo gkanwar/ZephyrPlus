@@ -86,6 +86,17 @@ $(document).ready(function()
 		{
 		    api.storage.last_viewed.type = 0;
 	    }
+
+            if (!api.storage.recent_subs) {
+                api.storage.recent_subs = {};
+            }
+            else {
+                for (var sub in api.storage.recent_subs) {
+                    if (new Date() - api.storage.recent_subs[sub] > 3 * 24 * 3600 * 1000) {
+                        delete api.storage.recent_subs[sub];
+                    }
+                }
+            }
 	}
         $("#logged_user")
             .text(api.username);
@@ -125,13 +136,12 @@ $(document).ready(function()
 	    }
 		
 
+            // Fill in the personals and classes sidebar
+            fillClasses();
             // Fill in the messages and button area
             fillMessagesByHistoricalClass();
             window.addEventListener("popstate", fillMessagesByHistoricalClass);
             fillButtonArea(api.storage.last_viewed.cls, api.storage.last_viewed.instance);
-            // Fill in the personals and classes sidebar
-            //fillPersonals(); // Personals don't exist anymore
-            fillClasses();
 	    // Scroll to the bottom of the messages div
 	    //$("#messages_scroll").prop({ scrollTop: $("#messages_scroll").prop("scrollHeight") });
         }
@@ -1099,15 +1109,27 @@ var fillMessagesByClass = function(class_id, instance_id)
         if(!first && api.storage.instances_last_seen);
         if(first && $("#message"+first).length>0)
             $("#messages_scroll").scrollTop($("#messages_scroll").scrollTop()+$("#message"+first).position().top);
-        else
+        else {
             //$("#messages-scroll").scrollTop(0);
+            if (classObj && api.storage.recent_subs[classObj.id] && !classObj.fetchedOldMessages) {
+                api.getOldMessages(classObj.name).then(function() {
+                    classObj.fetchedOldMessages = true;
+                    refillMessages();
+                });
+            }
             $("#messages_scroll").scrollTop($("#messages_scroll").prop("scrollHeight"));
+        }
     }
     
     api.saveStorage();
     updateTitle();
     updateHistoryState(class_id, instance_id);
 };
+
+function refillMessages() {
+    fillMessagesByClass(api.storage.last_viewed.cls,
+                        api.storage.last_viewed.instance);
+}
 
 var fillMessagesByPersonal = function(personal_id)
 {
@@ -1207,7 +1229,8 @@ var addZephyrClass = function()
 
     new_class_name = new_class_name.replace(/^\s+|\s+$/g, '');
     if(new_class_name != "" && api.classDict[new_class_name] == undefined) {
-        api.addSubscription(new_class_name, undefined, undefined, function(){
+        api.addSubscription(new_class_name).then(function(){
+            api.storage.recent_subs[api.classDict[new_class_name].id] = new Date().getTime();
 	    fillClasses();
 	    fillMessagesByClass(api.classDict[new_class_name].id);
 	});
@@ -1311,11 +1334,11 @@ function fillMessagesByHistoricalClass() {
             }
 
             if (api.classDict[className]) {
-                api.getOldMessages(className, undefined, undefined, undefined, fillMessages);
+                fillMessages();
             }
             else {
-                api.addSubscription(className, undefined, undefined, function() {
-                    fillClasses();
+                api.addSubscription(className).then(function() {
+                    api.storage.recent_subs[api.classDict[className].id] = new Date().getTime();
                     fillMessages();
                 });
             }
