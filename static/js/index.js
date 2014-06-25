@@ -530,6 +530,7 @@ var setCurrentRead = function(class_id, instance_id)
 
 function markAllAsRead(){
     api.storage.first_visible = {};
+    api.storage.instances_last_seen = {};
     for(var n=0; n<api.instances.length; n++){
         for(var i=0; i<api.instances[n].missedMessages.length; i++)
             if(api.instances[n].missedMessages[i].element)
