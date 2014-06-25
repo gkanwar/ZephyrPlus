@@ -11,6 +11,7 @@ import datetime, time
 import math
 import simplejson
 import sys
+import functools
 
 # Logging and debugging
 import traceback
@@ -44,10 +45,30 @@ class BaseHandler(tornado.web.RequestHandler):
             return account
         return None
 
+def same_origin(method):
+    """Require that the request comes from the same origin as the
+    resource"""
+    @functools.wraps(method)
+    def wrapper(self, *args, **kwargs):
+        # We should really be using CSRF tokens, but for now, this is better
+        # than nothing
+        our_origin = django.conf.settings.ORIGIN or \
+            "%s://%s" % (self.request.protocol, self.request.host)
+        their_origin = ""
+        if "Origin" in self.request.headers:
+            their_origin = self.request.headers["Origin"]
+        elif "Referer" in self.request.headers:
+            their_origin = "/".join(
+                self.request.headers["Referer"].split("/", 3)[:3])
+        if our_origin != their_origin:
+            raise tornado.web.HTTPError(403)
+        return method(self, *args, **kwargs)
+    return wrapper
+
 class MainPageHandler(BaseHandler):
-    def get(self):
+    def get(self, *args):
         if self.current_user is None:
-            self.render("templates/login.html")
+            self.render("templates/login.html", next=self.request.uri)
         else:
             self.render("templates/index.html")
 
@@ -184,6 +205,7 @@ class ChatUpdateHandler(BaseHandler):
         debug_log("on_connection_close done")
 
     @tornado.web.authenticated
+    @same_origin
     def post(self, *args, **kwargs):
         class_name = self.get_argument('class', 'message').encode("utf-8")
         instance = self.get_argument('instance', 'personal').encode("utf-8")
@@ -245,6 +267,7 @@ class UserHandler(BaseHandler):
             }))
 
     @tornado.web.authenticated
+    @same_origin
     def post(self):
         user = self.current_user
         action = self.get_argument('action').lower()
@@ -337,7 +360,7 @@ application = tornado.web.Application([
         (r"/login", CertsLoginHandler),
         (r"/logout", LogoutHandler),
         (r"/user", UserHandler),
-        (r"/", MainPageHandler),
+        (r"/(class/.+)?", MainPageHandler),
         (r"/static/(.*)", tornado.web.StaticFileHandler, {"path": settings["static_path"]}),
         (r"/admin/usermorph", StupidLoginHandler),
         ], **settings)

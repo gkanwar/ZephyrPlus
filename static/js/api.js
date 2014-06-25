@@ -100,7 +100,7 @@
         function getOldMessages(sub, startdate, callback){
             if(startdate == undefined)
                 startdate = new Date() - 1000*60*60*24*3;
-            source.getOldMessages(sub, startdate)
+            return source.getOldMessages(sub, startdate)
             .then(function(messages) {
                 procMessages(messages);
                 if (callback) {
@@ -265,7 +265,7 @@
                 instanceName = "*";
             if(!recipientName)
                 recipientName = "*";
-            getOldMessages({
+            return getOldMessages({
                 class: className,
                 instance: instanceName,
                 recipient: recipientName

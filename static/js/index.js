@@ -86,6 +86,17 @@ $(document).ready(function()
 		{
 		    api.storage.last_viewed.type = 0;
 	    }
+
+            if (!api.storage.recent_subs) {
+                api.storage.recent_subs = {};
+            }
+            else {
+                for (var sub in api.storage.recent_subs) {
+                    if (new Date() - api.storage.recent_subs[sub] > 3 * 24 * 3600 * 1000) {
+                        delete api.storage.recent_subs[sub];
+                    }
+                }
+            }
 	}
         $("#logged_user")
             .text(api.username);
@@ -125,12 +136,12 @@ $(document).ready(function()
 	    }
 		
 
-            // Fill in the messages and button area
-    	    fillMessagesByClass(api.storage.last_viewed.cls, api.storage.last_viewed.instance);
-            fillButtonArea(api.storage.last_viewed.cls, api.storage.last_viewed.instance);
             // Fill in the personals and classes sidebar
-            //fillPersonals(); // Personals don't exist anymore
             fillClasses();
+            // Fill in the messages and button area
+            fillMessagesByHistoricalClass();
+            window.addEventListener("popstate", fillMessagesByHistoricalClass);
+            fillButtonArea(api.storage.last_viewed.cls, api.storage.last_viewed.instance);
 	    // Scroll to the bottom of the messages div
 	    //$("#messages_scroll").prop({ scrollTop: $("#messages_scroll").prop("scrollHeight") });
         }
@@ -489,7 +500,14 @@ var updateTitle = function()
     {
 	numMissed += api.instances[i].missedMessages.length;
     }
-    $(document).attr("title", (numMissed==0) ? "ZephyrPlus!" : "ZephyrPlus! ("+numMissed+")");
+
+    var classObj = api.getClassById(api.storage.last_viewed.cls);
+    var instanceObj = api.getInstanceById(api.storage.last_viewed.instance);
+
+    $(document).attr("title",
+                     (numMissed == 0 ? "ZephyrPlus!" : "ZephyrPlus! ("+numMissed+")") +
+                     (classObj ? " (" + classObj.name + (instanceObj ? "/" + instanceObj.name : "" ) + ")" : "")
+                    );
     if(numMissed > 0 && api.storage.last_viewed && !api.storage.last_viewed.cls)
         $("#mark_read").show();
     else
@@ -1092,14 +1110,27 @@ var fillMessagesByClass = function(class_id, instance_id)
         if(!first && api.storage.instances_last_seen);
         if(first && $("#message"+first).length>0)
             $("#messages_scroll").scrollTop($("#messages_scroll").scrollTop()+$("#message"+first).position().top);
-        else
+        else {
             //$("#messages-scroll").scrollTop(0);
+            if (classObj && api.storage.recent_subs[classObj.id] && !classObj.fetchedOldMessages) {
+                api.getOldMessages(classObj.name).then(function() {
+                    classObj.fetchedOldMessages = true;
+                    refillMessages();
+                });
+            }
             $("#messages_scroll").scrollTop($("#messages_scroll").prop("scrollHeight"));
+        }
     }
     
     api.saveStorage();
     updateTitle();
+    updateHistoryState(class_id, instance_id);
 };
+
+function refillMessages() {
+    fillMessagesByClass(api.storage.last_viewed.cls,
+                        api.storage.last_viewed.instance);
+}
 
 var fillMessagesByPersonal = function(personal_id)
 {
@@ -1199,7 +1230,8 @@ var addZephyrClass = function()
 
     new_class_name = new_class_name.replace(/^\s+|\s+$/g, '');
     if(new_class_name != "" && api.classDict[new_class_name] == undefined) {
-        api.addSubscription(new_class_name, undefined, undefined, function(){
+        api.addSubscription(new_class_name).then(function(){
+            api.storage.recent_subs[api.classDict[new_class_name].id] = new Date().getTime();
 	    fillClasses();
 	    fillMessagesByClass(api.classDict[new_class_name].id);
 	});
@@ -1267,6 +1299,83 @@ function scrollToMessage(message) {
     var pos = $(message).position().top;
     if (pos < 0 || pos + $(message).height() > height) {
         scroll.scrollTop(scroll.scrollTop() + pos - 0.5*height + 0.5*$(message).height());
+    }
+}
+
+function fillMessagesByHistoricalClass() {
+    if (window.history.state !== null) {
+        fillMessagesByClass(window.history.state.classId,
+                            window.history.state.instanceId);
+        return;
+    }
+
+    var path = window.location.pathname.substr(1).split("/");
+
+    if (path.length > 0) {
+        var className, instanceName;
+        for (var n = 0; n < path.length / 2; n++) {
+            if (path[2 * n] === "class") {
+                className = decodeURIComponent(path[2 * n + 1]);
+            }
+            else if (path[2 * n] === "instance") {
+                instanceName = decodeURIComponent(path[2 * n + 1]);
+            }
+        }
+        if (className !== undefined) {
+            function fillMessages() {
+                var classObj = api.classDict[className];
+                if (instanceName !== undefined) {
+                    var instanceObj = classObj.instanceDict[instanceName];
+                    if (instanceObj) {
+                        fillMessagesByClass(classObj.id, instanceObj.id);
+                        return;
+                    }
+                }
+                fillMessagesByClass(classObj.id);
+            }
+
+            if (api.classDict[className]) {
+                fillMessages();
+            }
+            else {
+                api.addSubscription(className).then(function() {
+                    api.storage.recent_subs[api.classDict[className].id] = new Date().getTime();
+                    fillMessages();
+                });
+            }
+
+            return;
+        }
+    }
+    
+    fillMessagesByClass(api.storage.last_viewed.cls, api.storage.last_viewed.instance);
+}
+
+function updateHistoryState(classId, instanceId) {
+    if (window.history.state === null ||
+        window.history.state.classId !== classId ||
+        window.history.state.instanceId !== instanceId) {
+
+        var url = "/";
+
+        var classObj = api.getClassById(classId);
+        if (classObj && !classObj.name.startsWith(ZephyrAPI.PERSONALS_TAG)) {
+            url = "/class/" + encodeURIComponent(classObj.name);
+            var instanceObj = api.getInstanceById(instanceId);
+            if (instanceObj) {
+                url += "/instance/" + encodeURIComponent(instanceObj.name);
+            }
+        }
+
+        var newState = {classId: classId,
+                        instanceId: instanceId};
+
+        if (url == window.location.pathname) {
+            window.history.replaceState(newState, "", url);
+        }
+        else {
+            window.history.pushState(newState, "", url);
+        }
     }
 }
 
