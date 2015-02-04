@@ -582,10 +582,10 @@ var oldNote = false;
 function showNotifications(messages){
     if(!needsToBeSetup && 
             api.storage.notify && 
-            webkitNotifications && 
-            webkitNotifications.checkPermission()==0){
+            Notification && 
+            Notification.permission == "granted"){
         if(oldNote){
-            oldNote.note.cancel();
+            oldNote.note.close();
             window.clearTimeout(oldNote.timeout);
             oldNote = false;
         }
@@ -614,20 +614,19 @@ function showNotifications(messages){
             body = "";
         }
         
-        var note = webkitNotifications.createNotification(
-            "/static/img/zp_logo.png",
-            title,
-            body
-        );
+        var note = new Notification(title, {
+		body: body,
+		icon: "/static/img/zp_logo.png",
+	    });
+
         note.onclick = function(){
-            note.cancel();
+            note.close();
             window.focus();
         }
-        note.show();
         oldNote = {
             note: note,
             timeout: window.setTimeout(function(){
-                note.cancel();
+                note.close();
             }, 5000)
         };
     }
@@ -1560,7 +1559,7 @@ function showSettings(){
     
     var form = $("<form/>");
     
-    if(window.webkitNotifications){
+    if(window.Notification){
 	var notifySettings = $("<span />");
 	var notifyCheckbox = $("<input type='checkbox' id='notify' />");
 	notifyCheckbox[0].checked = api.storage.notify;
@@ -1568,15 +1567,15 @@ function showSettings(){
 			      "&nbsp;<label for='notify'>Enable desktop notifications</label>");
 	form.append("<br/>", notifySettings);
 	
-        if(webkitNotifications.checkPermission() != 0){
+        if(Notification.permission != "granted"){
             notifySettings.hide();
             var enableNotify = $("<input type='button' value='Enable desktop notifications'/>");
             enableNotify.click(function(){
-                webkitNotifications.requestPermission(function(){
-                    if(webkitNotifications.checkPermission() == 0){
+                Notification.requestPermission(function() {
+                    if(Notification.permission == "granted"){
                         enableNotify.hide();
                         notifySettings.show();
-                        notifyOn[0].checked=true;
+                        notifyCheckbox[0].checked=true;
                     }
                 });
             });
