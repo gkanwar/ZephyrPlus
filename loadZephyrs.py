@@ -39,6 +39,14 @@ class ZephyrLoader(threading.Thread):
 
     def addSubscription(self, sub):
         self.newSubQueue.put(sub)
+        for class_name in [sub.class_name,
+                           u"un" + sub.class_name,
+                           u"unun" + sub.class_name,
+                           sub.class_name + u".d"]:
+            related_sub, created = Subscription.objects.get_or_create(
+                class_name=class_name, instance="*", recipient="*")
+            if created:
+                self.newSubQueue.put(related_sub)
 
     ## First we get a list of subscriptions from the database
     ## Filter these subscriptions to only those with class fields

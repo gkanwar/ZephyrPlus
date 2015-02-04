@@ -274,7 +274,7 @@ class UserHandler(BaseHandler):
         if action == 'subscribe' or action == 'unsubscribe':
             class_name = self.get_argument('class', 'message').lower()
             instance = self.get_argument('instance', '*').lower()
-            recipient = self.get_argument('recipient', '*').lower()
+            recipient = '*'
             sub, created = Subscription.objects.get_or_create(class_name=class_name, instance=instance, recipient=recipient)
             if action == 'subscribe':
                 user.subscriptions.add(sub)
