@@ -722,13 +722,19 @@ var fillClasses = function()
     var ul = $("<ul></ul>");
     api.classes.sort(function(c1, c2){
         var name1 = c1.name, name2 = c2.name;
-        var un1=false, un2=false;
-        if (name1.indexOf("un") == 0) { name1=name1.substr(2); un1=true; }
-        if (name2.indexOf("un") == 0) { name2=name2.substr(2); un2=true; }
+        var un1 = 0, un2 = 0;
+        while (name1.indexOf("un") == 0) {
+	    name1 = name1.substr(2);
+	    un1++;
+	}
+        while (name2.indexOf("un") == 0) {
+	    name2 = name2.substr(2);
+	    un2++;
+	}
         if (name1 > name2) { return 1; }
         else if (name1 < name2) { return -1; }
-        else if (un1 && !un2) { return 1; }
-        else if (un2 && !un1) { return -1; }
+        else if (un1 > un2) { return 1; }
+        else if (un2 > un1) { return -1; }
         else { return 0; }
     });
     if(api.classes.length < 10)
