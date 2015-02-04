@@ -50,13 +50,13 @@
         var api = this;
         api.ready = false;
         api.classes = [];
-        api.classDict = {};
+        api.classDict = Object.create(null);
         api.instances = [];
         api.messages = [];
         api.last_messaged = new Date() - 3*24*60*60*1000;
-        var classIdDict = {};
-        var instanceIdDict = {};
-        var messageIdDict = {};
+        var classIdDict = Object.create(null);
+        var instanceIdDict = Object.create(null);
+        var messageIdDict = Object.create(null);
         
         api.status = ZephyrAPI.CONNECTING;
         var version;
@@ -117,7 +117,7 @@
                     last_messaged: new Date(0),
                     color: hashStringToColor(name),
                     instances: [],
-                    instanceDict: {},
+                    instanceDict: Object.create(null),
                     messages: [],
 		    missedMessages: []
                 }
