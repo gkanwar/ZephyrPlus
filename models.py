@@ -13,7 +13,8 @@ class Zephyr(models.Model):
 	receivers = models.ManyToManyField("Account", blank=True)
 	
 	def _compute_receivers(self):
-	    self.receivers = Account.objects.filter(Q(subscriptions=self.dst)|Q(subscriptions__in=self.dst.parents.all()))
+	    self.receivers.add(*Account.objects.filter(Q(subscriptions=self.dst)|Q(subscriptions__in=self.dst.parents.all())) \
+		.only('username'))
 
 	class Meta:
 		app_label = APPLICATION_NAME
@@ -25,7 +26,6 @@ class Zephyr(models.Model):
 def _on_zephyr_create(sender, instance, created, **kwargs):
     if created and sender == Zephyr:
         instance._compute_receivers()
-        instance.save()
 models.signals.post_save.connect(_on_zephyr_create, sender=Zephyr)
 
 class Subscription(models.Model):
