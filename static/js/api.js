@@ -350,6 +350,15 @@ APISource.prototype.dispatchMessages_ = function(messages) {
     }
 }
 
+APISource.prototype.maybeConvertClassToPersonal = function(message) {
+    if (message.class &&
+	message.class.replace(/\s/g, " ")
+	.startsWith(ZephyrAPI.PERSONALS_TAG.replace(/\s/g, " "))) {
+        message.recipient = message.class.substr(ZephyrAPI.PERSONALS_TAG.length);
+        message.class = "message";	
+    }
+}
+
 function NativeSource() {
     this.last_messaged = new Date() - 3*24*60*60*1000;
 }
@@ -448,6 +457,7 @@ NativeSource.prototype.removeSubscription = function(sub) {
 }
 
 NativeSource.prototype.sendZephyr = function(params) {
+    this.maybeConvertClassToPersonal(params);
     return $.post("/chat", params);
 }
 
@@ -637,6 +647,8 @@ RoostSource.prototype.removeSubscription = function(sub) {
 }
 
 RoostSource.prototype.sendZephyr = function(params) {
+    this.maybeConvertClassToPersonal(params);
+
     var message = {class: params.class || "message",
 		   instance: params.instance || "personal",
 		   recipient: params.recipient || "",
@@ -644,11 +656,6 @@ RoostSource.prototype.sendZephyr = function(params) {
 		   signature: params.signature || "",
 		   message: params.message || ""
 		  };
-    
-    if (message.class.startsWith(ZephyrAPI.PERSONALS_TAG)) {
-        message.recipient = message.class.substr(ZephyrAPI.PERSONALS_TAG.length);
-        message.class = "message";
-    }
     
     if (!message.signature) {
 	if (window.location.href.toLowerCase().match(/[a-z]+plus/)) {
