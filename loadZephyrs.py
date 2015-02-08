@@ -29,6 +29,7 @@ class ZephyrLoader(threading.Thread):
     retrySubTimeout = 0.01
     newSubQueue = Queue.Queue()
     lastTicketTime = 0
+    class_names = set()
 
     def __init__(self, *args, **kwargs):
 	threading.Thread.__init__(self, *args, **kwargs)
@@ -73,6 +74,7 @@ class ZephyrLoader(threading.Thread):
         while True:
             try:
                 subs.add((sub.class_name.encode("utf-8"), str(sub.instance), str(sub.recipient)))
+                self.class_names.add(sub.class_name)
                 time.sleep(0.001) # Loading too quickly 
                 return
             except IOError as (errno, strerror):
@@ -141,6 +143,13 @@ class ZephyrLoader(threading.Thread):
         #pdb.set_trace()
         logMsg = u"Zephyr(%d): %s %s %s %s" % (z.id, unicode(s), sender, msg, signature)
         self.log(logMsg)
+
+        # Subscribe to sender class
+        if zMsg.auth and sender not in self.class_names:
+            new_sub, created = Subscription.objects.get_or_create(
+                class_name=sender, instance="*", recipient="*")
+            if created:
+                self.addSubscription(new_sub)
 
         # Tell server to update
         z_id = z.id
