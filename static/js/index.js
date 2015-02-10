@@ -857,79 +857,84 @@ var createMessage = function(message)
     var timestamp = message.timestamp;
     var auth = message.auth;
     var missed = (timestamp > (api.storage.instances_last_seen[instanceObj.id] || 0));
-    
-    var message_entry = $("<div class='messages_entry'/>")
-	.click(function()
-	       {
-		   messageCursor(this);
-		   fillButtonArea(classObj.id, instanceObj.id);
-		   $("#messagetextarea").focus();
-	       })
-        .prop("id", "message"+message.id);
-    if(missed)
-        message_entry.addClass("missed");
-    var header = $("<div class='message_header'/>");
-    var header_class = $("<span />")
-	//.addClass("class_id_"+classObj.id)
-	.css("color", classObj.color)
-        .css("cursor", "pointer")
-	.text(classObj.name)
-	.click(function()
-	       {
-		   fillMessagesByClass(classObj.id);
-		   fillButtonArea(classObj.id);
-		   return false;
-	       });
-    var header_instance = $("<span />")
-	//.addClass("instance_id_"+instanceObj.id)
-	.css("color", instanceObj.color)
-        .css("cursor", "pointer")
-	.text(instanceObj.name)
-	.click(function()
-	       {
-		   fillMessagesByClass(classObj.id, instanceObj.id);
-		   fillButtonArea(classObj.id, instanceObj.id);
-		   return false;
-	       });
 
-    sender_text = $("<span />")
-	.append($("<span class='sender'>").text(sender_text));
-    if (api.arePersonalsSupported() && auth) {
-	sender_text
-	    .css("cursor", "pointer")
-	    .click(function() {
-		var id = api.getPersonalsClass(message.sender).id;
-		fillMessagesByClass(id);
-		fillButtonArea(id);
-		return false;
-	    });
+    var message_entry = document.getElementById("templates")
+        .getElementsByClassName("messages_entry")[0]
+        .cloneNode(true);
+    message_entry.addEventListener("click", function() {
+	messageCursor(this);
+	fillButtonArea(classObj.id, instanceObj.id);
+	$("#messagetextarea").focus();
+    });
+    message_entry.id = "message" + message.id;
+
+    if (missed) {
+        message_entry.classList.add("missed");
     }
 
-    if(!auth)
-	sender_text.append(" <span class='unauth'>(UNAUTH)</span>");
-    
-    if(signature)
-        sender_text.append(" ", $("<span class='signature'>").text("("+signature+")"));
+    var header_class = message_entry
+        .getElementsByClassName("message_class")[0];
+    header_class.textContent = classObj.name;
+    header_class.style.color = classObj.color;
+    header_class.addEventListener("click", function() {
+	fillMessagesByClass(classObj.id);
+	fillButtonArea(classObj.id);
+	return false;
+    });
 
-    header.append(header_class).append(" / ")
-	.append(header_instance).append(" / ")
-	.append(sender_text)
-        .append($("<span class='message_timestamp'/>").text(convertTime(timestamp)));
-    var body = $("<pre class='message_body'/>").text(message_text);
+    var header_instance = message_entry
+        .getElementsByClassName("message_instance")[0];
+    header_instance.textContent = instanceObj.name;
+    header_instance.style.color = instanceObj.color;
+    header_instance.addEventListener("click", function() {
+	fillMessagesByClass(classObj.id, instanceObj.id);
+	fillButtonArea(classObj.id, instanceObj.id);
+	return false;
+    });
 
-    var format = function (elt) {
-	elt.html(formatText(elt.html()));
-    };
-    format(body);
-    format(header_class);
-    format(header_instance);
-    format(sender_text);
+    var header_sender = message_entry
+        .getElementsByClassName("sender")[0];
+    header_sender.textContent = sender_text;
+    if (api.arePersonalsSupported() && auth) {
+        header_sender.style.cursor = "pointer";
+        header_sender.addEventListener("click", function() {
+	    var id = api.getPersonalsClass(message.sender).id;
+	    fillMessagesByClass(id);
+	    fillButtonArea(id);
+	    return false;
+        });
+    }
 
-    body.html(body.html().replace(/https?:\/\/[^ '"\n]+/g, "<a href=\"$&\" target=\"_blank\">$&</a>"));
+    if (!auth) {
+        header_sender.classList.add("unauth");
+    }
 
-    message_entry.append(header, body);
-    message.element = message_entry;
-    return message_entry
+    if (signature) {
+        var signature_node = message_entry
+            .getElementsByClassName("signature")[0];
+        signature_node.textContent = "(" + signature + ")";
+    }
+
+    message_entry.getElementsByClassName("message_timestamp")[0].textContent =
+        convertTime(timestamp);
+
+    var body =
+        message_entry.getElementsByClassName("message_body")[0];
+    body.textContent = message_text;
+
+    formatNodeText(body);
+    formatNodeText(header_class);
+    formatNodeText(header_instance);
+    if (signature) {
+        formatNodeText(signature_node);
+    }
+
+    body.innerHTML =
+        body.innerHTML.replace(/https?:\/\/[^ '"\n]*[^ '"\n.,]/g,
+                               "<a href=\"$&\" target=\"_blank\">$&</a>");
+
+    message.element = $(message_entry);
+    return message.element;
 }
 
 function convertTime(timestamp)
@@ -995,7 +1000,7 @@ var fillMessagesByClass = function(class_id, instance_id)
     {
 	var headerText_class = $("<span />")
 	    //.addClass("class_id_"+classObj.name)
-	    .text(classObj.name.replace(RegExp("^" + ZephyrAPI.PERSONALS_TAG), "private conversation with "))
+	    .text(classObj.name.replace(getRegExp("^" + ZephyrAPI.PERSONALS_TAG), "private conversation with "))
 	    .css("cursor", "pointer")
 	    .click(function()
 		   {
@@ -1073,7 +1078,7 @@ var fillMessagesByClass = function(class_id, instance_id)
     var cursor = messageCursor();
 
     // Actually fill in the messages
-    $(".messages_entry").detach();
+    $("#messages .messages_entry").detach();
     $("#messages").html('');
 
     // Display "no zephyrs" if there are no zephyrs in the class.
@@ -1084,14 +1089,12 @@ var fillMessagesByClass = function(class_id, instance_id)
 	})();
     }
 
-    for (var messageNum in messagesOut)
-    {
-	(function(){
-	    var i = messageNum;
-	    var message_entry = createMessage(messagesOut[i]);
-	    $("#messages").append(message_entry);
-	})();
+    var messageEntries = document.createDocumentFragment();
+    for (var i = 0; i < messagesOut.length; i++) {
+	var messageEntry = createMessage(messagesOut[i]);
+        messageEntries.appendChild(messageEntry[0]);
     }
+    $("#messages").append(messageEntries);
     
     $("#messages .old_missed").removeClass("old_missed");
     if(classObj)
@@ -1529,12 +1532,26 @@ function formatText(str){
     return fText;
 }
 
+function formatNodeText(node) {
+    node.innerHTML = formatText(node.innerHTML);
+}
+
+var getRegExp = (function() {
+    var regexes = {};
+    return function getRegExp(exp) {
+        if (regexes[exp]) {
+            return regexes[exp];
+        }
+        return regexes[exp] = RegExp(exp);
+    }
+})();
+
 /* Replace zephyr tags with html tags */
 function replaceZephyrTag(zephyrTag, htmlTag, str) {
-    var regexList = [RegExp("@" + zephyrTag + "\\{(.*?)\\}", "g"),
-                     RegExp("@" + zephyrTag + "\\[(.*?)\\]", "g"),
-                     RegExp("@" + zephyrTag + "\\((.*?)\\)", "g"),
-                     RegExp("@" + zephyrTag + "&lt;(.*?)&gt;", "g")];
+    var regexList = [getRegExp("@" + zephyrTag + "\\{(.*?)\\}", "g"),
+                     getRegExp("@" + zephyrTag + "\\[(.*?)\\]", "g"),
+                     getRegExp("@" + zephyrTag + "\\((.*?)\\)", "g"),
+                     getRegExp("@" + zephyrTag + "&lt;(.*?)&gt;", "g")];
 
     var tag;
     if (typeof(htmlTag) === 'function') {

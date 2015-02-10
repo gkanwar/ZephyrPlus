@@ -264,6 +264,10 @@ a.tooltip:hover span
 {
     /* Nothing for now */
 }
+.message_class, .message_instance
+{
+    cursor: pointer;
+}
 .message_body
 {
     padding: 0px 2px 0px 34px;
@@ -458,8 +462,9 @@ a.headerlink:hover
 {
     color:#F6F6F6;
 }
-.unauth
+.unauth::after
 {
+    content: " (UNAUTH)";
     color: #FF2222;
     font-weight: bold;
 }
@@ -505,4 +510,9 @@ a.headerlink:hover
     border: 1px black solid;
     padding: 5px;
     background-color: white;
+}
+
+#templates
+{
+    display: none;
 }
