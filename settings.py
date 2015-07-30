@@ -165,6 +165,7 @@ OIDC_TOKEN = "https://oidc.mit.edu/token"
 OIDC_USERINFO = "https://oidc.mit.edu/userinfo"
 
 OIDC_CLIENT_ID = None
+OIDC_CLIENT_SECRET = None
 
 try:
     from local_settings import *

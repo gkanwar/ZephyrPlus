@@ -15,6 +15,7 @@ class OidcMixin(object):
     _OIDC_USERINFO_ENDPOINT = None
 
     _OIDC_CLIENT_ID = None
+    _OIDC_CLIENT_SECRET = None
 
     @tornado.concurrent.return_future
     def authorize_redirect(self, scope=None, callback=None):
@@ -68,10 +69,15 @@ class OidcMixin(object):
                 "code": self.get_argument("code"),
                 "redirect_uri": self._oidc_redirect_uri()
                 })
-        token_response = yield http.fetch(
-            self._OIDC_TOKEN_ENDPOINT,
-            method="POST",
-            body=body)
+        try:
+            token_response = yield http.fetch(
+                self._OIDC_TOKEN_ENDPOINT,
+                method="POST",
+                auth_username=self._OIDC_CLIENT_ID,
+                auth_password=self._OIDC_CLIENT_SECRET,
+                body=body)
+        except tornado.httpclient.HTTPError as e:
+            raise tornado.auth.AuthError(e, e.response.body)
         token = simplejson.loads(token_response.body)["access_token"]
 
         userinfo_response = yield http.fetch(

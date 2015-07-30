@@ -100,6 +100,7 @@ class OidcLoginHandler(BaseHandler, OidcMixin):
     _OIDC_TOKEN_ENDPOINT = django.conf.settings.OIDC_TOKEN
     _OIDC_USERINFO_ENDPOINT = django.conf.settings.OIDC_USERINFO
     _OIDC_CLIENT_ID = django.conf.settings.OIDC_CLIENT_ID
+    _OIDC_CLIENT_SECRET = django.conf.settings.OIDC_CLIENT_SECRET
 
     @tornado.gen.coroutine
     def get(self):
