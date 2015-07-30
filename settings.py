@@ -160,6 +160,12 @@ EXCEPTIONS_TO = None
 
 ORIGIN = None
 
+OIDC_AUTH = "https://oidc.mit.edu/authorize"
+OIDC_TOKEN = "https://oidc.mit.edu/token"
+OIDC_USERINFO = "https://oidc.mit.edu/userinfo"
+
+OIDC_CLIENT_ID = None
+
 try:
     from local_settings import *
 except ImportError:

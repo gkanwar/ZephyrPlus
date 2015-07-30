@@ -28,12 +28,20 @@ from models import Zephyr, Subscription, Account
 import django.conf
 from django import db
 
+# Auth
+from oidc import OidcMixin
+
 LOGFILE_NAME = django.conf.settings.TORNADO_LOGFILE_NAME
 
 class BaseHandler(tornado.web.RequestHandler):
+    def login(self, username):
+        username = username.lower()
+        if username.endswith("@mit.edu"):
+            username = username.split("@")[0]
+        self.set_secure_cookie("user", username, expires_days=31)
+
     def get_current_user(self):
         debug_log("get_current_user")
-        #username = self.get_secure_cookie("user", max_age_days=31)
         username = self.get_secure_cookie("user")
         if username is not None:
             account, created = Account.objects.get_or_create(username=username)
@@ -72,37 +80,55 @@ class MainPageHandler(BaseHandler):
         else:
             self.render("templates/index.html")
 
-class LoginHandler(tornado.web.RequestHandler, tornado.auth.OpenIdMixin):
-    @tornado.web.asynchronous
-    def get(self):
-        if self.get_argument("openid.mode", None):
-            self.get_authenticated_user(self._on_auth)
-            return
-        self.authenticate_redirect()
-
-    def _on_auth(self, user):
-        if user is None or "email" not in user:
-            self.redirect("/")
-            return
-        username = user["email"].lower()
-        if username.endswith("@mit.edu"):
-            username = username.split("@")[0]
-        self.set_secure_cookie("user", username, expires_days=31)
-        self.redirect(self.get_argument("next", "/"))
-
-class GoogleLoginHandler(LoginHandler, tornado.auth.GoogleMixin):
-    pass
-
-class CertsLoginHandler(LoginHandler):
+class CertsLoginHandler(BaseHandler, tornado.auth.OpenIdMixin):
     _OPENID_ENDPOINT = "https://garywang.scripts.mit.edu/openid/login.py"
 
+    @tornado.gen.coroutine
+    def get(self):
+        if self.get_argument("openid.mode", False):
+            user = yield self.get_authenticated_user()
+            if user is None or "email" not in user:
+                self.redirect("/")
+                return
+            self.login(user["email"])
+            self.redirect(self.get_argument("next", "/"))
+        else:
+            yield self.authenticate_redirect()
+
+class OidcLoginHandler(BaseHandler, OidcMixin):
+    _OIDC_AUTHORIZATION_ENDPOINT = django.conf.settings.OIDC_AUTH
+    _OIDC_TOKEN_ENDPOINT = django.conf.settings.OIDC_TOKEN
+    _OIDC_USERINFO_ENDPOINT = django.conf.settings.OIDC_USERINFO
+    _OIDC_CLIENT_ID = django.conf.settings.OIDC_CLIENT_ID
+
+    @tornado.gen.coroutine
+    def get(self):
+        if self.get_argument("code", False):
+            try:
+                user = yield self.get_authenticated_user()
+            except tornado.auth.AuthError as e:
+                log(repr(e))
+                self.redirect("/")
+                return
+            if user is None or "email" not in user:
+                log("OIDC email missing")
+                self.redirect("/")
+                return
+            self.login(user["email"])
+            self.redirect(self.get_argument("next", "/"))
+        elif self.get_argument("error", False):
+            log("OIDC error: %s: %s" % (self.get_argument("error"),
+                                        self.get_argument("error_description", "")))
+            self.redirect("/")
+        else:
+            yield self.authorize_redirect()
+
 class StupidLoginHandler(BaseHandler):
-    @tornado.web.asynchronous
     @tornado.web.authenticated
     def get(self):
         if self.current_user.username in ['garywang', 'gurtej', 'mikewu', 'timyang', 'zeidman']:
-            username=self.get_argument("username")
-            self.set_secure_cookie("user", username, expires_days=31)
+            username = self.get_argument("username")
+            self.login(username)
         self.redirect("/")
 
 class LogoutHandler(BaseHandler):
@@ -300,7 +326,7 @@ def log(msg):
     datestr = datetime.datetime.now().strftime("[%m/%d %H:%M:%S.%f]")
     if LOGFILE_NAME is not None:
         logfile = open(LOGFILE_NAME, "a")
-        logfile.write(datestr + " " + msg + "\n")
+        logfile.write(datestr + " " + str(msg) + "\n")
         logfile.close()
     else:
         print datestr, msg
