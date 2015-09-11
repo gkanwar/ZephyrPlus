@@ -122,7 +122,6 @@ INSTALLED_APPS = (
     # 'django.contrib.admindocs',
 	'chat',
     'django_extensions',
-    'south',
 )
 
 # A sample logging configuration. The only tangible logging
@@ -149,6 +148,8 @@ LOGGING = {
 }
 
 #Custom settings
+
+PORT = 8888
 
 TORNADO_LOGFILE_NAME = None
 ZEPHYR_LOGFILE_NAME = None

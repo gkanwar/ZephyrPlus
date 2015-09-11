@@ -1,4 +1,4 @@
-#! /usr/bin/python2
+#! /usr/bin/env python
 
 # Tornado Server
 import tornado.httpserver, tornado.ioloop, tornado.web, tornado.auth
@@ -24,7 +24,9 @@ zephyr.init()
 
 # Django Library
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
-from models import Zephyr, Subscription, Account
+import django
+django.setup()
+from chat.models import Zephyr, Subscription, Account
 import django.conf
 from django import db
 
@@ -397,7 +399,7 @@ application = tornado.web.Application([
 class WebServer(threading.Thread):
     def run(self):
         http_server = tornado.httpserver.HTTPServer(application, xheaders=True)
-        http_server.listen(8888)
+        http_server.listen(django.conf.settings.PORT)
         tornado.ioloop.IOLoop.instance().start()
 
 def main():

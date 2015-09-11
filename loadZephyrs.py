@@ -10,7 +10,7 @@ import traceback
 import zephyr, _zephyr
 # Django Module for interacting with our database
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
-from models import Zephyr, Subscription
+from chat.models import Zephyr, Subscription
 from django import db
 # httplib to signal tornado to update
 import httplib
@@ -156,7 +156,7 @@ class ZephyrLoader(threading.Thread):
         #sys.stdout.write(str(z_id))
         #sys.stdout.flush()
         try:
-            h = httplib.HTTPConnection('localhost:8888')
+            h = httplib.HTTPConnection('localhost:%s' % django.conf.settings.PORT)
             h.request('GET', '/update?id='+str(z_id))
             r = h.getresponse()
             #print(r.status, r.reason)
