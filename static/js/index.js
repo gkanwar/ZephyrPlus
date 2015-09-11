@@ -60,7 +60,9 @@ $(document).ready(function()
 			type: 0,
 		    },
 		    // A dictionary of instances and when we last viewed their messages
-		    instances_last_seen: {}
+		    instances_last_seen: {},
+		    // A dictionary of classes and when we last viewed their messages
+		    recent_subs: {}
 		}
         
         // Give the user a popup telling them to see help
