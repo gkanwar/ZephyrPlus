@@ -35,7 +35,9 @@ class Subscription(models.Model):
     parents = models.ManyToManyField("self", symmetrical=False, related_name="children")
 
     def get_filter(self):
-        return models.Q(dst=self) | models.Q(dst__parents=self)
+        if self.instance != '*':
+            return models.Q(dst=self) | models.Q(dst__parents=self)
+        return models.Q(dst__parents=self)
 
     _cached_parents = None
     def get_parents(self):

@@ -1491,10 +1491,6 @@ function wrapStr(str, len){
 		    lines.push(line);
 		    line="";
 		}
-		while(words[i].length>len){
-		    lines.push(words[i].substr(0, len));
-		    words[i]=words[i].substr(len);
-		}
 		line+=(line.length>0?" ":"")+words[i];
 	    }
 	    if(line.length>0)
@@ -1538,11 +1534,11 @@ function formatNodeText(node) {
 
 var getRegExp = (function() {
     var regexes = {};
-    return function getRegExp(exp) {
+    return function getRegExp(exp, flags) {
         if (regexes[exp]) {
             return regexes[exp];
         }
-        return regexes[exp] = RegExp(exp);
+        return regexes[exp] = RegExp(exp, flags);
     }
 })();
 
