@@ -86,6 +86,7 @@ class CertsLoginHandler(BaseHandler, tornado.auth.OpenIdMixin):
     @tornado.gen.coroutine
     def get(self):
         if self.get_argument("openid.mode", False):
+            user = None
             user = yield self.get_authenticated_user()
             if user is None or "email" not in user:
                 self.redirect("/")
@@ -385,6 +386,7 @@ application = tornado.web.Application([
         (r"/chat", ChatUpdateHandler),
         (r"/update", NewZephyrHandler),
         (r"/login", CertsLoginHandler),
+        (r"/oidclogin", OidcLoginHandler),
         (r"/logout", LogoutHandler),
         (r"/user", UserHandler),
         (r"/(class/.+)?", MainPageHandler),
@@ -394,7 +396,7 @@ application = tornado.web.Application([
 
 class WebServer(threading.Thread):
     def run(self):
-        http_server = tornado.httpserver.HTTPServer(application)
+        http_server = tornado.httpserver.HTTPServer(application, xheaders=True)
         http_server.listen(8888)
         tornado.ioloop.IOLoop.instance().start()
 

@@ -30,7 +30,7 @@
     <div id="main">
       <div id="biglogo">
 	<center>
-	  <img src="/static/img/zp_login.png" alt="ZephyrPlus" width="619" height="524" align="center">
+	  <img src="/static/img/zp_login.png" alt="ZephyrPlus" width="563" height="476" align="center">
 	</center>
 	<div id="loginandlink">
 	  <div id="loginbutton">
@@ -41,6 +41,12 @@
 	  </div>
 	  <div id="abouthelp">
 	    <a id="about" href="/static/pages/about.html">about</a> | <a id="help" href="/static/pages/help.html">help</a>
+	  </div>
+	  <div id="nocertslogin">
+	    <form method="get" action="/oidclogin">
+	      <input type="submit" value="login without certificates">
+              <input type="hidden" name="next" value="{{ next }}">
+	    </form>
 	  </div>
 	</div>
       </div>

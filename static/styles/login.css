@@ -52,9 +52,28 @@ body
     font-family: 'Ubuntu Mono', sans-serif;
     color: #454545;
 }
-#loginbutton input[type=submit]:hover
+#loginbutton input[type=submit]:hover, #nocertslogin input[type=submit]:hover
 {
     color: #000000;
+}
+#nocertslogin
+{
+    position: relative;
+    top: -5px;
+    left: 40px;
+}
+#nocertslogin input[type=submit]
+{
+    width: 500px;
+    height: 80 px;
+    padding: 5px;
+    text-align: center;
+    background-image: url(../img/noise_light_gray.png);
+    border:none;
+    font-size:2em;
+    cursor: pointer;
+    font-family: 'Ubuntu Mono', sans-serif;
+    color: #454545;
 }
 #abouthelp
 {
