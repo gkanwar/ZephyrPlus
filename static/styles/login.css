@@ -12,15 +12,19 @@ body
 
 /*login page*/
 
-#biglogo
+#main
 {
     float: middle;
     margin-top: 40 px;
 }
+#biglogo
+{
+    display: block;
+    margin: 0 auto;
+}
 #abouthelp
 {
     float: right;
-
 }
 .backImg {
     position:absolute;

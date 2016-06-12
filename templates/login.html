@@ -1,5 +1,7 @@
+<!DOCTYPE html>
 <html>
   <head>
+    <meta charset="UTF-8">
     <title>ZephyrPlus!</title>
     <link href="/static/styles/login.css" type="text/css" rel="stylesheet" />
 
@@ -9,7 +11,7 @@
 
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 
-    <!--Google Analytics-------------------------------------- -->
+    <!-- Google Analytics -->
     <script type="text/javascript">
 
       var _gaq = _gaq || [];
@@ -23,31 +25,27 @@
       })();
 
     </script>
-    <!--Google Analytics End---------------------------------- -->
+    <!-- Google Analytics End -->
 
   </head>
   <body>
     <div id="main">
-      <div id="biglogo">
-	<center>
-	  <img src="/static/img/zp_login.png" alt="ZephyrPlus" width="563" height="476" align="center">
-	</center>
-	<div id="loginandlink">
-	  <div id="loginbutton">
-	    <form method="get" action="/login">
-	      <input type="submit" value="login with certificates">
-              <input type="hidden" name="next" value="{{ next }}">
-	    </form>
-	  </div>
-	  <div id="abouthelp">
-	    <a id="about" href="/static/pages/about.html">about</a> | <a id="help" href="/static/pages/help.html">help</a>
-	  </div>
-	  <div id="nocertslogin">
-	    <form method="get" action="/oidclogin">
-	      <input type="submit" value="login without certificates">
-              <input type="hidden" name="next" value="{{ next }}">
-	    </form>
-	  </div>
+      <img id="biglogo" src="/static/img/zp_login.png" alt="ZephyrPlus" width="563" height="476">
+      <div id="loginandlink">
+	<div id="loginbutton">
+	  <form method="get" action="/login">
+	    <input type="submit" value="login with certificates">
+            <input type="hidden" name="next" value="{{ next }}">
+	  </form>
+	</div>
+	<div id="abouthelp">
+	  <a id="about" href="/static/pages/about.html">about</a> | <a id="help" href="/static/pages/help.html">help</a>
+	</div>
+	<div id="nocertslogin">
+	  <form method="get" action="/oidclogin">
+	    <input type="submit" value="login without certificates">
+            <input type="hidden" name="next" value="{{ next }}">
+	  </form>
 	</div>
       </div>
     </div>

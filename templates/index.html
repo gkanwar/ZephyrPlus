@@ -1,7 +1,8 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 <html>
   <head>
+    <meta charset="UTF-8">
+
     <title>ZephyrPlus!</title>
 
     <link href="//fonts.googleapis.com/css?family=Ubuntu+Mono" rel="stylesheet" type="text/css">
@@ -29,7 +30,7 @@
     <script src="/static/js/api.js"></script>
     <script src="/static/js/index.js"></script>
 
-    <!--Google Analytics-------------------------------------- -->
+    <!-- Google Analytics -->
     <script type="text/javascript">
 
       var _gaq = _gaq || [];
@@ -43,21 +44,20 @@
       })();
 
     </script>
-    <!--Google Analytics End---------------------------------- -->
+    <!-- Google Analytics End -->
 
   </head>
   <body>
     <div id="header">
-      <a href="/"><img src="/static/img/zp_text.png" width="183px" height="18px"/></a>
-<!--      <div id="header_logo">zephyr+plus</div>-->
+      <a href="/">
+        <img src="/static/img/zp_text.png" width="183" height="18" alt="zephyrplus"/>
+      </a>
       <div id="site_links">
 	logged in as <span id="logged_user">logged_user</span> | 
         <a class="headerlink" href="/">chat</a> |
         <a class="headerlink" href="/static/pages/about.html">about</a> |
         <a class="headerlink" href="/static/pages/help.html">help</a> |
         <a class="headerlink" id="settings_link">settings</a> |
-        <!--        <a href="/settings">settings</a> |-->
-        <!--        logged in as <span id="logged_user">logged_user</span> |-->
         <a class="headerlink" href="/logout" onclick="localStorage.clear()">logout</a>
       </div>
     </div>
