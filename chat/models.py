@@ -5,23 +5,25 @@ import datetime
 APPLICATION_NAME = "chat"
 
 class Zephyr(models.Model):
-	message = models.TextField()
-	sender = models.CharField(max_length=200)
-	date = models.DateTimeField(db_index=True)
-	dst = models.ForeignKey('Subscription')
-	signature = models.TextField(blank=True, null=True)
-	receivers = models.ManyToManyField("Account", blank=True)
-	
-	def _compute_receivers(self):
-	    self.receivers.add(*Account.objects.filter(Q(subscriptions=self.dst)|Q(subscriptions__in=self.dst.parents.all())) \
-		.only('username'))
+    message = models.TextField()
+    sender = models.CharField(max_length=200)
+    date = models.DateTimeField(db_index=True)
+    dst = models.ForeignKey('Subscription')
+    signature = models.TextField(blank=True, null=True)
+    receivers = models.ManyToManyField("Account", blank=True)
 
-	class Meta:
-		app_label = APPLICATION_NAME
-		db_table = 'chat_zephyr'
+    def _compute_receivers(self):
+        self.receivers.add(
+            *Account.objects.filter(
+                Q(subscriptions=self.dst)|Q(subscriptions__in=self.dst.parents.all()))
+            .only('username'))
 
-	def __unicode__(self):
-		return self.sender + " to " + unicode(self.dst) + " on " + unicode(self.date)
+    class Meta:
+        app_label = APPLICATION_NAME
+        db_table = 'chat_zephyr'
+
+    def __unicode__(self):
+        return self.sender + " to " + unicode(self.dst) + " on " + unicode(self.date)
 
 def _on_zephyr_create(sender, instance, created, **kwargs):
     if created and sender == Zephyr:
@@ -84,32 +86,32 @@ def _on_subscription_create(sender, instance, created, **kwargs):
 models.signals.post_save.connect(_on_subscription_create, sender=Subscription)
 
 class Account(models.Model):
-	username = models.CharField(max_length=200, primary_key=True)
-	subscriptions = models.ManyToManyField(Subscription,blank=True)
-	js_data = models.TextField(default='{}')
-	
-	def get_filter(self):
-            #return models.Q(dst__account__username=self.username) | models.Q(dst__parents__account__username=self.username)
-            #subs = Subscription.objects.filter(models.Q(account__username=self.username) | models.Q(parents__account__username=self.username))
-            #subs = list(subs)
-            #return models.Q(dst__in=subs)
-            return models.Q(receivers__username=self.username)
+    username = models.CharField(max_length=200, primary_key=True)
+    subscriptions = models.ManyToManyField(Subscription,blank=True)
+    js_data = models.TextField(default='{}')
 
-	_cached_subscriptions = None
-	def get_subscriptions(self):
-	    if self._cached_subscriptions is None:
-	        self._cached_subscriptions = self.subscriptions.all()
-	    return self._cached_subscriptions
-	
-	def match(self, zephyr):
-            for sub in self.get_subscriptions():
-                if sub.match(zephyr):
-                    return True
-            return False
-	
-	class Meta:
-		app_label = APPLICATION_NAME
-		db_table = 'chat_account'
+    def get_filter(self):
+        #return models.Q(dst__account__username=self.username) | models.Q(dst__parents__account__username=self.username)
+        #subs = Subscription.objects.filter(models.Q(account__username=self.username) | models.Q(parents__account__username=self.username))
+        #subs = list(subs)
+        #return models.Q(dst__in=subs)
+        return models.Q(receivers__username=self.username)
 
-	def __unicode__(self):
-		return self.username
+    _cached_subscriptions = None
+    def get_subscriptions(self):
+        if self._cached_subscriptions is None:
+            self._cached_subscriptions = self.subscriptions.all()
+        return self._cached_subscriptions
+
+    def match(self, zephyr):
+        for sub in self.get_subscriptions():
+            if sub.match(zephyr):
+                return True
+        return False
+
+    class Meta:
+        app_label = APPLICATION_NAME
+        db_table = 'chat_account'
+
+    def __unicode__(self):
+        return self.username
