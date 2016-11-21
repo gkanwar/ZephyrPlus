@@ -136,9 +136,20 @@ class ZephyrLoader(threading.Thread):
         sender = unicode(sender, 'utf-8')
         signature = unicode(signature, 'utf-8')
 
+        # Unique id
+        zuid = (u"%s %s %s" % (zMsg.uid.time, zMsg.uid.address, sender))[:200]
+
         # Database insert
-        z = Zephyr(message=msg, sender=sender, date=datetime.datetime.now(), dst=s, signature=signature)
-        z.save()
+        z, inserted = Zephyr.objects.get_or_create(
+            zuid=zuid,
+            defaults=dict(
+                message=msg,
+                sender=sender,
+                date=datetime.datetime.now(),
+                dst=s,
+                signature=signature,
+            ),
+        )
 
         #pdb.set_trace()
         logMsg = u"Zephyr(%d): %s %s %s %s" % (z.id, unicode(s), sender, msg, signature)

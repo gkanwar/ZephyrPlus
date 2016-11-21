@@ -10,6 +10,7 @@ class Zephyr(models.Model):
     date = models.DateTimeField(db_index=True)
     dst = models.ForeignKey('Subscription')
     signature = models.TextField(blank=True, null=True)
+    zuid = models.CharField(max_length=200, unique=True)
     receivers = models.ManyToManyField("Account", blank=True)
 
     def _compute_receivers(self):
