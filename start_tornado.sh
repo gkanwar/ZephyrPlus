@@ -3,15 +3,12 @@ LOGFILE=/var/log/tornado.log
 PYTHON=/usr/bin/python
 
 # Authenticate our daemon
-kinit daemon/zephyrplus.xvm.mit.edu -k -t /ZephyrPlus/zephyrplus-new-keytab
+(
+    while true; do
+	kinit daemon/zephyrplus.xvm.mit.edu -k -t /ZephyrPlus/zephyrplus-new-keytab
+	sleep 3600;
+    done
+) &
 
 # Start the tornado server
-$PYTHON /ZephyrPlus/zephyrplus.py 2>> $LOGFILE &
-TORNADO_PID="$!"
-
-# Kill children on exit signal
-trap "(kill $TORNADO_PID)" exit INT TERM
-
-# Wait for child processes to exit
-wait
-
+exec $PYTHON /ZephyrPlus/zephyrplus.py 2>> $LOGFILE
