@@ -32,7 +32,7 @@ def _on_zephyr_create(sender, instance, created, **kwargs):
 models.signals.post_save.connect(_on_zephyr_create, sender=Zephyr)
 
 class Subscription(models.Model):
-    class_name = models.CharField(max_length=200)
+    class_name = models.CharField(max_length=200, db_index=True)
     instance = models.CharField(max_length=200)
     recipient = models.CharField(max_length=200)
     parents = models.ManyToManyField("self", symmetrical=False, related_name="children")
@@ -76,6 +76,8 @@ class Subscription(models.Model):
     class Meta:
         app_label = APPLICATION_NAME
         db_table = 'chat_subscription'
+        index_together = ('class_name', 'instance', 'recipient')
+        unique_together = ('class_name', 'instance', 'recipient')
 
     def __unicode__(self):
         return self.class_name + ", " + self.instance + ", " + self.recipient
