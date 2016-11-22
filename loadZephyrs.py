@@ -46,7 +46,7 @@ class ZephyrLoader(threading.Thread):
                            sub.class_name + u".d"]:
             related_sub, created = Subscription.objects.get_or_create(
                 class_name=class_name, instance="*", recipient="*")
-            if created:
+            if class_name not in self.class_names:
                 self.newSubQueue.put(related_sub)
 
     ## First we get a list of subscriptions from the database
@@ -73,7 +73,7 @@ class ZephyrLoader(threading.Thread):
     def subscribe(self, sub, subs):
         while True:
             try:
-                subs.add((sub.class_name.encode("utf-8"), str(sub.instance), str(sub.recipient)))
+                subs.add((sub.class_name.encode("utf-8"), '*', '*'))
                 self.class_names.add(sub.class_name)
                 time.sleep(0.001) # Loading too quickly 
                 return
@@ -159,8 +159,7 @@ class ZephyrLoader(threading.Thread):
         if zMsg.auth and sender not in self.class_names:
             new_sub, created = Subscription.objects.get_or_create(
                 class_name=sender, instance="*", recipient="*")
-            if created:
-                self.addSubscription(new_sub)
+            self.addSubscription(new_sub)
 
         # Tell server to update
         z_id = z.id
