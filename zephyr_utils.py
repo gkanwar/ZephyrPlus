@@ -64,7 +64,7 @@ def receive_zephyr():
         try:
             return s.decode(charset)
         except UnicodeDecodeError as e:
-            logging.warning(e, exc_info=True)
+            logger.warning(u'Failed to decode string %r' % s, exc_info=True)
             return s.decode(charset, 'replace')
 
     return zephyr.ZNotice(uid=z.uid,
