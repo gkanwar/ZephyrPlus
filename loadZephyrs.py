@@ -3,11 +3,11 @@ import os, sys
 import datetime, time
 import threading
 import Queue
-import socket
 import traceback
 
 # PyZephyr Library for subscribing and receiving
 import zephyr, _zephyr
+from zephyr_utils import send_zephyr, receive_zephyr
 # Django Module for interacting with our database
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 from chat.models import Zephyr, Subscription
@@ -33,10 +33,6 @@ class ZephyrLoader(threading.Thread):
 
     def __init__(self, *args, **kwargs):
 	threading.Thread.__init__(self, *args, **kwargs)
-	s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-	s.connect(("mit.edu",80))
-	self.ip = s.getsockname()[0]
-	s.close()
 
     def addSubscription(self, sub):
         self.newSubQueue.put(sub)
@@ -94,34 +90,29 @@ class ZephyrLoader(threading.Thread):
             return
 
         # Create a valid destination field for our zephyr
-        class_name = unicode(zMsg.cls.lower(), 'utf-8')
-        instance = unicode(zMsg.instance.lower(), 'utf-8')
-        recipient = unicode(zMsg.recipient.lower(), 'utf-8')
-        if recipient == '':
-            recipient = '*'
+        class_name = zMsg.cls.lower()
+        instance = zMsg.instance.lower()
+        recipient = zMsg.recipient.lower()
+        if recipient == u'':
+            recipient = u'*'
         s = Subscription.objects.get_or_create(class_name=class_name, instance=instance, recipient=recipient)[0]
 
         # Sender + Signature Processing
-        athena = '@ATHENA.MIT.EDU'
+        athena = u'@ATHENA.MIT.EDU'
         if (len(zMsg.sender) >= len(athena)) and (zMsg.sender[-len(athena):] == athena):
             sender = zMsg.sender[:-len(athena)]
         else:
             sender = zMsg.sender
 
         while len(zMsg.fields) < 2:
-            zMsg.fields = [''] + zMsg.fields
+            zMsg.fields = [u''] + zMsg.fields
         signature = zMsg.fields[0]
-        #if sender == "daemon/zephyrplus.xvm.mit.edu":
-            #sender = signature.split(" ")[0]
-            #if signature.find("(") != -1:
-                #signature = signature[signature.find("(")+1:signature.rfind(")")]
-            #else:
-                #signature = ""
+        msg = zMsg.fields[1].rstrip()
         if django.conf.settings.SIGNATURE is not None:
             signature = signature.replace(") (%s"%django.conf.settings.SIGNATURE, "").replace(django.conf.settings.SIGNATURE, "")
 
         # Authentication check
-        if not zMsg.auth and zMsg.uid.address != self.ip:
+        if not zMsg.auth:
 	    sender += " (UNAUTH)"
 	    if django.conf.settings.SIGNATURE is not None and django.conf.settings.SIGNATURE.lower() in zMsg.fields[0].lower():
 		zephyr.ZNotice(cls=zMsg.cls,
@@ -130,11 +121,6 @@ class ZephyrLoader(threading.Thread):
 			       opcode='AUTO',
 			       message="ZephyrPlus Server\x00" +
 			       "The previous zephyr,\n\n" + zMsg.fields[1].strip() + "\n\nwas FORGED (not sent from ZephyrPlus).\n").send()
-
-        # Convert to unicode
-        msg = unicode(zMsg.fields[1].rstrip(), 'utf-8')
-        sender = unicode(sender, 'utf-8')
-        signature = unicode(signature, 'utf-8')
 
         # Unique id
         zuid = (u"%s %s %s" % (zMsg.uid.time, zMsg.uid.address, sender))[:200]
@@ -151,8 +137,7 @@ class ZephyrLoader(threading.Thread):
             ),
         )
 
-        #pdb.set_trace()
-        logMsg = u"Zephyr(%d): %s %s %s %s" % (z.id, unicode(s), sender, msg, signature)
+        logMsg = u"Zephyr(%d): %s %s %s (%s)" % (z.id, s, sender, msg, signature)
         self.log(logMsg)
 
         # Subscribe to sender class
@@ -163,8 +148,6 @@ class ZephyrLoader(threading.Thread):
 
         # Tell server to update
         z_id = z.id
-        #sys.stdout.write(str(z_id))
-        #sys.stdout.flush()
         try:
             h = httplib.HTTPConnection('localhost:%s' % django.conf.settings.PORT)
             h.request('GET', '/update?id='+str(z_id))
@@ -219,7 +202,7 @@ class ZephyrLoader(threading.Thread):
         self.stop = False
 
         while not self.stop:
-            zMsg = _zephyr.receive()
+            zMsg = receive_zephyr()
             if zMsg != None:
                 try:
                     self.insertZephyr(zMsg)

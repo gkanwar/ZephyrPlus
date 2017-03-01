@@ -20,6 +20,7 @@ import email, smtplib
 # Zephyr Libraries
 import zephyr
 import loadZephyrs
+from zephyr_utils import send_zephyr
 zephyr.init()
 
 # Django Library
@@ -237,25 +238,25 @@ class ChatUpdateHandler(BaseHandler):
     @tornado.web.authenticated
     @same_origin
     def post(self, *args, **kwargs):
-        class_name = self.get_argument('class', 'message').encode("utf-8")
-        instance = self.get_argument('instance', 'personal').encode("utf-8")
-        recipient = self.get_argument('recipient', '').encode("utf-8")
+        class_name = self.get_argument('class', u'message')
+        instance = self.get_argument('instance', u'personal')
+        recipient = self.get_argument('recipient', u'')
         signature = self.get_argument('signature', None)
-        message = self.get_argument('message', '').encode("utf-8")
+        message = self.get_argument('message', u'')
         username = self.current_user.username
         if signature is not None:
-            signature += ") ("
+            signature += u') ('
         else:
-            signature = ""
-        signature += django.conf.settings.SIGNATURE or ""
-        signature = signature.encode("utf-8")
-        log("Send " + class_name + " " + instance + " " + recipient + " " + username.encode("utf-8") + " " + message)
-        zephyr.ZNotice(cls=class_name,
-                instance=instance,
-                recipient=recipient,
-                message=signature+'\x00'+message+'\n',
-                sender=username if '@' in username else username + '@ATHENA.MIT.EDU',
-                format='http://zephyr.1ts.org/wiki/df').send()
+            signature = u''
+        signature += django.conf.settings.SIGNATURE or u''
+        log(u'Send %s %s %s %s %s' % (class_name, instance, recipient, username, message))
+        send_zephyr(cls=class_name,
+                    instance=instance,
+                    recipient=recipient,
+                    sender=username if '@' in username else username + '@ATHENA.MIT.EDU',
+                    message=message,
+                    signature=signature)
+
 
 class NewZephyrHandler(tornado.web.RequestHandler):
     def get(self, *args, **kwargs):
@@ -327,6 +328,8 @@ class UserHandler(BaseHandler):
 
 # Writes debuging messages to logfile
 def log(msg):
+    if isinstance(msg, unicode):
+        msg = msg.encode('utf-8')
     datestr = datetime.datetime.now().strftime("[%m/%d %H:%M:%S.%f]")
     if LOGFILE_NAME is not None:
         logfile = open(LOGFILE_NAME, "a")

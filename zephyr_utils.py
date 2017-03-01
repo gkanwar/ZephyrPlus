@@ -1,3 +1,5 @@
+import base64
+import hashlib
 import hmac
 import logging
 import os
@@ -134,10 +136,11 @@ def _hmac_znotice(z):
 
 
 def _compute_hmac(*fields):
-    builder = hmac.new(django.conf.settings.SECRET_KEY)
+    builder = hmac.new(django.conf.settings.SECRET_KEY, digestmod=hashlib.sha256)
     for field in fields:
         s = field.encode('utf-8') if isinstance(field, unicode) else str(field)
         builder.update(str(len(s)))
         builder.update(' ')
         builder.update(s)
-    return builder.hexdigest()
+    digest = builder.digest()
+    return base64.b64encode(digest)
