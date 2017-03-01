@@ -61,7 +61,11 @@ def receive_zephyr():
         charset = 'utf-8'
 
     def decode(s):
-        return s.decode(charset)
+        try:
+            return s.decode(charset)
+        except UnicodeDecodeError as e:
+            logging.warning(e, exc_info=True)
+            return s.decode(charset, 'replace')
 
     return zephyr.ZNotice(uid=z.uid,
                           kind=z.kind,
