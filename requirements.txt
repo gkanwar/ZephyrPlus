@@ -1,0 +1,15 @@
+appdirs==1.4.2
+backports-abc==0.5
+backports.ssl-match-hostname==3.5.0.1
+certifi==2017.1.23
+Cython==0.25.2
+Django==1.8
+django-extensions==1.7.7
+packaging==16.8
+pyparsing==2.1.10
+simplejson==3.10.0
+singledispatch==3.4.0.3
+six==1.10.0
+sqlparse==0.2.2
+tornado==4.4.2
+git+git://github.com/ebroder/python-zephyr.git@ef949e2d7329221733f8714a2a869be36861d700
