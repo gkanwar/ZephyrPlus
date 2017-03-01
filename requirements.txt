@@ -2,7 +2,7 @@ appdirs==1.4.2
 backports-abc==0.5
 backports.ssl-match-hostname==3.5.0.1
 certifi==2017.1.23
-Cython==0.25.2
+Cython>=0.20.1
 Django==1.8
 django-extensions==1.7.7
 packaging==16.8
