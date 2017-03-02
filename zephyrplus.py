@@ -4,7 +4,7 @@
 import tornado.httpserver, tornado.ioloop, tornado.web, tornado.auth
 
 # Multiprocesses
-import os, subprocess, threading
+import os, subprocess, threading, thread
 
 # Utility libraries
 import datetime, time
@@ -352,6 +352,7 @@ def installThreadExcepthook():
                 raise
             except:
                 sys.excepthook(*sys.exc_info())
+                thread.interrupt_main()
         self.run = run_with_except_hook
     threading.Thread.__init__ = init
 
