@@ -14,6 +14,7 @@ import sys
 import functools
 
 # Logging and debugging
+import logging
 import traceback
 import email, smtplib
 
@@ -34,7 +35,9 @@ from django import db
 # Auth
 from oidc import OidcMixin
 
-LOGFILE_NAME = django.conf.settings.TORNADO_LOGFILE_NAME
+
+logger = logging.getLogger('zephyrplus.main')
+
 
 class BaseHandler(tornado.web.RequestHandler):
     def login(self, username):
@@ -112,18 +115,19 @@ class OidcLoginHandler(BaseHandler, OidcMixin):
             try:
                 user = yield self.get_authenticated_user()
             except tornado.auth.AuthError as e:
-                log(repr(e))
+                logger.warn(u'OIDC login failed', exc_info=True)
                 self.redirect("/")
                 return
             if user is None or "email" not in user:
-                log("OIDC email missing")
+                logger.warn(u'OIDC email missing')
                 self.redirect("/")
                 return
             self.login(user["email"])
             self.redirect(self.get_argument("next", "/"))
         elif self.get_argument("error", False):
-            log("OIDC error: %s: %s" % (self.get_argument("error"),
-                                        self.get_argument("error_description", "")))
+            logger.warn(u'OIDC error: %s: %s',
+                        self.get_argument('error'),
+                        self.get_argument('error_description', ''))
             self.redirect("/")
         else:
             yield self.authorize_redirect()
@@ -249,7 +253,7 @@ class ChatUpdateHandler(BaseHandler):
         else:
             signature = u''
         signature += django.conf.settings.SIGNATURE or u''
-        log(u'Send %s %s %s %s %s' % (class_name, instance, recipient, username, message))
+        logger.info(u'Send %s %s %s %s %s', class_name, instance, recipient, username, message)
         send_zephyr(cls=class_name,
                     instance=instance,
                     recipient=recipient,
@@ -266,21 +270,7 @@ class NewZephyrHandler(tornado.web.RequestHandler):
             z = Zephyr.objects.filter(id=z_id)
             MessageWaitor.new_message(z[0])
         debug_log("new zephyr end")
-#class NewZephyrHandler(threading.Thread):
-#    def run(self):
-#        while True:
-#            loadZephyrOutput= readZephyrProc.stdout.readline()
-#            log(loadZephyrOutput)
-#            if loadZephyrOutput != '':
-#                log("Received " + loadZephyrOutput)
-#                z_id = int(loadZephyrOutput)
-#                if z_id != None and z_id > 0:
-#                    z = Zephyr.objects.filter(id=z_id)
-#                    try:
-#                        MessageWaitor.new_message(z[0])
-#                    except:
-#                        print("Zephyr " + str(z_id) + " does not exist")
-#            time.sleep(1)
+
 
 class UserHandler(BaseHandler):
     @tornado.web.authenticated
@@ -310,7 +300,7 @@ class UserHandler(BaseHandler):
             if action == 'subscribe':
                 user.subscriptions.add(sub)
                 if created:
-                    log("Subscribe " + str(sub))
+                    logger.info('Subscribe %s', sub)
                     zephyrLoader.addSubscription(sub)
             else:
                 user.subscriptions.remove(sub)
@@ -326,22 +316,10 @@ class UserHandler(BaseHandler):
             self.set_header('Content-Type', 'text/plain')
             self.write(user.js_data)
 
-# Writes debuging messages to logfile
-def log(msg):
-    if isinstance(msg, unicode):
-        msg = msg.encode('utf-8')
-    datestr = datetime.datetime.now().strftime("[%m/%d %H:%M:%S.%f]")
-    if LOGFILE_NAME is not None:
-        logfile = open(LOGFILE_NAME, "a")
-        logfile.write(datestr + " " + str(msg) + "\n")
-        logfile.close()
-    else:
-        print datestr, msg
 
 def debug_log(msg):
-    #log(msg)
-    #print datetime.datetime.now(), msg
-    pass
+    logger.debug(msg)
+
 
 def sendmail(recipient, subject, message):
     msg = email.mime.text.MIMEText(message)
@@ -352,11 +330,10 @@ def sendmail(recipient, subject, message):
     s.sendmail(msg['From'], msg['To'], msg.as_string())
     s.quit()
 
+
 def excepthook(type, value, tb):
-    msg = "".join(traceback.format_exception(type, value, tb))
-    log(msg)
-    if django.conf.settings.EXCEPTIONS_TO is not None:
-        sendmail(django.conf.settings.EXCEPTIONS_TO, "ZephyrPlus exception", msg)
+    logger.critical(u'Uncaught exception, exiting!', exc_info=(type, value, tb))
+
 
 def installThreadExcepthook():
     """
@@ -407,15 +384,13 @@ class WebServer(threading.Thread):
 
 def main():
     if django.conf.settings.DEBUG:
-        log("WARNING: DEBUG is enabled. Django is storing all SQL queries. You will run out of memory...")
-        sys.stderr.write("WARNING: DEBUG is enabled. Django is storing all SQL queries. You will run out of memory...\n")
-    
+        logger.warning(u'DEBUG is enabled. Django is storing all SQL queries. You will run out of memory...')
+
     # Install custom excepthook to email us on exceptions
     sys.excepthook=excepthook
     installThreadExcepthook()
 
-    # Log our pid so another process can watch mem
-    log("Starting tornado server...")
+    logger.info(u'Starting tornado server...')
     # Start our listener process
     global zephyrLoader
     zephyrLoader = loadZephyrs.ZephyrLoader()

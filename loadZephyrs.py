@@ -1,6 +1,7 @@
 #!/usr/bin/env python2
 import os, sys
 import datetime, time
+import logging
 import threading
 import Queue
 import traceback
@@ -19,6 +20,10 @@ import codecs
 #Debugger
 #import pdb
 import django.conf
+
+
+logger = logging.getLogger('zephyrplus.loader')
+
 
 class ZephyrLoader(threading.Thread):
     LOGFILE_NAME = django.conf.settings.ZEPHYR_LOGFILE_NAME
@@ -63,7 +68,7 @@ class ZephyrLoader(threading.Thread):
             self.subscribe(sub, subs)
             done += 1
             if done%100 == 0:
-                self.log("%s/%s subscriptions loaded"%(done, total))
+                logger.info('%s/%s subscriptions loaded', done, total)
         return subs
 
     def subscribe(self, sub, subs):
@@ -137,8 +142,7 @@ class ZephyrLoader(threading.Thread):
             ),
         )
 
-        logMsg = u"Zephyr(%d): %s %s %s (%s)" % (z.id, s, sender, msg, signature)
-        self.log(logMsg)
+        logger.info(u'Zephyr(%d): %s %s %s (%s)', z.id, s, sender, msg, signature)
 
         # Subscribe to sender class
         if zMsg.auth and sender not in self.class_names:
@@ -154,7 +158,7 @@ class ZephyrLoader(threading.Thread):
             r = h.getresponse()
             #print(r.status, r.reason)
         except:
-            print("Could not notify tornado server of new zephyr.")
+            logger.warning(u'Could not notify tornado server of new zephyr.', exc_info=True)
 
         # Clean up our database queries
         db.reset_queries()
@@ -167,8 +171,7 @@ class ZephyrLoader(threading.Thread):
             return
         while not self.newSubQueue.empty():
             sub = self.newSubQueue.get()
-            logMsg = u"Sub: %s %s %s" % (sub.class_name, sub.instance, sub.recipient)
-            self.log(logMsg)
+            logger.info(u'Sub: %s %s %s', sub.class_name, sub.instance, sub.recipient)
             self.subscribe(sub, subs)
     
     # Send an empty subscription request to reload our tickets
@@ -180,38 +183,27 @@ class ZephyrLoader(threading.Thread):
             if ticketTime != self.lastTicketTime:
                 zephyr._z.sub('', '', '')
                 self.lastTicketTime = ticketTime
-                self.log("Tickets renewed")
-        except Exception as e:
-            self.log("Tickets not found")
-            self.log(str(e))
-
-    # Writes debuging messages to logfile
-    def log(self, msg):
-        datestr = datetime.datetime.now().strftime("[%m/%d %H:%M]")
-        if self.LOGFILE_NAME is not None:
-            logfile = codecs.open(self.LOGFILE_NAME, "a", encoding="utf-8")
-            logfile.write(datestr + " " + msg + "\n")
-            logfile.close()
-        else:
-            print datestr, msg
+                logger.info(u'Tickets renewed')
+        except:
+            logger.error(u'Tickets not found', exc_info=True)
 
     def run(self):
-        self.log("loadZephyr.py starting...")
+        logger.info(u'loadZephyr.py starting...')
         subs = self.loadSubscriptions()
-        self.log("Loaded " + str(len(subs)) + " subscriptions.")
+        logger.info(u'Loaded %s subscriptions.', len(subs))
         self.stop = False
 
         while not self.stop:
-            zMsg = receive_zephyr()
-            if zMsg != None:
-                try:
+            try:
+                zMsg = receive_zephyr()
+                if zMsg != None:
                     self.insertZephyr(zMsg)
-                except:
-                    self.log(traceback.format_exc())
-            else:
-                time.sleep(0.05)
-            self.checkForNewSubs(subs)
-            self.renewAuth()
+                else:
+                    time.sleep(0.05)
+                self.checkForNewSubs(subs)
+                self.renewAuth()
+            except:
+                logger.error(u'Exception in loader loop', exc_info=True)
 
 
 # If we call from main, don't spawn a thread, just execute run()

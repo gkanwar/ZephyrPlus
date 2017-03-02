@@ -18,7 +18,7 @@ import django.conf
 CLOCK_SKEW_MAX_S = 120
 
 random = SystemRandom()
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('zephyrplus.zephyr_utils')
 
 
 def send_zephyr(cls, instance, recipient, sender, message, signature):
