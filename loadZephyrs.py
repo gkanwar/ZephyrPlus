@@ -117,14 +117,19 @@ class ZephyrLoader(threading.Thread):
 
         # Authentication check
         if not zMsg.auth:
-	    sender += " (UNAUTH)"
-	    if django.conf.settings.SIGNATURE is not None and django.conf.settings.SIGNATURE.lower() in zMsg.fields[0].lower():
-		zephyr.ZNotice(cls=zMsg.cls,
-			       instance=zMsg.instance,
-			       recipient=zMsg.recipient,
-			       opcode='AUTO',
-			       message="ZephyrPlus Server\x00" +
-			       "The previous zephyr,\n\n" + zMsg.fields[1].strip() + "\n\nwas FORGED (not sent from ZephyrPlus).\n").send()
+            sender += u' (UNAUTH)'
+            if django.conf.settings.SIGNATURE is not None and django.conf.settings.SIGNATURE.lower() in zMsg.fields[0].lower():
+                logger.warning('Received forged zephyr: %r', zMsg.__dict__)
+                zephyr.ZNotice(
+                    cls=zMsg.cls.encode('utf-8'),
+                    instance=zMsg.instance.encode('utf-8'),
+                    recipient=zMsg.recipient.encode('utf-8'),
+                    opcode='AUTO',
+                    fields=[
+                        u'ZephyrPlus Server',
+                        u'The previous zephyr,\n\n%r\n\nwas FORGED (not sent from ZephyrPlus).\n' % zMsg.fields[1].strip()
+                    ]
+                ).send()
 
         # Unique id
         zuid = (u"%s %s %s" % (zMsg.uid.time, zMsg.uid.address, sender))[:200]

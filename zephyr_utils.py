@@ -45,8 +45,6 @@ def send_zephyr(cls, instance, recipient, sender, message, signature):
 
     _add_hmac(z)
     z.send()
-    if django.conf.settings.DEBUG and not check_auth(z):
-        logger.error('Sent zephyr %s will not authenticate!', z.__dict__)
 
 
 def receive_zephyr():
