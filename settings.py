@@ -129,8 +129,14 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
-        'console': {
+        'plain': {
             'format': '[%(asctime)s.%(msecs)03d][%(levelname)s][%(name)s]'
+                      '[%(filename)s:%(lineno)d] %(message)s',
+            'datefmt': '%m/%d %H:%M:%S',
+        },
+        'colored': {
+            '()': 'coloredlogs.ColoredFormatter',
+            'format': '%(asctime)s.%(msecs)03d %(levelname)s %(name)s'
                       '[%(filename)s:%(lineno)d] %(message)s',
             'datefmt': '%m/%d %H:%M:%S',
         },
@@ -138,7 +144,7 @@ LOGGING = {
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
-            'formatter': 'console'
+            'formatter': 'colored'
         },
     },
     'loggers': {
