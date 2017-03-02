@@ -164,13 +164,7 @@ LOGGING = {
 
 PORT = 8888
 
-TORNADO_LOGFILE_NAME = None
-ZEPHYR_LOGFILE_NAME = None
-
 SIGNATURE = None
-
-EXCEPTIONS_FROM = "zephyrplus@mit.edu"
-EXCEPTIONS_TO = None
 
 ORIGIN = None
 

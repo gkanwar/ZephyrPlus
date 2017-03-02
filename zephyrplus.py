@@ -215,15 +215,15 @@ class ChatUpdateHandler(BaseHandler):
             debug_log(str(last_id))
             totalMilliSeconds = int(math.ceil((time.mktime(zephyr.date.timetuple()) + zephyr.date.microsecond/1e6)*1000))
             values = {
-                    'id': zephyr.id,
-                    'message': zephyr.message,
-                    'sender': zephyr.sender,
-                    'date': totalMilliSeconds,
-                    'class': zephyr.dst.class_name,
-                    'instance': zephyr.dst.instance,
-                    'recipient': zephyr.dst.recipient,
-                    'signature': zephyr.signature
-                    }
+                'id': zephyr.id,
+                'message': zephyr.message,
+                'sender': zephyr.sender,
+                'date': totalMilliSeconds,
+                'class': zephyr.dst.class_name,
+                'instance': zephyr.dst.instance,
+                'recipient': zephyr.dst.recipient,
+                'signature': zephyr.signature
+            }
             response.append(values)
             if len(response) > 5000:
                 break
@@ -283,9 +283,9 @@ class UserHandler(BaseHandler):
                 "class": sub.class_name,
                 "instance": sub.instance,
                 "recipient": sub.recipient
-                } for sub in user.subscriptions.all()],
-            "data": user.js_data
-            }))
+            } for sub in user.subscriptions.all()],
+            "data": user.js_data,
+        }))
 
     @tornado.web.authenticated
     @same_origin
@@ -309,7 +309,7 @@ class UserHandler(BaseHandler):
                 "class": sub.class_name,
                 "instance": sub.instance,
                 "recipient": sub.recipient
-                }))
+            }))
         elif action == 'save_data':
             user.js_data = self.get_argument('data')
             user.save()
@@ -319,16 +319,6 @@ class UserHandler(BaseHandler):
 
 def debug_log(msg):
     logger.debug(msg)
-
-
-def sendmail(recipient, subject, message):
-    msg = email.mime.text.MIMEText(message)
-    msg['Subject'] = subject
-    msg['From'] = django.conf.settings.EXCEPTIONS_FROM
-    msg['To'] = recipient
-    s = smtplib.SMTP('outgoing.mit.edu')
-    s.sendmail(msg['From'], msg['To'], msg.as_string())
-    s.quit()
 
 
 def excepthook(type, value, tb):
@@ -358,24 +348,24 @@ def installThreadExcepthook():
 
 
 settings = {
-        "static_path": os.path.join(os.path.dirname(__file__), "static"),
-        "cookie_secret": django.conf.settings.SECRET_KEY,
-        "login_url": "/login",
-        "xsrf_cookies": False,
-        "debug": True,
-        }
+    "static_path": os.path.join(os.path.dirname(__file__), "static"),
+    "cookie_secret": django.conf.settings.SECRET_KEY,
+    "login_url": "/login",
+    "xsrf_cookies": False,
+    "debug": True,
+}
 
 application = tornado.web.Application([
-        (r"/chat", ChatUpdateHandler),
-        (r"/update", NewZephyrHandler),
-        (r"/login", CertsLoginHandler),
-        (r"/oidclogin", OidcLoginHandler),
-        (r"/logout", LogoutHandler),
-        (r"/user", UserHandler),
-        (r"/(class/.+)?", MainPageHandler),
-        (r"/static/(.*)", tornado.web.StaticFileHandler, {"path": settings["static_path"]}),
-        (r"/admin/usermorph", StupidLoginHandler),
-        ], **settings)
+    (r"/chat", ChatUpdateHandler),
+    (r"/update", NewZephyrHandler),
+    (r"/login", CertsLoginHandler),
+    (r"/oidclogin", OidcLoginHandler),
+    (r"/logout", LogoutHandler),
+    (r"/user", UserHandler),
+    (r"/(class/.+)?", MainPageHandler),
+    (r"/static/(.*)", tornado.web.StaticFileHandler, {"path": settings["static_path"]}),
+    (r"/admin/usermorph", StupidLoginHandler),
+], **settings)
 
 class WebServer(threading.Thread):
     def run(self):

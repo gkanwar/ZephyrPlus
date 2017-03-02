@@ -26,18 +26,17 @@ logger = logging.getLogger('zephyrplus.loader')
 
 
 class ZephyrLoader(threading.Thread):
-    LOGFILE_NAME = django.conf.settings.ZEPHYR_LOGFILE_NAME
     KRB_TICKET_CACHE = "/tmp/krb5cc_%s"%os.getuid()
     if 'KRB5CCNAME' in os.environ:
         KRB_TICKET_CACHE = os.environ['KRB5CCNAME'][5:]
-    checkSubs = True
-    retrySubTimeout = 0.01
-    newSubQueue = Queue.Queue()
-    lastTicketTime = 0
-    class_names = set()
 
     def __init__(self, *args, **kwargs):
 	threading.Thread.__init__(self, *args, **kwargs)
+        self.checkSubs = True
+        self.retrySubTimeout = 0.01
+        self.newSubQueue = Queue.Queue()
+        self.lastTicketTime = 0
+        self.class_names = set()
 
     def addSubscription(self, sub):
         self.newSubQueue.put(sub)
