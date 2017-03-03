@@ -54,7 +54,7 @@ class BaseHandler(tornado.web.RequestHandler):
             if created:
                 account.subscriptions.add(Subscription.objects.get_or_create(class_name="lobby", instance="*", recipient="*")[0])
                 account.subscriptions.add(Subscription.objects.get_or_create(class_name=username, instance="*", recipient="*")[0])
-                zephyrLoader.addSubscription(Subscription.objects.get_or_create(class_name=username, instance="*", recipient="*")[0])
+                zephyrLoader.subscribe(username)
             debug_log("get_current_user done %s"%username)
             return account
         return None
@@ -262,16 +262,6 @@ class ChatUpdateHandler(BaseHandler):
                     signature=signature)
 
 
-class NewZephyrHandler(tornado.web.RequestHandler):
-    def get(self, *args, **kwargs):
-        debug_log("new zephyr start")
-        z_id = self.get_argument('id', default=0)
-        if z_id != None and z_id > 0:
-            z = Zephyr.objects.filter(id=z_id)
-            MessageWaitor.new_message(z[0])
-        debug_log("new zephyr end")
-
-
 class UserHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
@@ -301,7 +291,7 @@ class UserHandler(BaseHandler):
                 user.subscriptions.add(sub)
                 if created:
                     logger.info('Subscribe %s', sub)
-                    zephyrLoader.addSubscription(sub)
+                    zephyrLoader.subscribe(class_name)
             else:
                 user.subscriptions.remove(sub)
             self.set_header('Content-Type', 'text/plain')
@@ -357,7 +347,6 @@ settings = {
 
 application = tornado.web.Application([
     (r"/chat", ChatUpdateHandler),
-    (r"/update", NewZephyrHandler),
     (r"/login", CertsLoginHandler),
     (r"/oidclogin", OidcLoginHandler),
     (r"/logout", LogoutHandler),
@@ -366,12 +355,6 @@ application = tornado.web.Application([
     (r"/static/(.*)", tornado.web.StaticFileHandler, {"path": settings["static_path"]}),
     (r"/admin/usermorph", StupidLoginHandler),
 ], **settings)
-
-class WebServer(threading.Thread):
-    def run(self):
-        http_server = tornado.httpserver.HTTPServer(application, xheaders=True)
-        http_server.listen(django.conf.settings.PORT)
-        tornado.ioloop.IOLoop.instance().start()
 
 def main():
     if django.conf.settings.DEBUG:
@@ -384,13 +367,13 @@ def main():
     logger.info(u'Starting tornado server...')
     # Start our listener process
     global zephyrLoader
-    zephyrLoader = loadZephyrs.ZephyrLoader()
-    zephyrLoader.start()
+    zephyrLoader = loadZephyrs.ZephyrLoader(MessageWaitor.new_message)
 
-    try:
-        WebServer().run() # Don't do multithreading for now, just get a stable working website
-    finally:
-        zephyrLoader.stop = True
+    http_server = tornado.httpserver.HTTPServer(application, xheaders=True)
+    http_server.listen(django.conf.settings.PORT)
+
+    tornado.ioloop.IOLoop.instance().run_sync(zephyrLoader.run)
+
 
 if __name__ == "__main__":
     main()

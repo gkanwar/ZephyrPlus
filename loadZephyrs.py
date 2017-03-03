@@ -1,94 +1,105 @@
-#!/usr/bin/env python2
-import os, sys
-import datetime, time
+#!/usr/bin/env python
+
+from __future__ import unicode_literals
+
+import datetime
 import logging
+import os
+import sys
 import threading
-import Queue
-import traceback
+import time
+from tornado import gen
+from tornado.ioloop import IOLoop, PeriodicCallback
+from tornado.queues import Queue
 
 # PyZephyr Library for subscribing and receiving
 import zephyr, _zephyr
 from zephyr_utils import send_zephyr, receive_zephyr
 # Django Module for interacting with our database
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
+import django
+django.setup()
 from chat.models import Zephyr, Subscription
-from django import db
-# httplib to signal tornado to update
-import httplib
-# Unicode support
-import codecs
-#Debugger
-#import pdb
 import django.conf
 
 
 logger = logging.getLogger('zephyrplus.loader')
 
 
-class ZephyrLoader(threading.Thread):
-    KRB_TICKET_CACHE = "/tmp/krb5cc_%s"%os.getuid()
-    if 'KRB5CCNAME' in os.environ:
-        KRB_TICKET_CACHE = os.environ['KRB5CCNAME'][5:]
+KRB_TICKET_CACHE = "/tmp/krb5cc_%s"%os.getuid()
+if 'KRB5CCNAME' in os.environ:
+    KRB_TICKET_CACHE = os.environ['KRB5CCNAME'][5:]
 
-    def __init__(self, *args, **kwargs):
-	threading.Thread.__init__(self, *args, **kwargs)
-        self.checkSubs = True
-        self.retrySubTimeout = 0.01
-        self.newSubQueue = Queue.Queue()
-        self.lastTicketTime = 0
-        self.class_names = set()
 
-    def addSubscription(self, sub):
-        self.newSubQueue.put(sub)
-        for class_name in [sub.class_name,
-                           u"un" + sub.class_name,
-                           u"unun" + sub.class_name,
-                           sub.class_name + u".d"]:
-            related_sub, created = Subscription.objects.get_or_create(
-                class_name=class_name, instance="*", recipient="*")
-            if class_name not in self.class_names:
-                self.newSubQueue.put(related_sub)
+class Subscriber(object):
+    '''Class responsible for subscribing to classes.'''
+
+    def __init__(self):
+        # Queue of Subscription objects
+        self._new_sub_queue = Queue()
+        # Set of classes that we are subscribed to or are in the queue
+        self._class_names = set()
+
+    def subscribe(self, class_name):
+        for related_class in [class_name,
+                              'un' + class_name,
+                              'unun' + class_name,
+                              class_name + '.d']:
+            if related_class not in self._class_names:
+                sub, created = Subscription.objects.get_or_create(
+                    class_name=related_class, instance='*', recipient='*')
+                logger.info('Sub %s', sub)
+                self._maybe_add_sub_to_queue(sub)
 
     ## First we get a list of subscriptions from the database
     ## Filter these subscriptions to only those with class fields
     ## With only want subscriptions with <class,*,*>
     ## Add these to the subscription set
+    def _load_subscriptions(self):
+        logger.debug('getting new subscriptions...')
+        for sub in Subscription.objects.filter(instance='*', recipient='*'):
+            self._maybe_add_sub_to_queue(sub)
+        logger.debug('got new subscriptions')
 
-    # loads the subscriptions from the database into the Subscriptions class
-    # subscribes using Subscriptions.sub
-    # returns the singleton Subscriptions
-    def loadSubscriptions(self):
-        subs = zephyr.Subscriptions()
-        toplevelClasses = Subscription.objects.filter(instance='*', recipient='*')
-        db.reset_queries()
-        done = 0
-        total = len(toplevelClasses)
-        for sub in toplevelClasses:
-            self.subscribe(sub, subs)
-            done += 1
-            if done%100 == 0:
-                logger.info('%s/%s subscriptions loaded', done, total)
-        return subs
+    def _maybe_add_sub_to_queue(self, sub):
+        if sub.class_name not in self._class_names:
+            self._new_sub_queue.put_nowait(sub)
+            self._class_names.add(sub.class_name)
 
-    def subscribe(self, sub, subs):
+    @gen.coroutine
+    def _process_subs(self):
         while True:
-            try:
-                subs.add((sub.class_name.encode("utf-8"), '*', '*'))
-                self.class_names.add(sub.class_name)
-                time.sleep(0.001) # Loading too quickly 
-                return
-            except IOError as (errno, strerror):
-                # SERVNAK: Usually is a temp. issue, loading too quickly.
-                if strerror == "SERVNAK received":
-                    time.sleep(self.retrySubTimeout)
-                else:
-                    sys.stderr.write("Could not handle IOError " + str(errno) + " " + strerror)
-                    sys.stderr.write("Exitting...")
-                    sys.exit(2)
+            first_sub = yield self._new_sub_queue.get()
+            subs = [first_sub]
+            while self._new_sub_queue.qsize() > 0 and len(subs) < 1000:
+                subs.append(self._new_sub_queue.get_nowait())
 
+            tuples = [(sub.class_name.encode('utf-8'), '*', '@' + _zephyr.realm())
+                      for sub in subs]
+
+            logger.debug('Subscribing to %s subs...', len(tuples))
+            _zephyr.subAll(tuples)
+            logger.info('Subscribed to %s subs', len(tuples))
+
+    @gen.coroutine
+    def run(self):
+        self._load_subscriptions()
+        # Periodically check for new subs added by other Z+ instances
+        PeriodicCallback(self._load_subscriptions, 60 * 1000).start()
+        yield self._process_subs()
+
+
+class Receiver(object):
+    '''Class responsible for receiving zephyrs and inserting them into the
+    database.'''
+
+    def __init__(self, subscriber, callback):
+        self._subscriber = subscriber
+        self._callback = callback
+        self.lastTicketTime = 0
 
     # Inserts a received ZNotice into our database
-    def insertZephyr(self, zMsg):
+    def _insert_zephyr(self, zMsg):
         # Check that the msg is an actual message and not other types.
         if zMsg.kind > 2: # Only allow UNSAFE, UNACKED, ACKED messages
             return
@@ -97,19 +108,19 @@ class ZephyrLoader(threading.Thread):
         class_name = zMsg.cls.lower()
         instance = zMsg.instance.lower()
         recipient = zMsg.recipient.lower()
-        if recipient == u'':
-            recipient = u'*'
+        if recipient == '':
+            recipient = '*'
         s = Subscription.objects.get_or_create(class_name=class_name, instance=instance, recipient=recipient)[0]
 
         # Sender + Signature Processing
-        athena = u'@ATHENA.MIT.EDU'
+        athena = '@ATHENA.MIT.EDU'
         if (len(zMsg.sender) >= len(athena)) and (zMsg.sender[-len(athena):] == athena):
             sender = zMsg.sender[:-len(athena)]
         else:
             sender = zMsg.sender
 
         while len(zMsg.fields) < 2:
-            zMsg.fields = [u''] + zMsg.fields
+            zMsg.fields = [''] + zMsg.fields
         signature = zMsg.fields[0]
         msg = zMsg.fields[1].rstrip()
         if django.conf.settings.SIGNATURE is not None:
@@ -117,7 +128,7 @@ class ZephyrLoader(threading.Thread):
 
         # Authentication check
         if not zMsg.auth:
-            sender += u' (UNAUTH)'
+            sender += ' (UNAUTH)'
             if django.conf.settings.SIGNATURE is not None and django.conf.settings.SIGNATURE.lower() in zMsg.fields[0].lower():
                 logger.warning('Received forged zephyr: %r', zMsg.__dict__)
                 zephyr.ZNotice(
@@ -126,8 +137,8 @@ class ZephyrLoader(threading.Thread):
                     recipient=zMsg.recipient.encode('utf-8'),
                     opcode='AUTO',
                     fields=[
-                        u'ZephyrPlus Server',
-                        u'The previous zephyr,\n\n%r\n\nwas FORGED (not sent from ZephyrPlus).\n' % zMsg.fields[1].strip()
+                        'ZephyrPlus Server',
+                        'The previous zephyr,\n\n%r\n\nwas FORGED (not sent from ZephyrPlus).\n' % msg
                     ]
                 ).send()
 
@@ -146,75 +157,66 @@ class ZephyrLoader(threading.Thread):
             ),
         )
 
-        logger.info(u'Zephyr(%d): %s %s %s (%s)', z.id, s, sender, msg, signature)
+        logger.info('Zephyr(%d): %s %s %s (%s)', z.id, s, sender, msg, signature)
 
         # Subscribe to sender class
-        if zMsg.auth and sender not in self.class_names:
-            new_sub, created = Subscription.objects.get_or_create(
-                class_name=sender, instance="*", recipient="*")
-            self.addSubscription(new_sub)
+        if zMsg.auth:
+            self._subscriber.subscribe(sender)
 
         # Tell server to update
-        z_id = z.id
-        try:
-            h = httplib.HTTPConnection('localhost:%s' % django.conf.settings.PORT)
-            h.request('GET', '/update?id='+str(z_id))
-            r = h.getresponse()
-            #print(r.status, r.reason)
-        except:
-            logger.warning(u'Could not notify tornado server of new zephyr.', exc_info=True)
+        self._callback(z)
 
-        # Clean up our database queries
-        db.reset_queries()
-
-    # Checks if our tornado process has sent us any new subs
-    # If we have a new sub, add it to the subscription list
-    # Modifies subs
-    def checkForNewSubs(self, subs):
-        if not self.checkSubs:
-            return
-        while not self.newSubQueue.empty():
-            sub = self.newSubQueue.get()
-            logger.info(u'Sub: %s %s %s', sub.class_name, sub.instance, sub.recipient)
-            self.subscribe(sub, subs)
-    
     # Send an empty subscription request to reload our tickets
     # so zephyrs won't show up as unauthenticated to us
     # whenever we renew tickets
-    def renewAuth(self):
+    def _renew_auth(self):
         try:
-            ticketTime = os.stat(self.KRB_TICKET_CACHE).st_mtime
+            ticketTime = os.stat(KRB_TICKET_CACHE).st_mtime
             if ticketTime != self.lastTicketTime:
                 zephyr._z.sub('', '', '')
                 self.lastTicketTime = ticketTime
-                logger.info(u'Tickets renewed')
+                logger.info('Tickets renewed')
         except:
-            logger.error(u'Tickets not found', exc_info=True)
+            logger.error('Tickets not found', exc_info=True)
 
+    @gen.coroutine
     def run(self):
-        logger.info(u'loadZephyr.py starting...')
-        subs = self.loadSubscriptions()
-        logger.info(u'Loaded %s subscriptions.', len(subs))
-        self.stop = False
-
-        while not self.stop:
+        while True:
             try:
                 zMsg = receive_zephyr()
                 if zMsg != None:
-                    self.insertZephyr(zMsg)
+                    self._insert_zephyr(zMsg)
                 else:
-                    time.sleep(0.05)
-                self.checkForNewSubs(subs)
-                self.renewAuth()
+                    yield gen.sleep(0.05)
+                self._renew_auth()
             except:
-                logger.error(u'Exception in loader loop', exc_info=True)
+                logger.error('Exception in loader loop', exc_info=True)
 
 
-# If we call from main, don't spawn a thread, just execute run()
-#def main():
-#    t = ZephyrLoader()
-#    t.run()
-#
-#if __name__ == "__main__":
-#    main()
-# vim: set expandtab:
+class ZephyrLoader(object):
+    def __init__(self, callback):
+        self._subscriber = Subscriber()
+        self._receiver = Receiver(self._subscriber, callback)
+
+    def subscribe(self, class_name):
+        self._subscriber.subscribe(class_name)
+
+    @gen.coroutine
+    def run(self):
+        logger.info('loadZephyr.py starting...')
+        yield gen.WaitIterator(
+            self._subscriber.run(),
+            self._receiver.run(),
+        ).next()
+
+
+def main():
+    zephyr.init()
+    def callback(zMsg):
+        print '%s' % zMsg.__dict__
+    loader = ZephyrLoader(callback)
+    IOLoop.current().run_sync(loader.run)
+
+
+if __name__ == '__main__':
+    main()
