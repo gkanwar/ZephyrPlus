@@ -9,6 +9,7 @@ import os, subprocess, threading, thread
 # Utility libraries
 import datetime, time
 import math
+import signal
 import simplejson
 import sys
 import functools
@@ -315,26 +316,23 @@ def excepthook(type, value, tb):
     logger.critical(u'Uncaught exception, exiting!', exc_info=(type, value, tb))
 
 
-def installThreadExcepthook():
-    """
-    Workaround for sys.excepthook thread bug
-    http://spyced.blogspot.com/2007/06/workaround-for-sysexcepthook-bug.html
-    Call once from __main__ before creating any threads.
-    """
-    init_old = threading.Thread.__init__
-    def init(self, *args, **kwargs):
-        init_old(self, *args, **kwargs)
-        run_old = self.run
-        def run_with_except_hook(*args, **kw):
-            try:
-                run_old(*args, **kw)
-            except (KeyboardInterrupt, SystemExit):
-                raise
-            except:
-                sys.excepthook(*sys.exc_info())
-                thread.interrupt_main()
-        self.run = run_with_except_hook
-    threading.Thread.__init__ = init
+def add_signal_handler(sig, server):
+    '''Adds a signal handler to shut down the server and IOLoop.'''
+
+    loop = tornado.ioloop.IOLoop.instance()
+
+    @tornado.gen.coroutine
+    def shutdown():
+        server.stop()
+        yield tornado.gen.sleep(2)
+        loop.stop()
+
+    def handler(sig, frame):
+        logger.info('Received signal %s, shutting down\n%s', sig,
+                    ''.join(traceback.format_stack(frame)))
+        loop.add_callback_from_signal(shutdown)
+
+    signal.signal(sig, handler)
 
 
 settings = {
@@ -356,25 +354,31 @@ application = tornado.web.Application([
     (r"/admin/usermorph", StupidLoginHandler),
 ], **settings)
 
+
+@tornado.gen.coroutine
 def main():
     if django.conf.settings.DEBUG:
         logger.warning(u'DEBUG is enabled. Django is storing all SQL queries. You will run out of memory...')
 
     # Install custom excepthook to email us on exceptions
     sys.excepthook=excepthook
-    installThreadExcepthook()
 
     logger.info(u'Starting tornado server...')
+
+    http_server = tornado.httpserver.HTTPServer(application, xheaders=True)
+    add_signal_handler(signal.SIGINT, http_server)
+    add_signal_handler(signal.SIGTERM, http_server)
+
     # Start our listener process
     global zephyrLoader
     zephyrLoader = loadZephyrs.ZephyrLoader(MessageWaitor.new_message)
+    yield zephyrLoader.start()
 
-    http_server = tornado.httpserver.HTTPServer(application, xheaders=True)
+    logger.info(u'Server listening on port %s', django.conf.settings.PORT)
     http_server.listen(django.conf.settings.PORT)
-
-    tornado.ioloop.IOLoop.instance().run_sync(zephyrLoader.run)
 
 
 if __name__ == "__main__":
     main()
+    tornado.ioloop.IOLoop.current().start()
 # vim: set expandtab:

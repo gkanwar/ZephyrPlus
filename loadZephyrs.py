@@ -82,20 +82,21 @@ class Subscriber(object):
             logger.info('Subscribed to %s subs', len(tuples))
 
     @gen.coroutine
-    def run(self):
+    def start(self):
         self._load_subscriptions()
         # Periodically check for new subs added by other Z+ instances
         PeriodicCallback(self._load_subscriptions, 60 * 1000).start()
-        yield self._process_subs()
+
+        PeriodicCallback(self._process_subs, 1).start()
 
 
 class Receiver(object):
     '''Class responsible for receiving zephyrs and inserting them into the
     database.'''
 
-    def __init__(self, subscriber, callback):
+    def __init__(self, subscriber, handler):
         self._subscriber = subscriber
-        self._callback = callback
+        self._handler = handler
         self.lastTicketTime = 0
 
     # Inserts a received ZNotice into our database
@@ -164,7 +165,7 @@ class Receiver(object):
             self._subscriber.subscribe(sender)
 
         # Tell server to update
-        self._callback(z)
+        self._handler(z)
 
     # Send an empty subscription request to reload our tickets
     # so zephyrs won't show up as unauthenticated to us
@@ -176,11 +177,11 @@ class Receiver(object):
                 zephyr._z.sub('', '', '')
                 self.lastTicketTime = ticketTime
                 logger.info('Tickets renewed')
-        except:
+        except Exception:
             logger.error('Tickets not found', exc_info=True)
 
     @gen.coroutine
-    def run(self):
+    def _run(self):
         while True:
             try:
                 zMsg = receive_zephyr()
@@ -189,25 +190,27 @@ class Receiver(object):
                 else:
                     yield gen.sleep(0.05)
                 self._renew_auth()
-            except:
+            except Exception:
                 logger.error('Exception in loader loop', exc_info=True)
+
+    @gen.coroutine
+    def start(self):
+        PeriodicCallback(self._run, 1).start()
 
 
 class ZephyrLoader(object):
-    def __init__(self, callback):
+    def __init__(self, handler):
         self._subscriber = Subscriber()
-        self._receiver = Receiver(self._subscriber, callback)
+        self._receiver = Receiver(self._subscriber, handler)
 
     def subscribe(self, class_name):
         self._subscriber.subscribe(class_name)
 
     @gen.coroutine
-    def run(self):
+    def start(self):
         logger.info('loadZephyr.py starting...')
-        yield gen.WaitIterator(
-            self._subscriber.run(),
-            self._receiver.run(),
-        ).next()
+        yield self._subscriber.start()
+        yield self._receiver.start()
 
 
 def main():
@@ -215,7 +218,8 @@ def main():
     def callback(zMsg):
         print '%s' % zMsg.__dict__
     loader = ZephyrLoader(callback)
-    IOLoop.current().run_sync(loader.run)
+    loader.start()
+    IOLoop.current().start()
 
 
 if __name__ == '__main__':
