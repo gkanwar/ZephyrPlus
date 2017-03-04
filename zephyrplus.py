@@ -327,17 +327,30 @@ def add_signal_handler(sig, server):
     '''Adds a signal handler to shut down the server and IOLoop.'''
 
     loop = IOLoop.instance()
+    shutdown_delay = 2
+
+    signals_caught = [0]
 
     @tornado.gen.coroutine
     def shutdown():
         server.stop()
-        yield tornado.gen.sleep(2)
+        # Wait for requests to finish processing
+        yield tornado.gen.sleep(shutdown_delay)
         loop.stop()
 
     def handler(sig, frame):
-        logger.info('Received signal %s, shutting down\n%s', sig,
-                    ''.join(traceback.format_stack(frame)))
-        loop.add_callback_from_signal(shutdown)
+        signals_caught[0] += 1
+        if signals_caught[0] == 1:
+            logger.info('Received signal %s, shutting down in %s seconds',
+                        sig, shutdown_delay)
+            loop.add_callback_from_signal(shutdown)
+        elif signals_caught[0] == 2:
+            logger.info('Received signal %s, shutting down now', sig)
+            loop.add_callback_from_signal(loop.stop)
+        else:
+            logger.critical('Received signal %s, killing process\n%s',
+                            sig, ''.join(traceback.format_stack(frame)))
+            os.kill(os.getpid(), 9)
 
     signal.signal(sig, handler)
 
@@ -347,7 +360,7 @@ settings = {
     "cookie_secret": django.conf.settings.SECRET_KEY,
     "login_url": "/login",
     "xsrf_cookies": False,
-    "debug": True,
+    "debug": django.conf.settings.DEBUG,
 }
 
 application = tornado.web.Application([
@@ -378,19 +391,23 @@ def start():
     zephyrLoader = loadZephyrs.ZephyrLoader(MessageWaitor.new_message)
     yield zephyrLoader.start()
 
-    logger.info(u'Server listening on port %s', django.conf.settings.PORT)
+    logger.info(u'Startup complete, server listening on port %s',
+                django.conf.settings.PORT)
     http_server.listen(django.conf.settings.PORT)
 
 
 def main():
-    try:
-        start().add_done_callback(lambda fut: fut.result())
-        IOLoop.current().start()
-    except Exception:
-        logger.critical(u'Uncaught exception, exiting!', exc_info=True)
+    # Kill the process if we get stuck for 30 seconds.
+    IOLoop.current().set_blocking_signal_threshold(30, None)
+
+    start().add_done_callback(lambda fut: fut.result())
+    IOLoop.current().start()
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception:
+        logger.critical(u'Uncaught exception, exiting!', exc_info=True)
 
 # vim: set expandtab:
