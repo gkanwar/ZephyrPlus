@@ -241,10 +241,10 @@ class ZephyrLoader(object):
 
 def main():
     zephyr.init()
-    def callback(zMsg):
+    def handler(zMsg):
         print '%s' % zMsg.__dict__
-    loader = ZephyrLoader(callback)
-    loader.start()
+    loader = ZephyrLoader(handler)
+    loader.start().add_done_callback(lambda fut: fut.result())
     IOLoop.current().start()
 
 

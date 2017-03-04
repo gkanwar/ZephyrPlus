@@ -312,10 +312,6 @@ def debug_log(msg):
     logger.debug(msg)
 
 
-def excepthook(type, value, tb):
-    logger.critical(u'Uncaught exception, exiting!', exc_info=(type, value, tb))
-
-
 def add_signal_handler(sig, server):
     '''Adds a signal handler to shut down the server and IOLoop.'''
 
@@ -356,12 +352,9 @@ application = tornado.web.Application([
 
 
 @tornado.gen.coroutine
-def main():
+def start():
     if django.conf.settings.DEBUG:
         logger.warning(u'DEBUG is enabled. Django is storing all SQL queries. You will run out of memory...')
-
-    # Install custom excepthook to email us on exceptions
-    sys.excepthook=excepthook
 
     logger.info(u'Starting tornado server...')
 
@@ -378,7 +371,15 @@ def main():
     http_server.listen(django.conf.settings.PORT)
 
 
+def main():
+    try:
+        start().add_done_callback(lambda fut: fut.result())
+        IOLoop.current().start()
+    except Exception:
+        logger.critical(u'Uncaught exception, exiting!', exc_info=True)
+
+
 if __name__ == "__main__":
     main()
-    tornado.ioloop.IOLoop.current().start()
+
 # vim: set expandtab:
