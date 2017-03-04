@@ -2,22 +2,21 @@
 
 # Tornado Server
 import tornado.httpserver, tornado.ioloop, tornado.web, tornado.auth
-
-# Multiprocesses
-import os, subprocess, threading, thread
+from tornado.ioloop import IOLoop
 
 # Utility libraries
+from collections import namedtuple
 import datetime, time
+import functools
 import math
+import os
 import signal
 import simplejson
 import sys
-import functools
 
 # Logging and debugging
 import logging
 import traceback
-import email, smtplib
 
 # Zephyr Libraries
 import zephyr
@@ -146,23 +145,34 @@ class LogoutHandler(BaseHandler):
         self.clear_cookie("user")
         self.redirect("/")
 
+
 class MessageWaitor(object):
-    # waiter stores (request, Subscription)
-    waiters = [] # table that deals with long polling requests
+    _Waiter = namedtuple('Waiter', ('sub', 'timeout_handle', 'callback'))
+    _waiters = {} # table that deals with long polling requests
 
     @classmethod
-    def wait_for_messages(cls, request, sub):
-        cls.waiters.append((request, sub))
+    def wait_for_messages(cls, request, sub, timeout, callback):
+        def on_timeout():
+            cls.remove_wait(request)
+            callback([])
+        timeout_handle = IOLoop.current().call_later(
+            timeout, on_timeout)
+        cls._waiters[request] = cls._Waiter(sub, timeout_handle, callback)
+
+    @classmethod
+    def remove_wait(cls, req):
+        if req in cls._waiters:
+            IOLoop.current().remove_timeout(cls._waiters[req].timeout_handle)
+            del cls._waiters[req]
+            logger.debug('wait removed')
 
     @classmethod
     def new_message(cls, zephyr):
-        new_waiters = []
-        for waitee in cls.waiters:
-            if waitee[1].match(zephyr):
-                waitee[0].write_zephyrs([zephyr])
-            else:
-                new_waiters.append(waitee)
-        cls.waiters = new_waiters
+        for req, waiter in cls._waiters.items():
+            if waiter.sub.match(zephyr):
+                cls.remove_wait(req)
+                waiter.callback([zephyr])
+
 
 class ChatUpdateHandler(BaseHandler):
     @tornado.web.asynchronous
@@ -177,8 +187,10 @@ class ChatUpdateHandler(BaseHandler):
         longpoll = self.get_argument('longpoll', "False")
         #TODO: do input validation on arguments
 
+        recipient = u'*'
         startdate = datetime.datetime.fromtimestamp(float(startdate)/1000)
         enddate = datetime.datetime.fromtimestamp(float(enddate)/1000)
+        longpoll = (longpoll.lower() == 'true')
 
         if class_name is not None:
             sub = Subscription.objects.get_or_create(class_name=class_name, instance=instance, recipient=recipient)[0]
@@ -197,9 +209,10 @@ class ChatUpdateHandler(BaseHandler):
         else:
             exists = zephyrs.exists()
 
-        if not exists and longpoll.lower() == "true":
+        if not exists and longpoll:
             debug_log("get not zephyr.exists")
-            MessageWaitor.wait_for_messages(self,sub)
+            MessageWaitor.wait_for_messages(
+                request=self, sub=sub, timeout=45., callback=self.write_zephyrs)
         else:
             debug_log("get zephyr.exists")
             self.write_zephyrs(zephyrs)
@@ -235,9 +248,7 @@ class ChatUpdateHandler(BaseHandler):
 
     def on_connection_close(self):
         debug_log("on_connection_close")
-        for waitee in MessageWaitor.waiters:
-            if waitee[0] == self:
-                MessageWaitor.waiters.remove(waitee)
+        MessageWaitor.remove_wait(self)
         debug_log("on_connection_close done")
 
     @tornado.web.authenticated
@@ -292,7 +303,7 @@ class UserHandler(BaseHandler):
                 user.subscriptions.add(sub)
                 if created:
                     logger.info('Subscribe %s', sub)
-                    zephyrLoader.subscribe(class_name)
+                zephyrLoader.subscribe(class_name)
             else:
                 user.subscriptions.remove(sub)
             self.set_header('Content-Type', 'text/plain')
@@ -315,7 +326,7 @@ def debug_log(msg):
 def add_signal_handler(sig, server):
     '''Adds a signal handler to shut down the server and IOLoop.'''
 
-    loop = tornado.ioloop.IOLoop.instance()
+    loop = IOLoop.instance()
 
     @tornado.gen.coroutine
     def shutdown():
