@@ -3,6 +3,7 @@
 from __future__ import unicode_literals
 
 import datetime
+from functools import partial
 import logging
 import os
 import sys
@@ -29,6 +30,31 @@ logger = logging.getLogger('zephyrplus.loader')
 KRB_TICKET_CACHE = "/tmp/krb5cc_%s"%os.getuid()
 if 'KRB5CCNAME' in os.environ:
     KRB_TICKET_CACHE = os.environ['KRB5CCNAME'][5:]
+
+
+@gen.coroutine
+def run_loop(f, delay=0):
+    '''Runs the provided coroutine in a loop, pausing for delay seconds
+    each iteration.
+
+    '''
+    while True:
+        try:
+            fut = f()
+            if fut is not None:
+                yield fut
+        except Exception:
+            IOLoop.current().handle_callback_exception(f)
+        finally:
+            yield gen.sleep(delay)
+
+
+def schedule_loop(f, delay=0):
+    '''Asynchronously schedules the provided coroutine to run in a loop,
+    pausing for delay seconds initially and after each iteration.
+
+    '''
+    IOLoop.current().call_later(delay, partial(run_loop, f, delay=delay))
 
 
 class Subscriber(object):
@@ -85,9 +111,9 @@ class Subscriber(object):
     def start(self):
         self._load_subscriptions()
         # Periodically check for new subs added by other Z+ instances
-        PeriodicCallback(self._load_subscriptions, 60 * 1000).start()
+        schedule_loop(self._load_subscriptions, 60)
 
-        PeriodicCallback(self._process_subs, 1).start()
+        schedule_loop(self._process_subs)
 
 
 class Receiver(object):
@@ -195,7 +221,7 @@ class Receiver(object):
 
     @gen.coroutine
     def start(self):
-        PeriodicCallback(self._run, 1).start()
+        schedule_loop(self._run)
 
 
 class ZephyrLoader(object):
