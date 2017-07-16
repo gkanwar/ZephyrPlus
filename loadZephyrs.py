@@ -6,6 +6,7 @@ import datetime
 from functools import partial
 import logging
 import os
+import os.path
 import sys
 import threading
 import time
@@ -30,6 +31,11 @@ logger = logging.getLogger('zephyrplus.loader')
 KRB_TICKET_CACHE = "/tmp/krb5cc_%s"%os.getuid()
 if 'KRB5CCNAME' in os.environ:
     KRB_TICKET_CACHE = os.environ['KRB5CCNAME'][5:]
+
+
+# If this exists, we will try to atomically move tickets from here to
+# KRB_TICKET_CACHE.
+KRB_TICKET_SWAP = os.environ.get('KRB_TICKET_SWAP')
 
 
 @gen.coroutine
@@ -198,6 +204,8 @@ class Receiver(object):
     # whenever we renew tickets
     def _renew_auth(self):
         try:
+            if KRB_TICKET_SWAP is not None and os.path.exists(KRB_TICKET_SWAP):
+                os.rename(KRB_TICKET_SWAP, KRB_TICKET_CACHE)
             ticketTime = os.stat(KRB_TICKET_CACHE).st_mtime
             if ticketTime != self.lastTicketTime:
                 zephyr._z.sub('', '', '')
@@ -214,8 +222,8 @@ class Receiver(object):
                 if zMsg != None:
                     self._insert_zephyr(zMsg)
                 else:
+                    self._renew_auth()
                     yield gen.sleep(0.05)
-                self._renew_auth()
             except Exception:
                 logger.error('Exception in loader loop', exc_info=True)
 
