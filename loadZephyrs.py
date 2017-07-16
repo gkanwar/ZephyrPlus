@@ -7,6 +7,7 @@ from functools import partial
 import logging
 import os
 import os.path
+import subprocess
 import sys
 import threading
 import time
@@ -205,7 +206,13 @@ class Receiver(object):
     def _renew_auth(self):
         try:
             if KRB_TICKET_SWAP is not None and os.path.exists(KRB_TICKET_SWAP):
-                os.rename(KRB_TICKET_SWAP, KRB_TICKET_CACHE)
+                with open(os.devnull, 'wb') as FNULL:
+                    if subprocess.call(['klist'],
+                                       env={'KRB5CCNAME': 'FILE:' + KRB_TICKET_SWAP},
+                                       stdout=FNULL,
+                                       stderr=FNULL,
+                                       close_fds=True) == 0:
+                        os.rename(KRB_TICKET_SWAP, KRB_TICKET_CACHE)
             ticketTime = os.stat(KRB_TICKET_CACHE).st_mtime
             if ticketTime != self.lastTicketTime:
                 zephyr._z.sub('', '', '')
